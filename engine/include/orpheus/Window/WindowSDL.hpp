@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Render/RenderOpenGL.hpp"
-#include "Window/Window.hpp"
+#include "orpheus/Window/Window.hpp"
+#include "orpheus/Render/RenderOpenGL.hpp"
+#include "orpheus/Utils.hpp"
 
 #include <SDL2/SDL.h>
 
-namespace WindowSDL {
+namespace Orpheus::WindowSDL {
     class OpenGL : public Window {
     private:
         class Context : public RenderOpenGL::Context {
@@ -21,6 +22,10 @@ namespace WindowSDL {
         SDL_Window* m_window;
 
     public:
+        static std::vector<std::string> getScopes() {
+            return Utils::vectorAdd(Window::getScopes(), "SDL", "OpenGL");
+        }
+
         OpenGL(const std::string& title, unsigned int width, unsigned int height);
         ~OpenGL();
 

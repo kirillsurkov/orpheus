@@ -1,0 +1,8 @@
+#pragma once
+
+namespace Version {
+    enum {
+        Major = @Game_VERSION_MAJOR@,
+        Minor = @Game_VERSION_MINOR@
+    };
+}

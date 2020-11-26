@@ -1,18 +1,20 @@
-#include "Window/WindowSDL.hpp"
+#include "orpheus/Window/WindowSDL.hpp"
+#include "orpheus/Log.hpp"
 
-WindowSDL::OpenGL::Context::Context(SDL_Window* window) {
+Orpheus::WindowSDL::OpenGL::Context::Context(SDL_Window* window) {
     m_context = SDL_GL_CreateContext(window);
     if (m_context == nullptr) {
         throw std::runtime_error("SDL_GL_CreateContext failed");
     }
 }
 
-WindowSDL::OpenGL::Context::~Context() {
+Orpheus::WindowSDL::OpenGL::Context::~Context() {
     SDL_GL_DeleteContext(m_context);
 }
 
-WindowSDL::OpenGL::OpenGL(const std::string& title, unsigned int width, unsigned int height) {
+Orpheus::WindowSDL::OpenGL::OpenGL(const std::string& title, unsigned int width, unsigned int height) {
     SDL_Init(SDL_INIT_VIDEO);
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -29,17 +31,21 @@ WindowSDL::OpenGL::OpenGL(const std::string& title, unsigned int width, unsigned
     if (m_window == nullptr) {
         throw std::runtime_error("SDL_CreateWindow failed");
     }
+
+    Log::info(this) << "test";
 }
 
-WindowSDL::OpenGL::~OpenGL() {
-    SDL_DestroyWindow(m_window);
+Orpheus::WindowSDL::OpenGL::~OpenGL() {
+    if (m_window != nullptr) {
+        SDL_DestroyWindow(m_window);
+    }
     SDL_Quit();
 }
 
-Render::ContextPtr WindowSDL::OpenGL::createContext() {
+Orpheus::Render::ContextPtr Orpheus::WindowSDL::OpenGL::createContext() {
     return std::make_shared<Context>(m_window);
 }
 
-void WindowSDL::OpenGL::swapBuffers() {
+void Orpheus::WindowSDL::OpenGL::swapBuffers() {
     SDL_GL_SwapWindow(m_window);
 }

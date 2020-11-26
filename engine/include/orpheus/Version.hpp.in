@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Version {
+namespace Orpheus::Version {
     enum {
         Major = @Orpheus_VERSION_MAJOR@,
         Minor = @Orpheus_VERSION_MINOR@

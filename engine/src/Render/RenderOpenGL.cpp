@@ -1,6 +1,6 @@
-#include "Render/RenderOpenGL.hpp"
+#include "orpheus/Render/RenderOpenGL.hpp"
 
-RenderOpenGL::RenderOpenGL(const Render::ContextPtr& context) :
+Orpheus::RenderOpenGL::RenderOpenGL(const Render::ContextPtr& context) :
     m_context(context)
 {
     if (!std::dynamic_pointer_cast<Context>(m_context)) {
@@ -8,6 +8,6 @@ RenderOpenGL::RenderOpenGL(const Render::ContextPtr& context) :
     }
 }
 
-RenderOpenGL::~RenderOpenGL() {
+Orpheus::RenderOpenGL::~RenderOpenGL() {
 
 }
