@@ -1,16 +1,13 @@
 #include "orpheus/Window/WindowGLFW.hpp"
+#include "orpheus/Exception.hpp"
 
-Orpheus::WindowGLFW::OpenGL::OpenGL(const std::string& title, unsigned int width, unsigned int height) {
-    throw std::runtime_error("WindowGLFW::OpenGL not implemented");
+Orpheus::Window::GLFW::GLFW(const std::string& title, unsigned int width, unsigned int height) {
+    addScope("GLFW");
 }
 
-Orpheus::WindowGLFW::OpenGL::~OpenGL() {
+Orpheus::Window::GLFW::~GLFW() {
 }
 
-Orpheus::Render::ContextPtr Orpheus::WindowGLFW::OpenGL::createContext() {
-    throw std::runtime_error("WindowGLFW::OpenGL::createContext not implemented");
-}
-
-void Orpheus::WindowGLFW::OpenGL::swapBuffers() {
-    throw std::runtime_error("WindowGLFW::OpenGL::swapBuffers not implemented");
+void Orpheus::Window::GLFW::swapBuffers() {
+    throw Orpheus::Exception(this, "not implemented");
 }

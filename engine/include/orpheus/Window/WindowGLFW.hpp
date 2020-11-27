@@ -3,24 +3,14 @@
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Utils.hpp"
 
-namespace Orpheus::WindowGLFW {
-    class OpenGL : public Window {
-    private:
-        class Context {
-        public:
-            Context();
-            ~Context();
-        };
-
+namespace Orpheus::Window {
+    class GLFW : public Window {
     public:
-        static std::vector<std::string> getScopes() {
-            return Utils::vectorAdd(Window::getScopes(), "GLFW", "OpenGL");
-        }
+        GLFW(const std::string& title, unsigned int width, unsigned int height);
+        ~GLFW();
 
-        OpenGL(const std::string& title, unsigned int width, unsigned int height);
-        ~OpenGL();
+        //createContext(Render::Render::ContextPtr& context);
 
-        virtual Render::ContextPtr createContext() override;
         virtual void swapBuffers() override;
     };
 };

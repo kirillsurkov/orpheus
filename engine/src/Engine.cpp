@@ -1,10 +1,11 @@
 #include "orpheus/Engine.hpp"
 #include <GL/gl.h>
 
-Orpheus::Engine::Engine(const WindowPtr& window, const RenderPtr& render) :
+Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr& render) :
     m_window(window),
     m_render(render)
 {
+    addScope("Engine");
 }
 
 Orpheus::Engine::~Engine() {

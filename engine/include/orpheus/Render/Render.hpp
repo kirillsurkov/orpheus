@@ -1,23 +1,20 @@
 #pragma once
 
-#include <memory>
+#include "orpheus/Log.hpp"
 
-#include "orpheus/Scope.hpp"
-#include "orpheus/Utils.hpp"
-
-namespace Orpheus {
-    class Render : public Scoped {
+namespace Orpheus::Render {
+    class Render : public Loggable {
     public:
         class Context {
         public:
             virtual ~Context() = default;
         };
 
-        static std::vector<std::string> getScopes() {
-            return Utils::vectorAdd(Scoped::getScopes(), "Render");
-        }
-
         using ContextPtr = std::shared_ptr<Context>;
+
+        Render() {
+            addScope("Render");
+        }
     };
 
     using RenderPtr = std::shared_ptr<Render>;

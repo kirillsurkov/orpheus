@@ -1,18 +1,19 @@
 #pragma once
 
-#include "orpheus/Scope.hpp"
 #include "orpheus/Render/Render.hpp"
-#include "orpheus/Utils.hpp"
 
-namespace Orpheus {
-    class Window : public Scoped {
+namespace Orpheus::Window {
+    class Window : public Loggable {
     public:
-        static std::vector<std::string> getScopes() {
-            return Utils::vectorAdd(Scoped::getScopes(), "Window");
+        Window() {
+            addScope("Window");
         }
 
-        virtual Render::ContextPtr createContext() = 0;
         virtual void swapBuffers() = 0;
+
+        template<class T>
+        void createContext(T&) {
+        }
     };
 
     using WindowPtr = std::shared_ptr<Window>;

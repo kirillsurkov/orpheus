@@ -1,77 +1,69 @@
 #pragma once
 
-#include <string>
-#include <mutex>
-#include <ostream>
 #include <iostream>
+#include <chrono>
 #include <iomanip>
+#include <mutex>
+#include <vector>
 #include <memory>
 
-#include "Scope.hpp"
+#include "orpheus/Exception.hpp"
 
 namespace Orpheus {
+    class Loggable {
+    private:
+        std::vector<std::string> m_scopes;
+
+    public:
+        void addScope(const std::string& scope) {
+            m_scopes.push_back(scope);
+        }
+
+        const std::vector<std::string>& getScopes() const {
+            return m_scopes;
+        }
+    };
+
     class Log {
     private:
-        class LogStreamWrapper {
+        class StreamWrapper {
         private:
-            std::mutex& m_lock;
+            std::mutex& m_mutex;
             std::ostream& m_stream;
 
         public:
-            LogStreamWrapper(std::mutex& lock, std::ostream& stream) :
-                m_lock(lock),
-                m_stream(stream)
-            {
-                m_lock.lock();
+            StreamWrapper(std::mutex& mutex, std::ostream& stream) : m_mutex(mutex), m_stream(stream) {
+                m_mutex.lock();
                 auto tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
                 auto tm = *std::gmtime(&tt);
                 m_stream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S ");
             }
 
-            ~LogStreamWrapper() {
+            ~StreamWrapper() {
                 m_stream << std::endl;
-                m_lock.unlock();
+                m_mutex.unlock();
             }
 
             template<class T>
-            LogStreamWrapper& operator<<(const T& data) {
-                m_stream << data;
+            StreamWrapper& operator<<(const T& value) {
+                m_stream << value;
                 return *this;
             }
         };
 
-        std::mutex m_lock;
+        std::mutex m_mutex;
         std::ostream& m_stream;
 
-        Log(std::ostream& stream) :
-            m_stream(stream)
-        {
-        }
+        Log(std::ostream& stream) : m_stream(stream) {}
 
         static Log& instance() {
             static Log log(std::cout);
             return log;
         }
 
-        template<class T> struct remove_all_pointers                           { using type = T; };
-        template<class T> struct remove_all_pointers<T*>                       { using type = T; };
-        template<class T> struct remove_all_pointers<T* const>                 { using type = T; };
-        template<class T> struct remove_all_pointers<std::shared_ptr<T>>       { using type = T; };
-        template<class T> struct remove_all_pointers<std::shared_ptr<T> const> { using type = T; };
-
-        template<
-            class T,
-            class S = typename remove_all_pointers<typename std::remove_reference<T>::type>::type
-        >
-        static LogStreamWrapper message(const std::string& level) {
-            static_assert(std::is_base_of<Scoped, S>::value, "S should be derived from Orpheus::Scoped");
-            auto& self = instance();
-
-            LogStreamWrapper wrapper(self.m_lock, self.m_stream);
-
-            wrapper << "| " << level << " | ";
+        static void printScope(StreamWrapper& wrapper, const Loggable& loggable) {
             bool first = true;
-            for (const auto& scope : S::getScopes()) {
+            for (const auto& scope : loggable.getScopes()) {
                 if (first) {
                     first = false;
                 } else {
@@ -80,24 +72,39 @@ namespace Orpheus {
                 wrapper << scope;
             }
             wrapper << ": ";
+        }
 
-            return wrapper;
+        static void printScope(StreamWrapper& wrapper, std::shared_ptr<Loggable> loggable) {
+            printScope(wrapper, *loggable.get());
+        }
+
+        static void printScope(StreamWrapper& wrapper, const Loggable* loggable) {
+            printScope(wrapper, *loggable);
+        }
+
+        static void printScope(StreamWrapper& wrapper, const Exception& exception) {
+            printScope(wrapper, *exception.getLoggable().get());
+            wrapper << exception.what();
+        }
+
+        static void printScope(StreamWrapper&) {
+        }
+
+        template<class... T>
+        static StreamWrapper message(const std::string& level, const T&... loggable) {
+            auto& self = instance();
+            StreamWrapper stream(self.m_mutex, self.m_stream);
+            stream << level << ": ";
+
+            printScope(stream, loggable...);
+
+            return stream;
         }
 
     public:
-        template<class T>
-        static LogStreamWrapper info(const T& scoped) {
-            return Log::message<T>(" INFO");
-        }
-
-        template<class T>
-        static LogStreamWrapper warning(const T& scoped) {
-            return Log::message<T>(" WARN");
-        }
-
-        template<class T>
-        static LogStreamWrapper fatal(const T& scoped) {
-            return Log::message<T>("FATAL");
-        }
+        template<class... T> static StreamWrapper info(const T&... loggable)  { return message(" INFO", loggable...); }
+        template<class... T> static StreamWrapper warn(const T&... loggable)  { return message(" WARN", loggable...); }
+        template<class... T> static StreamWrapper fatal(const T&... loggable) { return message("FATAL", loggable...); }
+        template<class... T> static StreamWrapper debug(const T&... loggable) { return message("DEBUG", loggable...); }
     };
 }

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "orpheus/Scope.hpp"
-#include "orpheus/Utils.hpp"
+#include "orpheus/Log.hpp"
 
 namespace Orpheus {
-    class Application : public Scoped {
+    class Application : public Loggable {
     public:
-        static std::vector<std::string> getScopes() {
-            return Utils::vectorAdd(Scoped::getScopes(), "Application");
-        }
+        Application();
+        ~Application() = default;
+
+        virtual void run() = 0;
     };
 }

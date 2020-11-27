@@ -1,22 +1,20 @@
 #pragma once
 
 #include "orpheus/Render/Render.hpp"
+#include "orpheus/Window/Window.hpp"
 #include "orpheus/Utils.hpp"
 
-namespace Orpheus {
-    class RenderOpenGL : public Render {
+namespace Orpheus::Render {
+    class OpenGL : public Render {
     public:
         class Context : public Render::Context {};
+        using ContextPtr = std::shared_ptr<Context>;
 
     private:
-        Render::ContextPtr m_context;
+        ContextPtr m_context;
 
     public:
-        static std::vector<std::string> getScopes() {
-            return Utils::vectorAdd(Render::getScopes(), "OpenGL");
-        }
-
-        RenderOpenGL(const Render::ContextPtr& context);
-        ~RenderOpenGL();
+        OpenGL(const Window::WindowPtr& window);
+        ~OpenGL();
     };
 }
