@@ -11,10 +11,9 @@ namespace Orpheus::Window {
 
     public:
         SDL(const std::string& title, unsigned int width, unsigned int height);
-        ~SDL();
+        virtual ~SDL();
 
         void createContext(Render::OpenGL::ContextPtr& context);
-
         virtual void swapBuffers() override;
     };
 };

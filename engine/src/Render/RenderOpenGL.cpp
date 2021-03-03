@@ -2,7 +2,11 @@
 
 Orpheus::Render::OpenGL::OpenGL(const Window::WindowPtr& window) {
     addScope("OpenGL");
-    window->createContext(m_context);
+    try {
+        window->createContext(m_context);
+    } catch (const std::exception& e) {
+        throw Exception(this, e.what());
+    }
 }
 
 Orpheus::Render::OpenGL::~OpenGL() {

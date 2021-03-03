@@ -3,6 +3,7 @@
 #include <orpheus/Log.hpp>
 #include <orpheus/Utils.hpp>
 #include <orpheus/Window/WindowGLFW.hpp>
+#include <orpheus/Window/WindowSDL.hpp>
 #include <orpheus/Render/RenderOpenGL.hpp>
 #include <orpheus/Engine.hpp>
 #include <orpheus/Game.hpp>
@@ -13,7 +14,7 @@ ApplicationTest::ApplicationTest() {
     auto timerTotal = Orpheus::Utils::DeltaTime();
     auto timerPart = Orpheus::Utils::DeltaTime();
 
-    m_window = std::make_shared<Orpheus::Window::GLFW>("test", 800, 600);
+    m_window = std::make_shared<Orpheus::Window::SDL>("test", 800, 600);
     Orpheus::Log::info(m_window) << "Initialized in " << timerPart.getDelta() << " milliseconds";
 
     m_render = std::make_shared<Orpheus::Render::OpenGL>(m_window);

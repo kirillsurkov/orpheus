@@ -36,7 +36,7 @@ namespace Orpheus {
                 m_mutex.lock();
                 auto tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
                 auto tm = *std::gmtime(&tt);
-                m_stream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S ");
+                m_stream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S | ");
             }
 
             ~StreamWrapper() {
@@ -94,7 +94,7 @@ namespace Orpheus {
         static StreamWrapper message(const std::string& level, const T&... loggable) {
             auto& self = instance();
             StreamWrapper stream(self.m_mutex, self.m_stream);
-            stream << level << ": ";
+            stream << level << " | ";
 
             printScope(stream, loggable...);
 

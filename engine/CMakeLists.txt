@@ -18,6 +18,10 @@ find_package(SDL2 REQUIRED)
 include_directories(Orpheus ${SDL2_INCLUDE_DIRS})
 target_link_libraries(Orpheus ${SDL2_LIBRARIES})
 
+find_package(glfw3 REQUIRED)
+include_directories(Orpheus glfw)
+target_link_libraries(Orpheus glfw)
+
 find_package(OpenGL REQUIRED)
 include_directories(Orpheus ${OPENGL_INCLUDE_DIRS})
 target_link_libraries(Orpheus ${OPENGL_LIBRARIES})

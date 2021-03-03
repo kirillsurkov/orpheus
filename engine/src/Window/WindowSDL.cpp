@@ -1,11 +1,21 @@
 #include "orpheus/Window/WindowSDL.hpp"
-#include "orpheus/Log.hpp"
 #include "orpheus/Window/impl/WindowSDLImpl.hpp"
 
 Orpheus::Window::SDL::SDL(const std::string& title, unsigned int width, unsigned int height) :
     m_impl(std::make_unique<Impl>(title, width, height))
 {
     addScope("SDL");
+
+    registerContextType<Render::OpenGL::ContextPtr>(this);
+
+    try {
+        m_impl->init();
+    } catch (const std::exception& e) {
+        throw Exception(this, e.what());
+    }
+}
+
+Orpheus::Window::SDL::~SDL() {
 }
 
 void Orpheus::Window::SDL::createContext(Render::OpenGL::ContextPtr& context) {
@@ -17,5 +27,9 @@ void Orpheus::Window::SDL::createContext(Render::OpenGL::ContextPtr& context) {
 }
 
 void Orpheus::Window::SDL::swapBuffers() {
-    m_impl->swapBuffers();
+    try {
+        m_impl->swapBuffers();
+    } catch (const std::exception& e) {
+        throw Exception(this, e.what());
+    }
 }
