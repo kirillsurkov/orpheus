@@ -23,6 +23,23 @@ void Orpheus::Window::SDL::Impl::init() {
 }
 
 void Orpheus::Window::SDL::Impl::createContext(Render::OpenGL::ContextPtr& context) {
+    class Context : public Render::OpenGL::Context {
+    private:
+        SDL_GLContext m_context;
+
+    public:
+        Context(SDL_Window* window) {
+            m_context = SDL_GL_CreateContext(window);
+            if (m_context == nullptr) {
+                throw std::runtime_error("SDL_GL_CreateContext failed");
+            }
+        }
+
+        ~Context() {
+            SDL_GL_DeleteContext(m_context);
+        }
+    };
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);

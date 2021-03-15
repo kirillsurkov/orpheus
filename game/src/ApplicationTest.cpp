@@ -17,7 +17,7 @@ ApplicationTest::ApplicationTest() {
     m_window = std::make_shared<Orpheus::Window::SDL>("test", 800, 600);
     Orpheus::Log::info(m_window) << "Initialized in " << timerPart.getDelta() << " milliseconds";
 
-    m_render = std::make_shared<Orpheus::Render::OpenGL>(m_window);
+    m_render = std::make_shared<Orpheus::Render::OpenGL>();
     Orpheus::Log::info(m_render) << "Initialized in " << timerPart.getDelta() << " milliseconds";
 
     m_engine = std::make_shared<Orpheus::Engine>(m_window, m_render);
@@ -34,5 +34,5 @@ ApplicationTest::~ApplicationTest() {
 }
 
 void ApplicationTest::run() {
-    m_engine->loop();
+    m_game->run();
 }

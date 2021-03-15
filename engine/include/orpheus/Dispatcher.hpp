@@ -20,7 +20,7 @@ namespace Orpheus {
         bool dispatch(T& t) {
             auto it = m_table.find(typeid(T).hash_code());
             if (it != m_table.end()) {
-                it->second(const_cast<typename std::remove_const<T>::type*>(&t));
+                it->second(const_cast<typename std::remove_cv<T>::type*>(&t));
                 return true;
             }
             return false;

@@ -14,6 +14,8 @@ namespace Orpheus::Window {
         virtual ~SDL();
 
         void createContext(Render::OpenGL::ContextPtr& context);
+
         virtual void swapBuffers() override;
+        virtual void pollEvents() override;
     };
 };

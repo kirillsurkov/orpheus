@@ -10,11 +10,11 @@ namespace Orpheus::Render {
         class Context : public Render::Context {};
         using ContextPtr = std::shared_ptr<Context>;
 
-    private:
-        ContextPtr m_context;
-
     public:
-        OpenGL(const Window::WindowPtr& window);
+        OpenGL();
         ~OpenGL();
+
+        virtual void setClearColor(float r, float g, float b, float a) override;
+        virtual void clear() override;
     };
 }
