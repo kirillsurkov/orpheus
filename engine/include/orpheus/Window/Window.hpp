@@ -6,8 +6,8 @@
 namespace Orpheus::Window {
     class Window : public Loggable {
     private:
-        Dispatcher m_createContextDispatcher;
-        Dispatcher m_eventsDispatcher;
+        TypeDispatcher m_createContextDispatcher;
+        TypeDispatcher m_eventsDispatcher;
 
     protected:
         template<class T, class U>

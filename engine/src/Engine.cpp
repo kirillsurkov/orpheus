@@ -13,6 +13,8 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_window->registerEventType<Event::EventQuit>(this);
     m_window->registerEventType<Event::EventKeyboard>(this);
     m_window->registerEventType<Event::EventMouse>(this);
+
+    bindKey(Event::EventKeyboard::Key::ESC, [this]() { quit(); });
 }
 
 Orpheus::Engine::~Engine() {
@@ -36,11 +38,9 @@ void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventQuit>&/* event*/
 }
 
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventKeyboard>& event) {
-    if (event->getKey() == Event::EventKeyboard::Key::ESC) {
-        quit();
-    }
+    m_keysDispatcher.dispatch(event->getKey());
 }
 
-void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventMouse>& event) {
+void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventMouse>&/* event*/) {
 
 }

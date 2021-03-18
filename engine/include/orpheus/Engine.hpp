@@ -13,6 +13,8 @@ namespace Orpheus {
         Render::RenderPtr m_render;
         bool m_alive;
 
+        Dispatcher<Event::EventKeyboard::Key> m_keysDispatcher;
+
         void quit();
 
     public:
@@ -20,6 +22,11 @@ namespace Orpheus {
         ~Engine();
 
         void loop();
+
+        template<class T>
+        void bindKey(const Event::EventKeyboard::Key key, T&& function) {
+            m_keysDispatcher.registerKey(key, function);
+        }
 
         void onEvent(const std::shared_ptr<Event::EventQuit>& event);
         void onEvent(const std::shared_ptr<Event::EventKeyboard>& event);
