@@ -38,5 +38,9 @@ namespace Orpheus::Event {
         bool isDown() const {
             return m_down;
         }
+
+        virtual std::string getName() const override {
+            return "EventKeyboard";
+        }
     };
 }

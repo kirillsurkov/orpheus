@@ -6,33 +6,46 @@
 #include <orpheus/Window/WindowSDL.hpp>
 #include <orpheus/Render/RenderOpenGL.hpp>
 #include <orpheus/Engine.hpp>
-#include <orpheus/Game.hpp>
+
+#include "Scenes/SceneMainMenu.hpp"
+#include "Scenes/SceneLevel01.hpp"
 
 ApplicationTest::ApplicationTest() {
     addScope("Test");
 
-    auto timerTotal = Orpheus::Utils::DeltaTime();
-    auto timerPart = Orpheus::Utils::DeltaTime();
+    auto timerTotal = Orpheus::Utils::StopWatch();
+    auto timerPart = Orpheus::Utils::StopWatch();
 
     m_window = std::make_shared<Orpheus::Window::SDL>("test", 800, 600);
-    Orpheus::Log::info(m_window) << "Initialized in " << timerPart.getDelta() << " milliseconds";
+    Orpheus::Log::info(m_window) << "Initialized in " << timerPart.split() << " milliseconds";
 
     m_render = std::make_shared<Orpheus::Render::OpenGL>();
-    Orpheus::Log::info(m_render) << "Initialized in " << timerPart.getDelta() << " milliseconds";
+    Orpheus::Log::info(m_render) << "Initialized in " << timerPart.split() << " milliseconds";
 
     m_engine = std::make_shared<Orpheus::Engine>(m_window, m_render);
-    Orpheus::Log::info(m_engine) << "Initialized in " << timerPart.getDelta() << " milliseconds";
+    Orpheus::Log::info(m_engine) << "Initialized in " << timerPart.split() << " milliseconds";
 
-    m_game = std::make_shared<Orpheus::Game>(m_engine);
-    Orpheus::Log::info(m_game) << "Initialized in " << timerPart.getDelta() << " milliseconds";
+    init();
 
-    Orpheus::Log::info(this) << "Initialized in " << timerTotal.getDelta() << " milliseconds";
+    Orpheus::Log::info(this) << "Initialized in " << timerTotal.split() << " milliseconds";
 }
 
 ApplicationTest::~ApplicationTest() {
     Orpheus::Log::info(this) << "Shut down";
 }
 
-void ApplicationTest::run() {
-    m_game->run();
+void ApplicationTest::init() {
+    m_engine->bindKey(Orpheus::Event::EventKeyboard::Key::ESC, [this](bool/* down*/) { m_engine->postEvent<Orpheus::Event::EventQuit>(); });
+    m_engine->bindKey(Orpheus::Event::EventKeyboard::Key::W,   [this](bool down) { Orpheus::Log::info(this) << "Forward " << (down ? "down" : "up"); });
+    m_engine->bindKey(Orpheus::Event::EventKeyboard::Key::A,   [this](bool down) { Orpheus::Log::info(this) << "Left " << (down ? "down" : "up"); });
+    m_engine->bindKey(Orpheus::Event::EventKeyboard::Key::S,   [this](bool down) { Orpheus::Log::info(this) << "Backward " << (down ? "down" : "up"); });
+    m_engine->bindKey(Orpheus::Event::EventKeyboard::Key::D,   [this](bool down) { Orpheus::Log::info(this) << "Right " << (down ? "down" : "up"); });
+
+    m_engine->postEvent<Orpheus::Event::EventLoadScene<SceneLevel01>>();
+}
+
+bool ApplicationTest::step() {
+    //m_render->setClearColor(1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f);
+    m_engine->step();
+    return m_engine->isAlive();
 }

@@ -3,10 +3,14 @@
 #include "orpheus/Event/Event.hpp"
 
 namespace Orpheus::Event {
-    class EventQuit : public Event {
+    template<class T>
+    class EventLoadScene : public Event {
     public:
+        EventLoadScene() {
+        }
+
         virtual std::string getName() const override {
-            return "EventQuit";
+            return "EventLoadScene";
         }
     };
 }

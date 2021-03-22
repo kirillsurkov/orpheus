@@ -13,34 +13,42 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_window->registerEventType<Event::EventQuit>(this);
     m_window->registerEventType<Event::EventKeyboard>(this);
     m_window->registerEventType<Event::EventMouse>(this);
-
-    bindKey(Event::EventKeyboard::Key::ESC, [this]() { quit(); });
 }
 
 Orpheus::Engine::~Engine() {
 }
 
-void Orpheus::Engine::quit() {
-    m_alive = false;
+bool Orpheus::Engine::isAlive() const {
+    return m_alive;
 }
 
-void Orpheus::Engine::loop() {
-    while (m_alive) {
-        m_window->pollEvents();
-        //m_render->clearColor(1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f * rand() / RAND_MAX, 1.0f);
-        m_render->clear();
-        m_window->swapBuffers();
+void Orpheus::Engine::loadScene(const std::shared_ptr<Scene::Scene>& scene) {
+    Log::info(scene) << "loaded";
+}
+
+void Orpheus::Engine::step() {
+    for (const auto& event : m_events) {
+        event();
     }
+    m_events.clear();
+    m_window->pollEvents();
+
+    m_render->clear();
+    m_window->swapBuffers();
 }
 
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventQuit>&/* event*/) {
-    quit();
+    m_alive = false;
 }
 
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventKeyboard>& event) {
-    m_keysDispatcher.dispatch(event->getKey());
+    if (event->isDown()) {
+        m_keysDownDispatcher.dispatch(event->getKey());
+    } else {
+        m_keysUpDispatcher.dispatch(event->getKey());
+    }
 }
 
-void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventMouse>&/* event*/) {
-
+void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventMouse>& event) {
+    Log::info(this) << event->getX() << ", " << event->getY() << ", " << event->getDX() << ", " << event->getDY();
 }

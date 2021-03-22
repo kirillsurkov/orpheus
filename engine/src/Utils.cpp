@@ -1,10 +1,11 @@
 #include "orpheus/Utils.hpp"
 
-Orpheus::Utils::DeltaTime::DeltaTime() {
-    m_last = std::chrono::system_clock::now();
+Orpheus::Utils::StopWatch::StopWatch() :
+    m_last(std::chrono::system_clock::now())
+{
 }
 
-float Orpheus::Utils::DeltaTime::getDelta() {
+float Orpheus::Utils::StopWatch::split() {
     auto now = std::chrono::system_clock::now();
     auto count = std::chrono::duration_cast<std::chrono::microseconds>(now - m_last).count();
 

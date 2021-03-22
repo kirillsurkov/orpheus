@@ -61,14 +61,14 @@ namespace Orpheus::Utils {
         };
     }
 
-    class DeltaTime {
+    class StopWatch {
     private:
         std::chrono::time_point<std::chrono::system_clock> m_last;
 
     public:
-        DeltaTime();
-        ~DeltaTime() = default;
+        StopWatch();
+        ~StopWatch() = default;
 
-        float getDelta();
+        float split();
     };
 }

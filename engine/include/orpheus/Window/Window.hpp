@@ -16,9 +16,9 @@ namespace Orpheus::Window {
         }
 
         template<class T>
-        void postEvent(const T& event) {
+        void postEvent(const std::shared_ptr<T>& event) {
             if (!m_eventsDispatcher.dispatch(event)) {
-                throw Exception(this, "Message of this type is not supported");
+                throw Exception(this, "Event '" + event->getName() + "' is not supported");
             }
         }
 

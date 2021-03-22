@@ -107,6 +107,10 @@ namespace Orpheus::Window {
                     receiver(std::make_shared<Event::EventKeyboard>(s2eKey(sdlEvent.key.keysym), false));
                     break;
                 }
+                case SDL_MOUSEMOTION: {
+                    receiver(std::make_shared<Event::EventMouse>(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
+                    break;
+                }
                 }
             }
         }
