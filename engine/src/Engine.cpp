@@ -1,4 +1,5 @@
 #include "orpheus/Engine.hpp"
+#include "orpheus/Version.hpp"
 
 Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr& render) :
     m_window(window),
@@ -6,6 +7,7 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_alive(true)
 {
     addScope("Engine");
+    Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
 
     m_render->init(m_window);
     m_render->setClearColor(0.0f, 0.0f, 0.0f, 1.0f);

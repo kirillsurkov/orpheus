@@ -1,10 +1,26 @@
-#include "GameTest.hpp"
-
 #include <orpheus/Exception.hpp>
+#include <orpheus/Window/WindowSDL.hpp>
+#include <orpheus/Render/RenderOpenGL.hpp>
+
+#include "GameTest.hpp"
 
 int main() {
     try {
-        auto game = GameTest();
+        auto timerTotal = Orpheus::Utils::StopWatch();
+        auto timerPart = Orpheus::Utils::StopWatch();
+
+        auto window = std::make_shared<Orpheus::Window::SDL>("test", 800, 600);
+        Orpheus::Log::info(window) << "Initialized in " << timerPart.split() << "ms";
+
+        auto render = std::make_shared<Orpheus::Render::OpenGL>();
+        Orpheus::Log::info(render) << "Initialized in " << timerPart.split() << "ms";
+
+        auto engine = std::make_shared<Orpheus::Engine>(window, render);
+        Orpheus::Log::info(engine) << "Initialized in " << timerPart.split() << "ms";
+
+        auto game = GameTest(engine);
+        Orpheus::Log::info(game) << "Initialized in " << timerTotal.split() << "ms";
+
         game.run();
     } catch (const Orpheus::Exception& e) {
         Orpheus::Log::fatal(e);

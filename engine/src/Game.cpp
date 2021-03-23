@@ -1,12 +1,14 @@
 #include "orpheus/Game.hpp"
 #include "orpheus/Log.hpp"
-#include "orpheus/Version.hpp"
 
-Orpheus::Game::Game() {
-    addScope("Application");
-    Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
+Orpheus::Game::Game(const EnginePtr& engine) :
+    m_engine(engine)
+{
+    addScope("Game");
 }
 
 void Orpheus::Game::run() {
-    while (step());
+    while (m_engine->isAlive()) {
+        m_engine->step();
+    }
 }
