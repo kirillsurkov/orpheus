@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <functional>
 #include <typeindex>
+#include <memory>
 
 namespace Orpheus {
     template<class Key, class... Values>
@@ -11,6 +12,18 @@ namespace Orpheus {
         std::unordered_map<Key, std::function<void(Values...)>> m_table;
 
     public:
+        Dispatcher() {
+        }
+
+        Dispatcher(Dispatcher&& dispatcher) {
+            *this = std::move(dispatcher);
+        }
+
+        Dispatcher& operator=(Dispatcher&& dispatcher) {
+            m_table = std::move(dispatcher.m_table);
+            return *this;
+        }
+
         template<class F>
         void registerKey(const Key& key, F&& router) {
             m_table[key] = router;
@@ -36,6 +49,18 @@ namespace Orpheus {
         Dispatcher<std::type_index, void*> m_dispatcher;
 
     public:
+        TypeDispatcher() {
+        }
+
+        TypeDispatcher(TypeDispatcher&& dispatcher) {
+            *this = std::move(dispatcher);
+        }
+
+        TypeDispatcher& operator=(TypeDispatcher&& dispatcher) {
+            m_dispatcher = std::move(dispatcher.m_dispatcher);
+            return *this;
+        }
+
         template<class T, class F>
         void registerType(F&& router) {
             m_dispatcher.registerKey(std::type_index(typeid(T)), [router](void* x) {
@@ -48,6 +73,39 @@ namespace Orpheus {
             return m_dispatcher.dispatch(std::type_index(typeid(T)), [&value](auto& router) {
                 router(const_cast<typename std::remove_cv<T>::type*>(&value));
             });
+        }
+    };
+
+    class EventsDispatcher {
+    private:
+        TypeDispatcher m_dispatcher;
+
+    public:
+        EventsDispatcher() {
+        }
+
+        EventsDispatcher(EventsDispatcher&& dispatcher) {
+            *this = std::move(dispatcher);
+        }
+
+        EventsDispatcher& operator=(EventsDispatcher&& dispatcher) {
+            m_dispatcher = std::move(dispatcher.m_dispatcher);
+            return *this;
+        }
+
+        template<class T, class U>
+        void registerEventType(U* receiver) {
+            m_dispatcher.registerType<const std::shared_ptr<T>&>([receiver](const std::shared_ptr<T>& event) { receiver->onEvent(event); });
+        }
+
+        template<class T, class U>
+        void registerEventType(U&& receiver) {
+            m_dispatcher.registerType<const std::shared_ptr<T>&>([&receiver](const std::shared_ptr<T>& event) { receiver.onEvent(event); });
+        }
+
+        template<class T>
+        bool dispatch(T&& value) {
+            return m_dispatcher.dispatch(value);
         }
     };
 }

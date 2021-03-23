@@ -4,10 +4,10 @@
 #include "orpheus/Dispatcher.hpp"
 
 namespace Orpheus {
-    class Application : public Loggable {
+    class Game : public Loggable {
     public:
-        Application();
-        ~Application() = default;
+        Game();
+        ~Game() = default;
 
         void run();
 

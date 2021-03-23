@@ -7,7 +7,7 @@ namespace Orpheus::Window {
     class Window : public Loggable {
     private:
         TypeDispatcher m_createContextDispatcher;
-        TypeDispatcher m_eventsDispatcher;
+        EventsDispatcher m_eventsDispatcher;
 
     protected:
         template<class T, class U>
@@ -37,8 +37,8 @@ namespace Orpheus::Window {
         }
 
         template<class T, class U>
-        void registerEventType(U* receiver) {
-            m_eventsDispatcher.registerType<const std::shared_ptr<T>&>([receiver](const std::shared_ptr<T>& event) { receiver->onEvent(event); });
+        void registerEventType(U&& receiver) {
+            m_eventsDispatcher.registerEventType<T>(std::forward<U>(receiver));
         }
 
     public:

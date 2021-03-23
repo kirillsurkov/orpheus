@@ -61,6 +61,11 @@ namespace Orpheus::Utils {
         };
     }
 
+    template<class T>
+    class TypeIdentity {
+        using Type = T;
+    };
+
     class StopWatch {
     private:
         std::chrono::time_point<std::chrono::system_clock> m_last;

@@ -1,11 +1,11 @@
-#include "ApplicationTest.hpp"
+#include "GameTest.hpp"
 
 #include <orpheus/Exception.hpp>
 
 int main() {
     try {
-        auto app = ApplicationTest();
-        app.run();
+        auto game = GameTest();
+        game.run();
     } catch (const Orpheus::Exception& e) {
         Orpheus::Log::fatal(e);
     } catch (const std::exception& e) {

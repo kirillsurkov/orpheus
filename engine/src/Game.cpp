@@ -1,12 +1,12 @@
-#include "orpheus/Application.hpp"
+#include "orpheus/Game.hpp"
 #include "orpheus/Log.hpp"
 #include "orpheus/Version.hpp"
 
-Orpheus::Application::Application() {
+Orpheus::Game::Game() {
     addScope("Application");
     Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
 }
 
-void Orpheus::Application::run() {
+void Orpheus::Game::run() {
     while (step());
 }
