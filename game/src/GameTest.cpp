@@ -1,9 +1,11 @@
 #include "GameTest.hpp"
+#include "Version.hpp"
 #include "Scenes/SceneMainMenu.hpp"
 #include "Scenes/SceneLevel01.hpp"
 
 GameTest::GameTest(const Orpheus::EnginePtr& engine) : Orpheus::Game(engine) {
     addScope("Test");
+    Orpheus::Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
 
     bindKey(Orpheus::Input::Key::ESC, [this](bool/* down*/) { postEvent<Orpheus::Event::EventQuit>(); });
     bindKey(Orpheus::Input::Key::W,   [this](bool down) { Orpheus::Log::info(this) << "Forward " << (down ? "down" : "up"); });

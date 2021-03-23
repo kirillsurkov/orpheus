@@ -91,7 +91,7 @@ namespace Orpheus {
         }
 
         template<class... T>
-        static StreamWrapper message(const std::string& level, const T&... loggable) {
+        static StreamWrapper message(const std::string& level, T&&... loggable) {
             auto& self = instance();
             StreamWrapper stream(self.m_mutex, self.m_stream);
             stream << level << " | ";
@@ -102,9 +102,9 @@ namespace Orpheus {
         }
 
     public:
-        template<class... T> static StreamWrapper info(const T&... loggable)  { return message(" INFO", loggable...); }
-        template<class... T> static StreamWrapper warn(const T&... loggable)  { return message(" WARN", loggable...); }
-        template<class... T> static StreamWrapper fatal(const T&... loggable) { return message("FATAL", loggable...); }
-        template<class... T> static StreamWrapper debug(const T&... loggable) { return message("DEBUG", loggable...); }
+        template<class... T> static StreamWrapper info(T&&... loggable)  { return message(" INFO", std::forward<T>(loggable)...); }
+        template<class... T> static StreamWrapper warn(T&&... loggable)  { return message(" WARN", std::forward<T>(loggable)...); }
+        template<class... T> static StreamWrapper fatal(T&&... loggable) { return message("FATAL", std::forward<T>(loggable)...); }
+        template<class... T> static StreamWrapper debug(T&&... loggable) { return message("DEBUG", std::forward<T>(loggable)...); }
     };
 }

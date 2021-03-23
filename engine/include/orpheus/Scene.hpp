@@ -27,7 +27,7 @@ namespace Orpheus::Scene {
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
-            auto event = std::make_shared<T>(args...);
+            auto event = std::make_shared<T>(std::forward<Args>(args)...);
             if (!m_eventsDispatcher.dispatch(event)) {
                 throw Exception(this, "Event '" + event->getName() + "' is not supported within Scene");
             }

@@ -34,7 +34,7 @@ namespace Orpheus {
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
-            auto event = std::make_shared<T>(args...);
+            auto event = std::make_shared<T>(std::forward<Args>(args)...);
             m_events.push_back([this, event]() {
                 onEvent(event);
             });
