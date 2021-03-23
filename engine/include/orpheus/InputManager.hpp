@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Log.hpp"
 #include "orpheus/Dispatcher.hpp"
 
 #include <unordered_map>
@@ -25,7 +26,7 @@ namespace Orpheus::Input {
         UNKNOWN
     };
 
-    class Manager {
+    class Manager : public Loggable {
     private:
         EventsDispatcher m_eventsDispatcher;
         std::unordered_map<Key, bool> m_state;
