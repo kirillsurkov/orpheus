@@ -13,8 +13,8 @@ namespace Orpheus::Scene {
             addScope("Scene");
         }
 
-        Scene(Scene&& scene) : Scene() {
-            m_eventsDispatcher = std::move(scene.m_eventsDispatcher);
+        Scene(const Scene& scene) : Scene() {
+            m_eventsDispatcher = scene.m_eventsDispatcher;
         }
 
         virtual ~Scene() {
@@ -33,4 +33,6 @@ namespace Orpheus::Scene {
             }
         }
     };
+
+    using ScenePtr = std::shared_ptr<Scene>;
 }

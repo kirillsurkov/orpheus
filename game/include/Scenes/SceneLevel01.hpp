@@ -6,7 +6,7 @@
 
 class SceneLevel01 : public Orpheus::Scene::Scene {
 public:
-    SceneLevel01(Orpheus::Scene::Scene&& scene) : Orpheus::Scene::Scene(std::move(scene)) {
+    SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
         addScope("Level01");
         postEvent<Orpheus::Event::EventTest>("It works!");
     }

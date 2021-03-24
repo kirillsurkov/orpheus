@@ -17,6 +17,10 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
 
     m_window->registerEventType<Event::EventKeyboard>(m_inputManager);
     m_inputManager.registerEventType<Event::EventKeyboard>(this);
+
+    m_sceneBase = std::make_shared<Scene::Scene>();
+    m_sceneBase->registerEventType<Event::EventLoadScene>(this);
+    m_sceneBase->registerEventType<Event::EventTest>(this);
 }
 
 Orpheus::Engine::~Engine() {
@@ -27,7 +31,7 @@ bool Orpheus::Engine::isAlive() const {
 }
 
 void Orpheus::Engine::loadScene(const std::shared_ptr<Scene::Scene>& scene) {
-    Log::info(scene) << "TODO: loadScene";
+    m_sceneStack.push(scene);
 }
 
 void Orpheus::Engine::step() {
@@ -61,10 +65,7 @@ void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventLoadScene>& even
     auto index = event->getTypeIndex();
     auto it = m_sceneCache.find(index);
     if (it == m_sceneCache.end()) {
-        Scene::Scene scene;
-        scene.registerEventType<Event::EventLoadScene>(this);
-        scene.registerEventType<Event::EventTest>(this);
-        it = m_sceneCache.emplace(index, event->createScene(std::move(scene))).first;
+        it = m_sceneCache.emplace(index, event->createScene(m_sceneBase)).first;
     }
     loadScene(it->second);
 }

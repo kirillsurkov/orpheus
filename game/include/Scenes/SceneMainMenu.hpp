@@ -4,7 +4,7 @@
 
 class SceneMainMenu : public Orpheus::Scene::Scene {
 public:
-    SceneMainMenu() {
+    SceneMainMenu(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
         addScope("MainMenu");
     }
 };

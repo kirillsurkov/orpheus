@@ -3,6 +3,7 @@
 #include <chrono>
 #include <vector>
 #include <array>
+#include <string_view>
 
 namespace Orpheus::Utils {
     namespace Concat {

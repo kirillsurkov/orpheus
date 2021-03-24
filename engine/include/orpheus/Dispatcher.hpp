@@ -19,8 +19,17 @@ namespace Orpheus {
             *this = std::move(dispatcher);
         }
 
+        Dispatcher(const Dispatcher& dispatcher) {
+            *this = dispatcher;
+        }
+
         Dispatcher& operator=(Dispatcher&& dispatcher) {
             m_table = std::move(dispatcher.m_table);
+            return *this;
+        }
+
+        Dispatcher& operator=(const Dispatcher& dispatcher) {
+            m_table = dispatcher.m_table;
             return *this;
         }
 
@@ -56,8 +65,17 @@ namespace Orpheus {
             *this = std::move(dispatcher);
         }
 
+        TypeDispatcher(const TypeDispatcher& dispatcher) {
+            *this = dispatcher;
+        }
+
         TypeDispatcher& operator=(TypeDispatcher&& dispatcher) {
             m_dispatcher = std::move(dispatcher.m_dispatcher);
+            return *this;
+        }
+
+        TypeDispatcher& operator=(const TypeDispatcher& dispatcher) {
+            m_dispatcher = dispatcher.m_dispatcher;
             return *this;
         }
 
@@ -88,8 +106,17 @@ namespace Orpheus {
             *this = std::move(dispatcher);
         }
 
+        EventsDispatcher(const EventsDispatcher& dispatcher) {
+            *this = dispatcher;
+        }
+
         EventsDispatcher& operator=(EventsDispatcher&& dispatcher) {
             m_dispatcher = std::move(dispatcher.m_dispatcher);
+            return *this;
+        }
+
+        EventsDispatcher& operator=(const EventsDispatcher& dispatcher) {
+            m_dispatcher = dispatcher.m_dispatcher;
             return *this;
         }
 

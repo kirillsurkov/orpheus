@@ -10,6 +10,8 @@
 #include "orpheus/InputManager.hpp"
 #include "orpheus/Scene.hpp"
 
+#include <stack>
+
 namespace Orpheus {
     class Engine : public Loggable {
     private:
@@ -17,7 +19,9 @@ namespace Orpheus {
         Render::RenderPtr m_render;
         Input::Manager m_inputManager;
         std::vector<std::function<void()>> m_events;
-        std::unordered_map<std::type_index, std::shared_ptr<Scene::Scene>> m_sceneCache;
+        std::unordered_map<std::type_index, Scene::ScenePtr> m_sceneCache;
+        std::stack<Scene::ScenePtr> m_sceneStack;
+        Scene::ScenePtr m_sceneBase;
         bool m_alive;
 
         Dispatcher<Input::Key> m_keysDownDispatcher;
@@ -34,7 +38,7 @@ namespace Orpheus {
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
-            auto event = std::make_shared<T>(std::forward<Args>(args)...);
+            auto event = std::make_shared<T>(std::forward<Args...>(args)...);
             m_events.push_back([this, event]() {
                 onEvent(event);
             });
