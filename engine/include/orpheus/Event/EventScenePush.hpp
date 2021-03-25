@@ -8,14 +8,14 @@
 #include <functional>
 
 namespace Orpheus::Event {
-    class EventLoadScene : public Event {
+    class EventScenePush : public Event {
     private:
         std::type_index m_typeIndex;
         std::function<std::shared_ptr<Scene::Scene>(const Scene::ScenePtr&)> m_createScene;
 
     public:
         template<class T>
-        EventLoadScene(Utils::TypeIdentity<T>) :
+        EventScenePush(Utils::TypeIdentity<T>) :
             m_typeIndex(std::type_index(typeid(T))),
             m_createScene([](const Scene::ScenePtr& sceneBase) {
                 return std::make_shared<T>(*sceneBase);
@@ -24,7 +24,7 @@ namespace Orpheus::Event {
         }
 
         virtual std::string getName() const override {
-            return "EventLoadScene";
+            return "EventScenePush";
         }
 
         std::type_index getTypeIndex() const {

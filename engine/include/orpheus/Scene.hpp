@@ -25,6 +25,9 @@ namespace Orpheus::Scene {
         virtual ~Scene() {
         }
 
+        virtual void onShow() {
+        }
+
         template<class T, class U>
         void registerEventType(U&& receiver) {
             m_eventsDispatcher.registerEventType<T>(std::forward<U>(receiver));

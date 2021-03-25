@@ -51,6 +51,10 @@ namespace Orpheus {
         bool dispatch(const Key& key) {
             return dispatch(key, [](auto& router) { router(); });
         }
+
+        void clear() {
+            m_table.clear();
+        }
     };
 
     class TypeDispatcher {
@@ -91,6 +95,10 @@ namespace Orpheus {
             return m_dispatcher.dispatch(std::type_index(typeid(T)), [&value](auto& router) {
                 router(const_cast<typename std::remove_cv<T>::type*>(&value));
             });
+        }
+
+        void clear() {
+            m_dispatcher.clear();
         }
     };
 
@@ -133,6 +141,10 @@ namespace Orpheus {
         template<class T>
         bool dispatch(T&& value) {
             return m_dispatcher.dispatch(value);
+        }
+
+        void clear() {
+            m_dispatcher.clear();
         }
     };
 }

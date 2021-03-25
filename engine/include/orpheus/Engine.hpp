@@ -17,7 +17,7 @@ namespace Orpheus {
         Window::WindowPtr m_window;
         Render::RenderPtr m_render;
         Input::Manager m_inputManager;
-        std::vector<std::function<void()>> m_events;
+        std::vector<std::function<bool()>> m_events;
         std::unordered_map<std::type_index, Scene::ScenePtr> m_sceneCache;
         std::stack<Scene::ScenePtr> m_sceneStack;
         Scene::ScenePtr m_sceneBase;
@@ -32,14 +32,15 @@ namespace Orpheus {
 
         bool isAlive() const;
 
-        void loadScene(const std::shared_ptr<Scene::Scene>& scene);
+        void pushScene(const std::shared_ptr<Scene::Scene>& scene);
+        bool popScene();
         void step();
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
             auto event = std::make_shared<T>(std::forward<Args>(args)...);
             m_events.push_back([this, event]() {
-                onEvent(event);
+                return onEvent(event);
             });
         }
 
@@ -50,7 +51,7 @@ namespace Orpheus {
         }
 
         template<class T>
-        void onEvent(const std::shared_ptr<T>& event) {
+        bool onEvent(const std::shared_ptr<T>& event) {
             throw Exception(this, "Event '" + event->getName() + "' is not supported within Engine");
         }
     };
