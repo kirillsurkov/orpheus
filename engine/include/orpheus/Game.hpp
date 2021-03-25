@@ -16,7 +16,7 @@ namespace Orpheus {
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
-            m_engine->postEvent<T>(std::forward<Args...>(args)...);
+            m_engine->postEvent<T>(std::forward<Args>(args)...);
         }
 
         template<class T>

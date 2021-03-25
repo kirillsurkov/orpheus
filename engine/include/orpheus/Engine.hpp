@@ -2,17 +2,16 @@
 
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Render/Render.hpp"
-#include "orpheus/Event/EventQuit.hpp"
-#include "orpheus/Event/EventKeyboard.hpp"
-#include "orpheus/Event/EventMouse.hpp"
-#include "orpheus/Event/EventLoadScene.hpp"
-#include "orpheus/Event/EventTest.hpp"
 #include "orpheus/InputManager.hpp"
-#include "orpheus/Scene.hpp"
 
 #include <stack>
 
 namespace Orpheus {
+    namespace Scene {
+        class Scene;
+        using ScenePtr = std::shared_ptr<Scene>;
+    }
+
     class Engine : public Loggable {
     private:
         Window::WindowPtr m_window;
@@ -38,7 +37,7 @@ namespace Orpheus {
 
         template<class T, class... Args>
         void postEvent(Args&&... args) {
-            auto event = std::make_shared<T>(std::forward<Args...>(args)...);
+            auto event = std::make_shared<T>(std::forward<Args>(args)...);
             m_events.push_back([this, event]() {
                 onEvent(event);
             });
@@ -50,11 +49,10 @@ namespace Orpheus {
             m_keysUpDispatcher.registerKey(key,  [function]() { function(false); });
         }
 
-        void onEvent(const std::shared_ptr<Event::EventQuit>& event);
-        void onEvent(const std::shared_ptr<Event::EventKeyboard>& event);
-        void onEvent(const std::shared_ptr<Event::EventMouse>& event);
-        void onEvent(const std::shared_ptr<Event::EventLoadScene>& event);
-        void onEvent(const std::shared_ptr<Event::EventTest>& event);
+        template<class T>
+        void onEvent(const std::shared_ptr<T>& event) {
+            throw Exception(this, "Event '" + event->getName() + "' is not supported within Engine");
+        }
     };
 
     using EnginePtr = std::shared_ptr<Engine>;

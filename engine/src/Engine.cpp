@@ -1,5 +1,10 @@
 #include "orpheus/Engine.hpp"
 #include "orpheus/Version.hpp"
+#include "orpheus/Event/EventQuit.hpp"
+#include "orpheus/Event/EventKeyboard.hpp"
+#include "orpheus/Event/EventMouse.hpp"
+#include "orpheus/Event/EventLoadScene.hpp"
+#include "orpheus/Event/EventTest.hpp"
 
 Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr& render) :
     m_window(window),
@@ -18,7 +23,7 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_window->registerEventType<Event::EventKeyboard>(m_inputManager);
     m_inputManager.registerEventType<Event::EventKeyboard>(this);
 
-    m_sceneBase = std::make_shared<Scene::Scene>();
+    m_sceneBase = std::make_shared<Scene::Scene>(*this);
     m_sceneBase->registerEventType<Event::EventLoadScene>(this);
     m_sceneBase->registerEventType<Event::EventTest>(this);
 }
@@ -45,10 +50,12 @@ void Orpheus::Engine::step() {
     m_window->swapBuffers();
 }
 
+template<>
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventQuit>&/* event*/) {
     m_alive = false;
 }
 
+template<>
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventKeyboard>& event) {
     if (event->isDown()) {
         m_keysDownDispatcher.dispatch(event->getKey());
@@ -57,10 +64,12 @@ void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventKeyboard>& event
     }
 }
 
+template<>
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventMouse>& event) {
     Log::info(this) << event->getX() << ", " << event->getY() << ", " << event->getDX() << ", " << event->getDY();
 }
 
+template<>
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventLoadScene>& event) {
     auto index = event->getTypeIndex();
     auto it = m_sceneCache.find(index);
@@ -70,6 +79,7 @@ void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventLoadScene>& even
     loadScene(it->second);
 }
 
+template<>
 void Orpheus::Engine::onEvent(const std::shared_ptr<Event::EventTest>& event) {
     Log::info(this) << event->getMessage();
 }

@@ -2,18 +2,23 @@
 
 #include "orpheus/Log.hpp"
 #include "orpheus/Dispatcher.hpp"
+#include "orpheus/InputManager.hpp"
+#include "orpheus/Engine.hpp"
 
 namespace Orpheus::Scene {
     class Scene : public Loggable {
     private:
         EventsDispatcher m_eventsDispatcher;
+        Engine& m_engine;
 
     public:
-        Scene() {
+        Scene(Engine& engine) :
+            m_engine(engine)
+        {
             addScope("Scene");
         }
 
-        Scene(const Scene& scene) : Scene() {
+        Scene(const Scene& scene) : Scene(scene.m_engine) {
             m_eventsDispatcher = scene.m_eventsDispatcher;
         }
 
@@ -31,6 +36,11 @@ namespace Orpheus::Scene {
             if (!m_eventsDispatcher.dispatch(event)) {
                 throw Exception(this, "Event '" + event->getName() + "' is not supported within Scene");
             }
+        }
+
+        template<class T>
+        void bindKey(const Input::Key key, T&& function) {
+            m_engine.bindKey(key, std::forward<T>(function));
         }
     };
 
