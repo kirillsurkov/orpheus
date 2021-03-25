@@ -1,16 +1,16 @@
 #pragma once
 
-#include "orpheus/Event/Event.hpp"
+#include "orpheus/Command/Command.hpp"
 #include "orpheus/InputManager.hpp"
 
-namespace Orpheus::Event {
-    class EventKeyboard : public Event {
+namespace Orpheus::Command {
+    class CommandKeyboard : public Command {
     private:
         Input::Key m_key;
         bool m_down;
 
     public:
-        EventKeyboard(Input::Key key, bool down) :
+        CommandKeyboard(Input::Key key, bool down) :
             m_key(key),
             m_down(down)
         {
@@ -25,7 +25,7 @@ namespace Orpheus::Event {
         }
 
         virtual std::string getName() const override {
-            return "EventKeyboard";
+            return "CommandKeyboard";
         }
     };
 }

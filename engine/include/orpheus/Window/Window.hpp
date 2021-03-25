@@ -7,7 +7,7 @@ namespace Orpheus::Window {
     class Window : public Loggable {
     private:
         TypeDispatcher m_createContextDispatcher;
-        EventsDispatcher m_eventsDispatcher;
+        CommandDispatcher m_commandDispatcher;
 
     protected:
         template<class T, class U>
@@ -16,9 +16,9 @@ namespace Orpheus::Window {
         }
 
         template<class T>
-        void postEvent(const std::shared_ptr<T>& event) {
-            if (!m_eventsDispatcher.dispatch(event)) {
-                throw Exception(this, "Event '" + event->getName() + "' is not supported within Window");
+        void postCommand(const std::shared_ptr<T>& command) {
+            if (!m_commandDispatcher.dispatch(command)) {
+                throw Exception(this, "Command '" + command->getName() + "' is not supported within Window");
             }
         }
 
@@ -37,8 +37,8 @@ namespace Orpheus::Window {
         }
 
         template<class T, class U>
-        void registerEventType(U&& receiver) {
-            m_eventsDispatcher.registerEventType<T>(std::forward<U>(receiver));
+        void registerCommand(U&& receiver) {
+            m_commandDispatcher.registerCommand<T>(std::forward<U>(receiver));
         }
 
     public:

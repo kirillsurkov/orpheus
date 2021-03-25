@@ -1,42 +1,25 @@
 #pragma once
 
-#include <orpheus/Scene.hpp>
-#include <orpheus/Event/EventTest.hpp>
-#include <orpheus/Event/EventScenePush.hpp>
-#include <orpheus/Event/EventScenePop.hpp>
+#include "SceneLevel.hpp"
 
-#include "SceneMainMenu.hpp"
+#include <orpheus/Command/CommandTest.hpp>
+#include <orpheus/Command/CommandScenePush.hpp>
+#include <orpheus/Command/CommandScenePop.hpp>
+#include <orpheus/Command/Render/RenderCommandClear.hpp>
+#include <orpheus/Command/Render/RenderCommandSetClearColor.hpp>
+#include <orpheus/Entity/EntityCommand.hpp>
 
-class SceneLevel01 : public Orpheus::Scene::Scene {
+class SceneLevel01 : public SceneLevel {
 public:
-    SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
+    SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : SceneLevel(sceneBase) {
         addScope("Level01");
+        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandSetClearColor>>(0.5f, 0.5f, 0.0f, 1.0f);
+        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandClear>>();
     }
 
     virtual void onShow() override {
-        postEvent<Orpheus::Event::EventTest>("Level01 shown!");
+        postCommand<Orpheus::Command::CommandTest>("Level01 shown!");
 
-        bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
-            if (down) {
-                postEvent<Orpheus::Event::EventScenePop>();
-            }
-        });
-
-        bindKey(Orpheus::Input::Key::W,   [this](bool down) { Orpheus::Log::info(this) << "Forward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::A,   [this](bool down) { Orpheus::Log::info(this) << "Left " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::S,   [this](bool down) { Orpheus::Log::info(this) << "Backward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::D,   [this](bool down) { Orpheus::Log::info(this) << "Right " << (down ? "down" : "up"); });
-
-        bindKey(Orpheus::Input::Key::Z,   [this](bool down) {
-            if (down) {
-                postEvent<Orpheus::Event::EventTest>("It works from Level01!");
-            }
-        });
-
-        bindKey(Orpheus::Input::Key::X,   [this](bool down) {
-            if (down) {
-                postEvent<Orpheus::Event::EventScenePush>(Orpheus::Utils::TypeIdentity<SceneMainMenu>{});
-            }
-        });
+        bindKeys();
     }
 };

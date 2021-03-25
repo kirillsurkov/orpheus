@@ -1,20 +1,20 @@
 #pragma once
 
-#include "orpheus/Event/Event.hpp"
+#include "orpheus/Command/Command.hpp"
 
-namespace Orpheus::Event {
-    class EventTest : public Event {
+namespace Orpheus::Command {
+    class CommandTest : public Command {
     private:
         std::string m_message;
 
     public:
-        EventTest(const std::string& message) :
+        CommandTest(const std::string& message) :
             m_message(message)
         {
         }
 
         virtual std::string getName() const override {
-            return "EventTest";
+            return "CommandTest";
         }
 
         const std::string& getMessage() const {

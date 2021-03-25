@@ -36,8 +36,8 @@ void Orpheus::Window::SDL::swapBuffers() {
 
 void Orpheus::Window::SDL::pollEvents() {
     try {
-        m_impl->pollEvents([this](const auto& event) {
-            postEvent(event);
+        m_impl->pollEvents([this](const auto& command) {
+            postCommand(command);
         });
     } catch (const std::exception& e) {
         throw Exception(this, e.what());

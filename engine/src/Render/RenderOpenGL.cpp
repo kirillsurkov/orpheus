@@ -5,15 +5,18 @@ Orpheus::Render::OpenGL::OpenGL() :
     Render(this)
 {
     addScope("OpenGL");
+
+    registerRenderCommand<Command::Render::RenderCommandClear>(this);
+    registerRenderCommand<Command::Render::RenderCommandSetClearColor>(this);
 }
 
 Orpheus::Render::OpenGL::~OpenGL() {
 }
 
-void Orpheus::Render::OpenGL::setClearColor(float r, float g, float b, float a) {
-    glClearColor(r, g, b, a);
+void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::RenderCommandClear>&/* command*/) {
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Orpheus::Render::OpenGL::clear() {
-    glClear(GL_COLOR_BUFFER_BIT);
+void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::RenderCommandSetClearColor>& command) {
+    glClearColor(command->getR(), command->getG(), command->getB(), command->getA());
 }

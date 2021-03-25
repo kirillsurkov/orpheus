@@ -2,6 +2,10 @@
 
 #include "orpheus/Window/Window.hpp"
 
+namespace Orpheus::Scene {
+    class Scene;
+}
+
 namespace Orpheus::Render {
     class Render : public Loggable {
     public:
@@ -15,6 +19,13 @@ namespace Orpheus::Render {
     private:
         std::function<void(Window::WindowPtr&)> m_initializer;
         ContextPtr m_context;
+        CommandDispatcher m_renderCommandDispatcher;
+
+    protected:
+        template<class T, class U>
+        void registerRenderCommand(U&& receiver) {
+            m_renderCommandDispatcher.registerCommand<T>(std::forward<U>(receiver));
+        }
 
     public:
         template<class T>
@@ -28,13 +39,15 @@ namespace Orpheus::Render {
             };
         }
 
-        void init(Window::WindowPtr& window) {
-            m_initializer(window);
+        template<class T>
+        void postRenderCommand(T&& command) {
+            if (!m_renderCommandDispatcher.dispatch(command)) {
+                throw Exception(this, "Command '" + command->getName() + "' is not supported within Render");
+            }
         }
 
-    public:
-        virtual void setClearColor(float r, float g, float b, float a) = 0;
-        virtual void clear() = 0;
+        void init(Window::WindowPtr& window);
+        void drawScene(const std::shared_ptr<Orpheus::Scene::Scene>& scene);
     };
 
     using RenderPtr = std::shared_ptr<Render>;

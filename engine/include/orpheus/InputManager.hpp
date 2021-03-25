@@ -5,8 +5,8 @@
 
 #include <unordered_map>
 
-namespace Orpheus::Event {
-    class EventKeyboard;
+namespace Orpheus::Command {
+    class CommandKeyboard;
 }
 
 namespace Orpheus::Input {
@@ -28,18 +28,23 @@ namespace Orpheus::Input {
 
     class Manager : public Loggable {
     private:
-        EventsDispatcher m_eventsDispatcher;
+        CommandDispatcher m_commandDispatcher;
         std::unordered_map<Key, bool> m_state;
+
+        void onCommand(const std::shared_ptr<Command::CommandKeyboard>& command);
 
     public:
         Manager();
         ~Manager();
 
         template<class T, class U>
-        void registerEventType(U&& receiver) {
-            m_eventsDispatcher.registerEventType<T>(std::forward<U>(receiver));
+        void registerCommand(U&& receiver) {
+            m_commandDispatcher.registerCommand<T>(std::forward<U>(receiver));
         }
 
-        void onEvent(const std::shared_ptr<Event::EventKeyboard>& event);
+        template<class T>
+        void postCommand(T&& command) {
+            onCommand(command);
+        }
     };
 }

@@ -1,33 +1,24 @@
 #pragma once
 
-#include <orpheus/Scene.hpp>
-#include <orpheus/Event/EventScenePop.hpp>
-#include <orpheus/Event/EventTest.hpp>
+#include "SceneMenu.hpp"
 
-class SceneMainMenu : public Orpheus::Scene::Scene {
+#include <orpheus/Command/CommandScenePop.hpp>
+#include <orpheus/Command/CommandTest.hpp>
+#include <orpheus/Command/Render/RenderCommandClear.hpp>
+#include <orpheus/Command/Render/RenderCommandSetClearColor.hpp>
+#include <orpheus/Entity/EntityCommand.hpp>
+
+class SceneMainMenu : public SceneMenu {
 public:
-    SceneMainMenu(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
-        addScope("MainMenu");
+    SceneMainMenu(const Orpheus::Scene::Scene& sceneBase) : SceneMenu(sceneBase) {
+        addScope("Main");
+        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandSetClearColor>>(0.0f, 0.5f, 0.5f, 1.0f);
+        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandClear>>();
     }
 
     virtual void onShow() override {
-        postEvent<Orpheus::Event::EventTest>("MainMenu shown!");
+        postCommand<Orpheus::Command::CommandTest>("MainMenu shown!");
 
-        bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
-            if (down) {
-                postEvent<Orpheus::Event::EventScenePop>();
-            }
-        });
-
-        bindKey(Orpheus::Input::Key::W,   [this](bool down) { Orpheus::Log::info(this) << "Forward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::A,   [this](bool down) { Orpheus::Log::info(this) << "Left " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::S,   [this](bool down) { Orpheus::Log::info(this) << "Backward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::D,   [this](bool down) { Orpheus::Log::info(this) << "Right " << (down ? "down" : "up"); });
-
-        bindKey(Orpheus::Input::Key::Z,   [this](bool down) {
-            if (down) {
-                postEvent<Orpheus::Event::EventTest>("It works from MainMenu!");
-            }
-        });
+        bindKeys();
     }
 };

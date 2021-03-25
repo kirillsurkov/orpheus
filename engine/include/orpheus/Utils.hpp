@@ -67,6 +67,16 @@ namespace Orpheus::Utils {
         using Type = T;
     };
 
+    template<class T>
+    T* ptr(T* obj) {
+        return obj;
+    }
+
+    template<class T>
+    T* ptr(T& obj) {
+        return &obj;
+    }
+
     class StopWatch {
     private:
         std::chrono::time_point<std::chrono::system_clock> m_last;

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "orpheus/Window/WindowSDL.hpp"
-#include "orpheus/Event/EventQuit.hpp"
-#include "orpheus/Event/EventKeyboard.hpp"
-#include "orpheus/Event/EventMouse.hpp"
+#include "orpheus/Command/CommandQuit.hpp"
+#include "orpheus/Command/CommandKeyboard.hpp"
+#include "orpheus/Command/CommandMouse.hpp"
 
 #include <SDL2/SDL.h>
 
@@ -106,19 +106,19 @@ namespace Orpheus::Window {
             while (SDL_PollEvent(&sdlEvent)) {
                 switch (sdlEvent.type) {
                 case SDL_QUIT: {
-                    receiver(std::make_shared<Event::EventQuit>());
+                    receiver(std::make_shared<Command::CommandQuit>());
                     break;
                 }
                 case SDL_KEYDOWN: {
-                    receiver(std::make_shared<Event::EventKeyboard>(s2eKey(sdlEvent.key.keysym), true));
+                    receiver(std::make_shared<Command::CommandKeyboard>(s2eKey(sdlEvent.key.keysym), true));
                     break;
                 }
                 case SDL_KEYUP: {
-                    receiver(std::make_shared<Event::EventKeyboard>(s2eKey(sdlEvent.key.keysym), false));
+                    receiver(std::make_shared<Command::CommandKeyboard>(s2eKey(sdlEvent.key.keysym), false));
                     break;
                 }
                 case SDL_MOUSEMOTION: {
-                    receiver(std::make_shared<Event::EventMouse>(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
+                    receiver(std::make_shared<Command::CommandMouse>(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
                     break;
                 }
                 }

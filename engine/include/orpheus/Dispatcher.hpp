@@ -5,6 +5,8 @@
 #include <typeindex>
 #include <memory>
 
+#include "orpheus/Utils.hpp"
+
 namespace Orpheus {
     template<class Key, class... Values>
     class Dispatcher {
@@ -102,40 +104,36 @@ namespace Orpheus {
         }
     };
 
-    class EventsDispatcher {
+    class CommandDispatcher {
     private:
         TypeDispatcher m_dispatcher;
 
     public:
-        EventsDispatcher() {
+        CommandDispatcher() {
         }
 
-        EventsDispatcher(EventsDispatcher&& dispatcher) {
+        CommandDispatcher(CommandDispatcher&& dispatcher) {
             *this = std::move(dispatcher);
         }
 
-        EventsDispatcher(const EventsDispatcher& dispatcher) {
+        CommandDispatcher(const CommandDispatcher& dispatcher) {
             *this = dispatcher;
         }
 
-        EventsDispatcher& operator=(EventsDispatcher&& dispatcher) {
+        CommandDispatcher& operator=(CommandDispatcher&& dispatcher) {
             m_dispatcher = std::move(dispatcher.m_dispatcher);
             return *this;
         }
 
-        EventsDispatcher& operator=(const EventsDispatcher& dispatcher) {
+        CommandDispatcher& operator=(const CommandDispatcher& dispatcher) {
             m_dispatcher = dispatcher.m_dispatcher;
             return *this;
         }
 
         template<class T, class U>
-        void registerEventType(U* receiver) {
-            m_dispatcher.registerType<const std::shared_ptr<T>&>([receiver](const std::shared_ptr<T>& event) { receiver->onEvent(event); });
-        }
-
-        template<class T, class U>
-        void registerEventType(U&& receiver) {
-            m_dispatcher.registerType<const std::shared_ptr<T>&>([&receiver](const std::shared_ptr<T>& event) { receiver.onEvent(event); });
+        void registerCommand(U&& receiver) {
+            auto* receiverPtr = Utils::ptr(std::forward<U>(receiver));
+            m_dispatcher.registerType<const std::shared_ptr<T>&>([receiverPtr](const std::shared_ptr<T>& command) { receiverPtr->postCommand(command); });
         }
 
         template<class T>
