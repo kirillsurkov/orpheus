@@ -54,6 +54,7 @@ void Orpheus::Engine::step(float delta) {
 
     if (m_sceneStack.size() > 0) {
         auto scene = m_sceneStack.top();
+        scene->updateEntities(delta);
         scene->update(delta);
         m_render->drawScene(scene);
         m_window->swapBuffers();

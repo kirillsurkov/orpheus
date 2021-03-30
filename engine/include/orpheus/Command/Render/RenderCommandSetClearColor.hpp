@@ -20,6 +20,22 @@ namespace Orpheus::Command::Render {
             return "RenderCommandSetClearColor";
         }
 
+        void setR(float r) {
+            m_r = r;
+        }
+
+        void setG(float g) {
+            m_g = g;
+        }
+
+        void setB(float b) {
+            m_b = b;
+        }
+
+        void setA(float a) {
+            m_a = a;
+        }
+
         float getR() const {
             return m_r;
         }

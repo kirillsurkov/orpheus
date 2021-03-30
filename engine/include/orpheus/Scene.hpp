@@ -32,11 +32,10 @@ namespace Orpheus::Scene {
             m_commandDispatcher = scene.m_commandDispatcher;
         }
 
-        virtual ~Scene() {
-        }
+        virtual ~Scene() {}
 
-        virtual void onShow() {
-        }
+        virtual void onShow() {}
+        virtual void update(float/* delta*/) {}
 
         template<class T, class U>
         void registerCommand(U&& receiver) {
@@ -60,7 +59,7 @@ namespace Orpheus::Scene {
             return m_entities;
         }
 
-        void update(float delta) {
+        void updateEntities(float delta) {
             for (const auto& entity : m_entities) {
                 entity->update(delta);
             }
