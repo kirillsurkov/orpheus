@@ -17,8 +17,20 @@ void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::CommandKe
     auto it = m_state.find(key);
     if (it == m_state.end() || it->second != down) {
         m_state[key] = down;
-        if (!m_commandDispatcher.dispatch(command)) {
-            throw Exception(this, "Command '" + command->getName() + "' is not supported within Input::Manager");
+
+        if (command->isDown()) {
+            m_keysDownDispatcher.dispatch(command->getKey());
+        } else {
+            m_keysUpDispatcher.dispatch(command->getKey());
         }
     }
+}
+
+void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::CommandMouse>& command) {
+    Log::info(this) << command->getX() << ", " << command->getY() << ", " << command->getDX() << ", " << command->getDY();
+}
+
+void Orpheus::Input::Manager::unbindKeys() {
+    m_keysDownDispatcher.clear();
+    m_keysUpDispatcher.clear();
 }

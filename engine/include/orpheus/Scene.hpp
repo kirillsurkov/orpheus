@@ -3,14 +3,13 @@
 #include "orpheus/Log.hpp"
 #include "orpheus/Dispatcher.hpp"
 #include "orpheus/InputManager.hpp"
-#include "orpheus/Engine.hpp"
 #include "orpheus/Entity/Entity.hpp"
 
 namespace Orpheus::Scene {
     class Scene : public Loggable {
     private:
         CommandDispatcher m_commandDispatcher;
-        Engine& m_engine;
+        Input::Manager& m_inputManager;
         std::vector<Entity::EntityPtr> m_entities;
 
     protected:
@@ -22,15 +21,8 @@ namespace Orpheus::Scene {
         }
 
     public:
-        Scene(Engine& engine) :
-            m_engine(engine)
-        {
-            addScope("Scene");
-        }
-
-        Scene(const Scene& scene) : Scene(scene.m_engine) {
-            m_commandDispatcher = scene.m_commandDispatcher;
-        }
+        Scene(Input::Manager& inputManager);
+        Scene(const Scene& scene);
 
         virtual ~Scene() {}
 
@@ -52,17 +44,11 @@ namespace Orpheus::Scene {
 
         template<class T>
         void bindKey(const Input::Key key, T&& function) {
-            m_engine.bindKey(key, std::forward<T>(function));
+            m_inputManager.bindKey(key, std::forward<T>(function));
         }
 
         const std::vector<Entity::EntityPtr>& getEntities() const {
             return m_entities;
-        }
-
-        void updateEntities(float delta) {
-            for (const auto& entity : m_entities) {
-                entity->update(delta);
-            }
         }
     };
 

@@ -7,6 +7,7 @@
 
 namespace Orpheus::Command {
     class CommandKeyboard;
+    class CommandMouse;
 }
 
 namespace Orpheus::Input {
@@ -28,23 +29,28 @@ namespace Orpheus::Input {
 
     class Manager : public Loggable {
     private:
-        CommandDispatcher m_commandDispatcher;
         std::unordered_map<Key, bool> m_state;
+        Dispatcher<Input::Key> m_keysDownDispatcher;
+        Dispatcher<Input::Key> m_keysUpDispatcher;
 
         void onCommand(const std::shared_ptr<Command::CommandKeyboard>& command);
+        void onCommand(const std::shared_ptr<Command::CommandMouse>& command);
 
     public:
         Manager();
         ~Manager();
 
-        template<class T, class U>
-        void registerCommand(U&& receiver) {
-            m_commandDispatcher.registerCommand<T>(std::forward<U>(receiver));
-        }
+        void unbindKeys();
 
         template<class T>
         void postCommand(T&& command) {
             onCommand(command);
+        }
+
+        template<class T>
+        void bindKey(const Input::Key key, T&& function) {
+            m_keysDownDispatcher.registerKey(key, [function]() { function(true); });
+            m_keysUpDispatcher.registerKey(key,  [function]() { function(false); });
         }
     };
 }

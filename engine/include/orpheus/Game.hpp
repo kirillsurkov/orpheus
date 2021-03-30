@@ -18,10 +18,5 @@ namespace Orpheus {
         void postCommand(Args&&... args) {
             m_engine->postCommand<T>(std::forward<Args>(args)...);
         }
-
-        template<class T>
-        void bindKey(const Input::Key key, T&& function) {
-            m_engine->bindKey(key, std::forward<T>(function));
-        }
     };
 }
