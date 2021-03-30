@@ -12,14 +12,9 @@
 #include <cmath>
 
 class SceneLevel01 : public SceneLevel {
-private:
-    std::shared_ptr<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandSetClearColor>> m_clearColor;
-
 public:
     SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : SceneLevel(sceneBase) {
         addScope("Level01");
-        m_clearColor = addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandSetClearColor>>(0.5f, 0.5f, 0.0f, 1.0f);
-        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandClear>>();
     }
 
     virtual void onShow() override {
@@ -29,7 +24,6 @@ public:
     }
 
     virtual void update(float delta) override {
-        const auto& command = m_clearColor->getCommand();
-        command->setR(std::fmod(command->getR() + delta, 1.0f));
+        m_clearColor->setR(std::fmod(m_clearColor->getR() + delta, 1.0f));
     }
 };

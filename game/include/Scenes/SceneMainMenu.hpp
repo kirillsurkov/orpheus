@@ -12,8 +12,7 @@ class SceneMainMenu : public SceneMenu {
 public:
     SceneMainMenu(const Orpheus::Scene::Scene& sceneBase) : SceneMenu(sceneBase) {
         addScope("Main");
-        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandSetClearColor>>(0.0f, 0.5f, 0.5f, 1.0f);
-        addEntity<Orpheus::Entity::EntityCommand<Orpheus::Command::Render::RenderCommandClear>>();
+        m_clearColor->set(0.0f, 1.0f, 1.0f, 1.0f);
     }
 
     virtual void onShow() override {

@@ -4,6 +4,8 @@
 #include "orpheus/Dispatcher.hpp"
 #include "orpheus/InputManager.hpp"
 #include "orpheus/Entity/Entity.hpp"
+#include "orpheus/Entity/EntityCommand.hpp"
+#include "orpheus/Command/Render/RenderCommandSetClearColor.hpp"
 
 namespace Orpheus::Scene {
     class Scene : public Loggable {
@@ -11,8 +13,11 @@ namespace Orpheus::Scene {
         CommandDispatcher m_commandDispatcher;
         Input::Manager& m_inputManager;
         std::vector<Entity::EntityPtr> m_entities;
+        std::shared_ptr<Entity::EntityCommand<Command::Render::RenderCommandSetClearColor>> m_clearColorEntity;
 
     protected:
+        std::shared_ptr<Command::Render::RenderCommandSetClearColor> m_clearColor;
+
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
             auto entity = std::make_shared<T>(std::forward<Args>(args)...);
