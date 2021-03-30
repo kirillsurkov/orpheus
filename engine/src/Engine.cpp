@@ -49,12 +49,12 @@ void Orpheus::Engine::popScene() {
     }
 }
 
-void Orpheus::Engine::step() {
+void Orpheus::Engine::step(float delta) {
     m_window->pollEvents();
 
     if (m_sceneStack.size() > 0) {
         auto scene = m_sceneStack.top();
-        scene->update();
+        scene->update(delta);
         m_render->drawScene(scene);
         m_window->swapBuffers();
     } else {

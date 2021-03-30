@@ -11,5 +11,5 @@ float Orpheus::Utils::StopWatch::split() {
 
     m_last = now;
 
-    return count / 1000.0f;
+    return 1.0f * count / 1e6;
 }

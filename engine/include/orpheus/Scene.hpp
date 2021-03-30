@@ -60,7 +60,10 @@ namespace Orpheus::Scene {
             return m_entities;
         }
 
-        void update() {
+        void update(float delta) {
+            for (const auto& entity : m_entities) {
+                entity->update(delta);
+            }
         }
     };
 

@@ -42,7 +42,7 @@ namespace Orpheus {
 
         bool isAlive() const;
 
-        void step();
+        void step(float delta);
 
         template<class T>
         void postCommand(T&& command) {

@@ -10,12 +10,13 @@ namespace Orpheus::Entity {
     protected:
         template<class T, class... Args>
         std::shared_ptr<T> createRenderCommand(Args&&... args) {
-            return std::make_shared<T>(std::forward<Args>(args)...);;
+            return std::make_shared<T>(std::forward<Args>(args)...);
         }
 
     public:
         virtual ~Entity() {}
 
+        virtual void update(float/* delta*/) {}
         virtual void draw(Render::Render&/* render*/) {}
     };
 
