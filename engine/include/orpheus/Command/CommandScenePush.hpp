@@ -17,11 +17,11 @@ namespace Orpheus::Command {
         std::function<std::shared_ptr<Scene::Scene>(const std::shared_ptr<Scene::Scene>&)> m_createScene;
 
     public:
-        template<class T>
-        CommandScenePush(Utils::TypeIdentity<T>) :
+        template<class T, class... Args>
+        CommandScenePush(const Utils::TypeIdentity<T>&, Args&&... args) :
             m_typeIndex(std::type_index(typeid(T))),
-            m_createScene([](const std::shared_ptr<Scene::Scene>& sceneBase) {
-                return std::make_shared<T>(*sceneBase);
+            m_createScene([args...](const std::shared_ptr<Scene::Scene>& sceneBase) {
+                return std::make_shared<T>(*sceneBase, std::forward<Args>(args)...);
             })
         {
         }

@@ -27,6 +27,8 @@ namespace Orpheus::Render {
             m_renderCommandDispatcher.registerCommand<T>(std::forward<U>(receiver));
         }
 
+        virtual void onCreate() = 0;
+
     public:
         template<class T>
         Render(T*) {

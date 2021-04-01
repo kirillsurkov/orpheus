@@ -25,3 +25,7 @@ target_link_libraries(Orpheus glfw)
 find_package(OpenGL REQUIRED)
 include_directories(Orpheus ${OPENGL_INCLUDE_DIRS})
 target_link_libraries(Orpheus ${OPENGL_LIBRARIES})
+
+find_package(GLEW REQUIRED)
+include_directories(Orpheus ${GLEW_INCLUDE_DIRS})
+target_link_libraries(Orpheus ${GLEW_LIBRARIES})

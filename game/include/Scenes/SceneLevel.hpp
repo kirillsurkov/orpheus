@@ -6,6 +6,7 @@
 #include <orpheus/Command/CommandTest.hpp>
 #include <orpheus/Command/CommandScenePush.hpp>
 #include <orpheus/Command/CommandScenePop.hpp>
+#include <orpheus/Entity/EntityRect.hpp>
 
 class SceneLevel : public Orpheus::Scene::Scene {
 protected:
@@ -36,6 +37,6 @@ protected:
 
 public:
     SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
-        addScope("Level01");
+        addScope("Level");
     }
 };

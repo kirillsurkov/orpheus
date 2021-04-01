@@ -20,9 +20,13 @@ namespace Orpheus::Scene {
 
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
-            auto entity = std::make_shared<T>(std::forward<Args>(args)...);
-            m_entities.push_back(entity);
-            return entity;
+            try {
+                auto entity = std::make_shared<T>(std::forward<Args>(args)...);
+                m_entities.push_back(entity);
+                return entity;
+            } catch (const std::exception& e) {
+                throw Exception(this, e.what());
+            }
         }
 
     public:

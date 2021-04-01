@@ -14,7 +14,9 @@
 class SceneLevel01 : public SceneLevel {
 public:
     SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : SceneLevel(sceneBase) {
-        addScope("Level01");
+        addScope("01");
+
+        addEntity<Orpheus::Entity::EntityRect>(0, 0, 0.1f, 0.1f);
     }
 
     virtual void onShow() override {

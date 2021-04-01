@@ -3,6 +3,7 @@
 
 void Orpheus::Render::Render::init(Window::WindowPtr& window) {
    m_initializer(window);
+   onCreate();
 }
 
 void Orpheus::Render::Render::drawScene(const Orpheus::Scene::ScenePtr& scene) {
