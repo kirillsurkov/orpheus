@@ -1,9 +1,9 @@
 #pragma once
 
-#include "orpheus/Command/Command.hpp"
-#include "orpheus/InputManager.hpp"
+#include "orpheus/Command/Engine/Command.hpp"
+#include "orpheus/Keys.hpp"
 
-namespace Orpheus::Command {
+namespace Orpheus::Command::Engine {
     class CommandKeyboard : public Command {
     private:
         Input::Key m_key;

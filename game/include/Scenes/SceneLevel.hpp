@@ -3,9 +3,9 @@
 #include "SceneMainMenu.hpp"
 
 #include <orpheus/Scene.hpp>
-#include <orpheus/Command/CommandTest.hpp>
-#include <orpheus/Command/CommandScenePush.hpp>
-#include <orpheus/Command/CommandScenePop.hpp>
+#include <orpheus/Command/Game/CommandTest.hpp>
+#include <orpheus/Command/Game/CommandScenePush.hpp>
+#include <orpheus/Command/Game/CommandScenePop.hpp>
 #include <orpheus/Entity/EntityRect.hpp>
 
 class SceneLevel : public Orpheus::Scene::Scene {
@@ -13,7 +13,7 @@ protected:
     void bindKeys() {
         bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMainMenu>{});
+                postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMainMenu>{});
             }
         });
 
@@ -24,13 +24,13 @@ protected:
 
         bindKey(Orpheus::Input::Key::Z,   [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::CommandTest>("It works from Level!");
+                postCommand<Orpheus::Command::Game::CommandTest>("It works from Level!");
             }
         });
 
         bindKey(Orpheus::Input::Key::X,   [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::CommandScenePop>();
+                postCommand<Orpheus::Command::Game::CommandScenePop>();
             }
         });
     }

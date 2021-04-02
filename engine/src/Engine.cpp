@@ -12,14 +12,14 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
 
     m_render->init(m_window);
 
-    m_window->registerCommand<Command::CommandQuit>(this);
-    m_window->registerCommand<Command::CommandMouse>(m_inputManager);
-    m_window->registerCommand<Command::CommandKeyboard>(m_inputManager);
+    m_window->registerCommand<Command::Engine::CommandQuit>(this);
+    m_window->registerCommand<Command::Engine::CommandMouse>(m_inputManager);
+    m_window->registerCommand<Command::Engine::CommandKeyboard>(m_inputManager);
 
     m_sceneBase = std::make_shared<Scene::Scene>(m_inputManager);
-    m_sceneBase->registerCommand<Command::CommandScenePush>(this);
-    m_sceneBase->registerCommand<Command::CommandScenePop>(this);
-    m_sceneBase->registerCommand<Command::CommandTest>(this);
+    m_sceneBase->registerCommand<Command::Game::CommandScenePush>(this);
+    m_sceneBase->registerCommand<Command::Game::CommandScenePop>(this);
+    m_sceneBase->registerCommand<Command::Game::CommandTest>(this);
 }
 
 Orpheus::Engine::~Engine() {
@@ -41,15 +41,15 @@ void Orpheus::Engine::step(float delta) {
         m_render->drawScene(scene);
         m_window->swapBuffers();
     } else {
-        postCommand<Command::CommandQuit>();
+        postCommand<Command::Engine::CommandQuit>();
     }
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandQuit>&/* command*/) {
+void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Engine::CommandQuit>&/* command*/) {
     m_alive = false;
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandScenePush>& command) {
+void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandScenePush>& command) {
     auto index = command->getTypeIndex();
     auto it = m_sceneCache.find(index);
     if (it == m_sceneCache.end()) {
@@ -60,7 +60,7 @@ void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandScenePush>
     m_sceneStack.top()->onShow();
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandScenePop>&/* command*/) {
+void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandScenePop>&/* command*/) {
     m_sceneStack.pop();
     if (m_sceneStack.size() > 0) {
         m_inputManager.unbindKeys();
@@ -68,6 +68,6 @@ void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandScenePop>&
     }
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::CommandTest>& command) {
+void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandTest>& command) {
     Log::info(this) << command->getMessage();
 }

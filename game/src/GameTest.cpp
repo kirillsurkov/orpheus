@@ -7,7 +7,7 @@ GameTest::GameTest(const Orpheus::EnginePtr& engine) : Orpheus::Game(engine) {
     addScope("Test");
     Orpheus::Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
 
-    postCommand<Orpheus::Command::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneLevel01>{});
+    postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneLevel01>{});
 }
 
 GameTest::~GameTest() {

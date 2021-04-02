@@ -2,11 +2,9 @@
 
 #include "SceneLevel.hpp"
 
-#include <orpheus/Command/CommandTest.hpp>
-#include <orpheus/Command/CommandScenePush.hpp>
-#include <orpheus/Command/CommandScenePop.hpp>
-#include <orpheus/Command/Render/RenderCommandClear.hpp>
-#include <orpheus/Command/Render/RenderCommandSetClearColor.hpp>
+#include <orpheus/Command/Game/CommandTest.hpp>
+#include <orpheus/Command/Game/CommandScenePush.hpp>
+#include <orpheus/Command/Game/CommandScenePop.hpp>
 #include <orpheus/Entity/EntityCommand.hpp>
 
 #include <cmath>
@@ -20,7 +18,7 @@ public:
     }
 
     virtual void onShow() override {
-        postCommand<Orpheus::Command::CommandTest>("Level01 shown!");
+        postCommand<Orpheus::Command::Game::CommandTest>("Level01 shown!");
 
         bindKeys();
     }

@@ -2,10 +2,8 @@
 
 #include "SceneMenu.hpp"
 
-#include <orpheus/Command/CommandScenePop.hpp>
-#include <orpheus/Command/CommandTest.hpp>
-#include <orpheus/Command/Render/RenderCommandClear.hpp>
-#include <orpheus/Command/Render/RenderCommandSetClearColor.hpp>
+#include <orpheus/Command/Game/CommandScenePop.hpp>
+#include <orpheus/Command/Game/CommandTest.hpp>
 #include <orpheus/Entity/EntityCommand.hpp>
 
 class SceneMainMenu : public SceneMenu {
@@ -16,7 +14,7 @@ public:
     }
 
     virtual void onShow() override {
-        postCommand<Orpheus::Command::CommandTest>("MainMenu shown!");
+        postCommand<Orpheus::Command::Game::CommandTest>("MainMenu shown!");
 
         bindKeys();
     }

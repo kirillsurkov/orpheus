@@ -1,8 +1,8 @@
 #pragma once
 
-#include "orpheus/Command/Command.hpp"
+#include "orpheus/Command/Engine/Command.hpp"
 
-namespace Orpheus::Command {
+namespace Orpheus::Command::Engine {
     class CommandMouse : public Command {
     private:
         int m_x;

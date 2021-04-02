@@ -3,10 +3,10 @@
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Render/Render.hpp"
 #include "orpheus/InputManager.hpp"
-#include "orpheus/Command/CommandQuit.hpp"
-#include "orpheus/Command/CommandScenePush.hpp"
-#include "orpheus/Command/CommandScenePop.hpp"
-#include "orpheus/Command/CommandTest.hpp"
+#include "orpheus/Command/Engine/CommandQuit.hpp"
+#include "orpheus/Command/Game/CommandScenePush.hpp"
+#include "orpheus/Command/Game/CommandScenePop.hpp"
+#include "orpheus/Command/Game/CommandTest.hpp"
 
 #include <stack>
 
@@ -21,11 +21,10 @@ namespace Orpheus {
         std::shared_ptr<Scene::Scene> m_sceneBase;
         bool m_alive;
 
-        void onCommand(const std::shared_ptr<Command::CommandQuit>& command);
-        void onCommand(const std::shared_ptr<Command::CommandMouse>& command);
-        void onCommand(const std::shared_ptr<Command::CommandScenePush>& command);
-        void onCommand(const std::shared_ptr<Command::CommandScenePop>& command);
-        void onCommand(const std::shared_ptr<Command::CommandTest>& command);
+        void onCommand(const std::shared_ptr<Command::Engine::CommandQuit>& command);
+        void onCommand(const std::shared_ptr<Command::Game::CommandScenePush>& command);
+        void onCommand(const std::shared_ptr<Command::Game::CommandScenePop>& command);
+        void onCommand(const std::shared_ptr<Command::Game::CommandTest>& command);
 
     public:
         Engine(const Window::WindowPtr& window, const Render::RenderPtr& render);

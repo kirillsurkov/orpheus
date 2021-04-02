@@ -1,11 +1,11 @@
 #pragma once
 
-#include "orpheus/Command/Render/RenderCommand.hpp"
+#include "orpheus/Command/Render/Command.hpp"
 
 #include <vector>
 
 namespace Orpheus::Command::Render {
-    class RenderCommandVertices : public RenderCommand {
+    class CommandVertices : public Command {
     public:
         class AttribArray {
         private:
@@ -49,11 +49,8 @@ namespace Orpheus::Command::Render {
         std::vector<std::shared_ptr<AttribArray>> m_attribs;
 
     public:
-        RenderCommandVertices() {
-        }
-
         virtual std::string getName() const override {
-            return "RenderCommandVertices";
+            return "CommandVertices";
         }
 
         const std::vector<std::shared_ptr<AttribArray>>& getAttribs() const {

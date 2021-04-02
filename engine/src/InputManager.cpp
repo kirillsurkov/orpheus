@@ -1,6 +1,4 @@
 #include "orpheus/InputManager.hpp"
-#include "orpheus/Command/CommandKeyboard.hpp"
-#include "orpheus/Command/CommandMouse.hpp"
 #include "orpheus/Exception.hpp"
 
 Orpheus::Input::Manager::Manager() {
@@ -10,7 +8,7 @@ Orpheus::Input::Manager::Manager() {
 Orpheus::Input::Manager::~Manager() {
 }
 
-void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::CommandKeyboard>& command) {
+void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::Engine::CommandKeyboard>& command) {
     bool down = command->isDown();
     auto key = command->getKey();
 
@@ -26,7 +24,7 @@ void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::CommandKe
     }
 }
 
-void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::CommandMouse>& command) {
+void Orpheus::Input::Manager::onCommand(const std::shared_ptr<Command::Engine::CommandMouse>& command) {
     Log::info(this) << command->getX() << ", " << command->getY() << ", " << command->getDX() << ", " << command->getDY();
 }
 

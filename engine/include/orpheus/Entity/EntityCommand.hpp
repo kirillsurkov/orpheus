@@ -15,7 +15,7 @@ namespace Orpheus::Entity {
         EntityCommand(Args&&... args) :
             m_command(createRenderCommand<T>(std::forward<Args>(args)...)),
             m_draw([this](Render::Render& render) {
-                render.postRenderCommand(std::static_pointer_cast<T>(m_command));
+                render.postRenderCommand(m_command);
             })
         {
         }

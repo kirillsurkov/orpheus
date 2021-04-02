@@ -1,13 +1,10 @@
 #pragma once
 
-#include "orpheus/Command/Command.hpp"
+#include "orpheus/Command/Game/Command.hpp"
 
-namespace Orpheus::Command {
+namespace Orpheus::Command::Game {
     class CommandScenePop : public Command {
     public:
-        CommandScenePop() {
-        }
-
         virtual std::string getName() const override {
             return "CommandScenePop";
         }

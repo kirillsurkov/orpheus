@@ -1,8 +1,8 @@
 #pragma once
 
-#include "orpheus/Command/Command.hpp"
+#include "orpheus/Command/Game/Command.hpp"
 
-namespace Orpheus::Command {
+namespace Orpheus::Command::Game {
     class CommandTest : public Command {
     private:
         std::string m_message;

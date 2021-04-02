@@ -3,9 +3,9 @@
 #include "orpheus/Render/Render.hpp"
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Utils.hpp"
-#include "orpheus/Command/Render/RenderCommandClear.hpp"
-#include "orpheus/Command/Render/RenderCommandSetClearColor.hpp"
-#include "orpheus/Command/Render/RenderCommandVertices.hpp"
+#include "orpheus/Command/Render/CommandClear.hpp"
+#include "orpheus/Command/Render/CommandSetClearColor.hpp"
+#include "orpheus/Command/Render/CommandVertices.hpp"
 
 namespace Orpheus::Render {
     class OpenGL : public Render {
@@ -19,13 +19,13 @@ namespace Orpheus::Render {
             unsigned int count;
         };
 
-        std::unordered_map<std::shared_ptr<Command::Render::RenderCommandVertices::AttribArray>, unsigned int> m_attribs;
-        std::unordered_map<std::shared_ptr<Command::Render::RenderCommandVertices>, Vertices> m_vertices;
+        std::unordered_map<std::shared_ptr<Command::Render::CommandVertices::AttribArray>, unsigned int> m_attribs;
+        std::unordered_map<std::shared_ptr<Command::Render::CommandVertices>, Vertices> m_vertices;
 
     private:
-        void onCommand(const std::shared_ptr<Command::Render::RenderCommandClear>& command);
-        void onCommand(const std::shared_ptr<Command::Render::RenderCommandSetClearColor>& command);
-        void onCommand(const std::shared_ptr<Command::Render::RenderCommandVertices>& command);
+        void onCommand(const std::shared_ptr<Command::Render::CommandClear>& command);
+        void onCommand(const std::shared_ptr<Command::Render::CommandSetClearColor>& command);
+        void onCommand(const std::shared_ptr<Command::Render::CommandVertices>& command);
 
     protected:
         virtual void onCreate() override;

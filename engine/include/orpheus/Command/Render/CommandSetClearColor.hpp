@@ -1,9 +1,9 @@
 #pragma once
 
-#include "orpheus/Command/Render/RenderCommand.hpp"
+#include "orpheus/Command/Render/Command.hpp"
 
 namespace Orpheus::Command::Render {
-    class RenderCommandSetClearColor : public RenderCommand {
+    class CommandSetClearColor : public Command {
     private:
         float m_r;
         float m_g;
@@ -11,13 +11,13 @@ namespace Orpheus::Command::Render {
         float m_a;
 
     public:
-        RenderCommandSetClearColor(float r, float g, float b, float a) :
+        CommandSetClearColor(float r, float g, float b, float a) :
             m_r(r), m_g(g), m_b(b), m_a(a)
         {
         }
 
         virtual std::string getName() const override {
-            return "RenderCommandSetClearColor";
+            return "CommandSetClearColor";
         }
 
         void set(float r, float g, float b, float a) {

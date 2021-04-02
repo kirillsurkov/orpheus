@@ -6,9 +6,9 @@ Orpheus::Render::OpenGL::OpenGL() :
 {
     addScope("OpenGL");
 
-    registerRenderCommand<Command::Render::RenderCommandClear>(this);
-    registerRenderCommand<Command::Render::RenderCommandSetClearColor>(this);
-    registerRenderCommand<Command::Render::RenderCommandVertices>(this);
+    registerRenderCommand<Command::Render::CommandClear>(this);
+    registerRenderCommand<Command::Render::CommandSetClearColor>(this);
+    registerRenderCommand<Command::Render::CommandVertices>(this);
 }
 
 Orpheus::Render::OpenGL::~OpenGL() {
@@ -58,15 +58,15 @@ void Orpheus::Render::OpenGL::onCreate() {
     glUseProgram(prog);
 }
 
-void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::RenderCommandClear>&/* command*/) {
+void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::CommandClear>&/* command*/) {
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::RenderCommandSetClearColor>& command) {
+void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::CommandSetClearColor>& command) {
     glClearColor(command->getR(), command->getG(), command->getB(), command->getA());
 }
 
-void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::RenderCommandVertices>& command) {
+void Orpheus::Render::OpenGL::onCommand(const std::shared_ptr<Command::Render::CommandVertices>& command) {
     auto it = m_vertices.find(command);
     if (it == m_vertices.end()) {
         unsigned int vao;

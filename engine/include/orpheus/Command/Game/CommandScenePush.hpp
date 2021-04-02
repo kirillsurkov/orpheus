@@ -1,16 +1,13 @@
 #pragma once
 
-#include "orpheus/Command/Command.hpp"
+#include "orpheus/Command/Game/Command.hpp"
 #include "orpheus/Utils.hpp"
+#include "orpheus/Scene.hpp"
 
 #include <typeindex>
 #include <functional>
 
-namespace Orpheus::Scene {
-    class Scene;
-}
-
-namespace Orpheus::Command {
+namespace Orpheus::Command::Game {
     class CommandScenePush : public Command {
     private:
         std::type_index m_typeIndex;
