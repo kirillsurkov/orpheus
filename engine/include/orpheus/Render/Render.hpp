@@ -17,7 +17,6 @@ namespace Orpheus::Render {
         using ContextPtr = std::shared_ptr<Context>;
 
     private:
-        std::function<void(Window::WindowPtr&)> m_initializer;
         ContextPtr m_context;
         CommandDispatcher m_renderCommandDispatcher;
 
@@ -27,18 +26,14 @@ namespace Orpheus::Render {
             m_renderCommandDispatcher.registerCommand<T>(std::forward<U>(receiver));
         }
 
-        virtual void onCreate() = 0;
-
     public:
         template<class T>
-        Render(T*) {
+        Render(T*, const Window::WindowPtr& window) {
             addScope("Render");
 
-            m_initializer = [this](Window::WindowPtr& window) {
-                typename T::ContextPtr ctx;
-                window->createContext(ctx);
-                m_context = std::move(ctx);
-            };
+            typename T::ContextPtr ctx;
+            window->createContext(ctx);
+            m_context = std::move(ctx);
         }
 
         template<class T>
@@ -48,7 +43,6 @@ namespace Orpheus::Render {
             }
         }
 
-        void init(Window::WindowPtr& window);
         void drawScene(const std::shared_ptr<Orpheus::Scene::Scene>& scene);
     };
 

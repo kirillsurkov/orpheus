@@ -12,7 +12,7 @@ int main() {
         auto window = std::make_shared<Orpheus::Window::SDL>("test", 800, 600);
         Orpheus::Log::info(window) << "Initialized in " << (timerPart.split() * 1e3) << "ms";
 
-        auto render = std::make_shared<Orpheus::Render::OpenGL>();
+        auto render = std::make_shared<Orpheus::Render::OpenGL>(window);
         Orpheus::Log::info(render) << "Initialized in " << (timerPart.split() * 1e3)  << "ms";
 
         auto engine = std::make_shared<Orpheus::Engine>(window, render);

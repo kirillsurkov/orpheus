@@ -1,12 +1,14 @@
 #include "orpheus/Scene.hpp"
 #include "orpheus/Command/Render/CommandClear.hpp"
+#include "orpheus/Entity/Entity.hpp"
+#include "orpheus/Entity/EntityCommand.hpp"
 
 Orpheus::Scene::Scene::Scene(Orpheus::Input::Manager& inputManager) :
     m_inputManager(inputManager)
 {
     addScope("Scene");
 
-    m_clearColorEntity = addEntity<Entity::EntityCommand<Command::Render::CommandSetClearColor>>(0.0f, 0.0f, 0.0f, 1.0f);
+    m_clearColorEntity = addEntity<Entity::EntityCommand<Command::Render::CommandColor>>(0.0f, 0.0f, 0.0f, 1.0f);
     m_clearColor = m_clearColorEntity->getCommand();
 
     addEntity<Entity::EntityCommand<Command::Render::CommandClear>>();

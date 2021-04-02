@@ -1,6 +1,8 @@
 #include "orpheus/Engine.hpp"
 #include "orpheus/Version.hpp"
 #include "orpheus/Scene.hpp"
+#include "orpheus/Entity/Entity.hpp"
+#include "orpheus/Entity/EntityCommand.hpp"
 
 Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr& render) :
     m_window(window),
@@ -9,8 +11,6 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
 {
     addScope("Engine");
     Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
-
-    m_render->init(m_window);
 
     m_window->registerCommand<Command::Engine::CommandQuit>(this);
     m_window->registerCommand<Command::Engine::CommandMouse>(m_inputManager);

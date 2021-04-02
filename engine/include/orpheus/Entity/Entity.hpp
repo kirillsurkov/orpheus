@@ -17,6 +17,7 @@ namespace Orpheus::Entity {
         virtual ~Entity() {}
 
         virtual void update(float/* delta*/) {}
+
         virtual void draw(Render::Render&/* render*/) {}
     };
 

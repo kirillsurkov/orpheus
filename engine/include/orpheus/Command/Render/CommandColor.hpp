@@ -3,7 +3,7 @@
 #include "orpheus/Command/Render/Command.hpp"
 
 namespace Orpheus::Command::Render {
-    class CommandSetClearColor : public Command {
+    class CommandColor : public Command {
     private:
         float m_r;
         float m_g;
@@ -11,7 +11,7 @@ namespace Orpheus::Command::Render {
         float m_a;
 
     public:
-        CommandSetClearColor(float r, float g, float b, float a) :
+        CommandColor(float r, float g, float b, float a) :
             m_r(r), m_g(g), m_b(b), m_a(a)
         {
         }

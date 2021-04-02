@@ -15,7 +15,7 @@ namespace Orpheus::Command::Game {
 
     public:
         template<class T, class... Args>
-        CommandScenePush(const Utils::TypeIdentity<T>&, Args&&... args) :
+        CommandScenePush(Utils::TypeIdentity<T>, Args&&... args) :
             m_typeIndex(std::type_index(typeid(T))),
             m_createScene([args...](const std::shared_ptr<Scene::Scene>& sceneBase) {
                 return std::make_shared<T>(*sceneBase, std::forward<Args>(args)...);
