@@ -16,7 +16,7 @@ namespace Orpheus::Scene {
         std::shared_ptr<Entity::EntityCommand<Command::Render::CommandColor>> m_clearColorEntity;
 
     protected:
-        std::shared_ptr<Command::Render::CommandColor> m_clearColor;
+        Command::Render::CommandColor& m_clearColor;
 
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
@@ -45,10 +45,7 @@ namespace Orpheus::Scene {
 
         template<class T, class... Args>
         void postCommand(Args&&... args) {
-            auto command = std::make_shared<T>(std::forward<Args>(args)...);
-            if (!m_commandDispatcher.dispatch(command)) {
-                throw Exception(this, "Command '" + command->getName() + "' is not supported within Scene");
-            }
+            m_commandDispatcher.dispatchOrThrow(this, T(std::forward<Args>(args)...));
         }
 
         template<class T>

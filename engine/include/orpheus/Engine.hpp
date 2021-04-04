@@ -21,10 +21,10 @@ namespace Orpheus {
         std::shared_ptr<Scene::Scene> m_sceneBase;
         bool m_alive;
 
-        void onCommand(const std::shared_ptr<Command::Engine::CommandQuit>& command);
-        void onCommand(const std::shared_ptr<Command::Game::CommandScenePush>& command);
-        void onCommand(const std::shared_ptr<Command::Game::CommandScenePop>& command);
-        void onCommand(const std::shared_ptr<Command::Game::CommandTest>& command);
+        void onCommand(const Command::Engine::CommandQuit& command);
+        void onCommand(const Command::Game::CommandScenePush& command);
+        void onCommand(const Command::Game::CommandScenePop& command);
+        void onCommand(const Command::Game::CommandTest& command);
 
     public:
         Engine(const Window::WindowPtr& window, const Render::RenderPtr& render);
@@ -43,7 +43,7 @@ namespace Orpheus {
 
         template<class T, class... Args>
         void postCommand(Args&&... args) {
-            postCommand(std::make_shared<T>(std::forward<Args>(args)...));
+            postCommand(T(std::forward<Args>(args)...));
         }
     };
 

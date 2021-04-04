@@ -17,7 +17,7 @@ namespace Orpheus::Command::Render {
         }
 
         virtual std::string getName() const override {
-            return "CommandSetClearColor";
+            return "CommandColor";
         }
 
         void set(float r, float g, float b, float a) {

@@ -38,9 +38,7 @@ namespace Orpheus::Render {
 
         template<class T>
         void postRenderCommand(T&& command) {
-            if (!m_renderCommandDispatcher.dispatch(command)) {
-                throw Exception(this, "Command '" + command->getName() + "' is not supported within Render");
-            }
+            m_renderCommandDispatcher.dispatchOrThrow(this, command);
         }
 
         void drawScene(const std::shared_ptr<Orpheus::Scene::Scene>& scene);

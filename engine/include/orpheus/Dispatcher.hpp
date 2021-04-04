@@ -4,6 +4,7 @@
 #include <functional>
 #include <typeindex>
 #include <memory>
+#include <stdexcept>
 
 #include "orpheus/Utils.hpp"
 
@@ -93,9 +94,9 @@ namespace Orpheus {
         }
 
         template<class T>
-        bool dispatch(T& value) {
+        bool dispatch(T&& value) {
             return m_dispatcher.dispatch(std::type_index(typeid(T)), [&value](auto& router) {
-                router(const_cast<typename std::remove_cv<T>::type*>(&value));
+                router(const_cast<std::remove_cv_t<std::remove_reference_t<T>>*>(&value));
             });
         }
 
@@ -133,12 +134,19 @@ namespace Orpheus {
         template<class T, class U>
         void registerCommand(U&& receiver) {
             auto* receiverPtr = Utils::ptr(std::forward<U>(receiver));
-            m_dispatcher.registerType<const std::shared_ptr<T>&>([receiverPtr](const std::shared_ptr<T>& command) { receiverPtr->postCommand(command); });
+            m_dispatcher.registerType<const T&>([receiverPtr](const T& command) { receiverPtr->postCommand(command); });
         }
 
         template<class T>
-        bool dispatch(T&& value) {
-            return m_dispatcher.dispatch(value);
+        bool dispatch(const T& command) {
+            return m_dispatcher.dispatch(command);
+        }
+
+        template<class U, class T>
+        void dispatchOrThrow(U&& loggable, const T& command) {
+            if (!m_dispatcher.dispatch(command)) {
+                throw Exception(loggable, "Command '" + command.getName() + "' is not supported");
+            }
         }
 
         void clear() {

@@ -15,8 +15,8 @@ namespace Orpheus::Input {
         Dispatcher<Input::Key> m_keysDownDispatcher;
         Dispatcher<Input::Key> m_keysUpDispatcher;
 
-        void onCommand(const std::shared_ptr<Command::Engine::CommandKeyboard>& command);
-        void onCommand(const std::shared_ptr<Command::Engine::CommandMouse>& command);
+        void onCommand(const Command::Engine::CommandKeyboard& command);
+        void onCommand(const Command::Engine::CommandMouse& command);
 
     public:
         Manager();

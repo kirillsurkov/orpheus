@@ -7,12 +7,6 @@
 
 namespace Orpheus::Entity {
     class Entity {
-    protected:
-        template<class T, class... Args>
-        std::shared_ptr<T> createRenderCommand(Args&&... args) {
-            return std::make_shared<T>(std::forward<Args>(args)...);
-        }
-
     public:
         virtual ~Entity() {}
 

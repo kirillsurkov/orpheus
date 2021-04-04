@@ -16,10 +16,8 @@ namespace Orpheus::Window {
         }
 
         template<class T>
-        void postCommand(const std::shared_ptr<T>& command) {
-            if (!m_commandDispatcher.dispatch(command)) {
-                throw Exception(this, "Command '" + command->getName() + "' is not supported within Window");
-            }
+        void postCommand(T&& command) {
+            m_commandDispatcher.dispatchOrThrow(this, command);
         }
 
     public:

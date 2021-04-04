@@ -19,8 +19,8 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "    color = vec4(u_color.r, u_color.g, u_color.b, u_color.a);\n"
                    "}";
 
-        void onCommand(const std::shared_ptr<Command::Render::CommandColor>& command) {
-            glUniform4f(glGetUniformLocation(m_program, "u_color"), command->getR(), command->getG(), command->getB(), command->getA());
+        void onCommand(const Command::Render::CommandColor& command) {
+            glUniform4f(glGetUniformLocation(m_program, "u_color"), command.getR(), command.getG(), command.getB(), command.getA());
         }
 
     public:

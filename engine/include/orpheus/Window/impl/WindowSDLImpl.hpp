@@ -106,19 +106,19 @@ namespace Orpheus::Window {
             while (SDL_PollEvent(&sdlEvent)) {
                 switch (sdlEvent.type) {
                 case SDL_QUIT: {
-                    receiver(std::make_shared<Command::Engine::CommandQuit>());
+                    receiver(Command::Engine::CommandQuit());
                     break;
                 }
                 case SDL_KEYDOWN: {
-                    receiver(std::make_shared<Command::Engine::CommandKeyboard>(s2eKey(sdlEvent.key.keysym), true));
+                    receiver(Command::Engine::CommandKeyboard(s2eKey(sdlEvent.key.keysym), true));
                     break;
                 }
                 case SDL_KEYUP: {
-                    receiver(std::make_shared<Command::Engine::CommandKeyboard>(s2eKey(sdlEvent.key.keysym), false));
+                    receiver(Command::Engine::CommandKeyboard(s2eKey(sdlEvent.key.keysym), false));
                     break;
                 }
                 case SDL_MOUSEMOTION: {
-                    receiver(std::make_shared<Command::Engine::CommandMouse>(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
+                    receiver(Command::Engine::CommandMouse(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
                     break;
                 }
                 }

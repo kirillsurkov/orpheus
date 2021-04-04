@@ -18,7 +18,7 @@ namespace Orpheus::Render {
         };
 
         std::unordered_map<std::shared_ptr<Command::Render::CommandVertices::AttribArray>, unsigned int> m_attribs;
-        std::unordered_map<std::shared_ptr<Command::Render::CommandVertices>, Vertices> m_vertices;
+        std::unordered_map<const Command::Render::CommandVertices*, Vertices> m_vertices;
 
         OpenGLImpl::Material::MaterialPtr m_material;
 
@@ -28,9 +28,9 @@ namespace Orpheus::Render {
         Impl();
         ~Impl();
 
-        void onCommand(const std::shared_ptr<Command::Render::CommandClear>& command);
-        void onCommand(const std::shared_ptr<Command::Render::CommandColor>& command);
-        void onCommand(const std::shared_ptr<Command::Render::CommandVertices>& command);
-        void onCommand(const std::shared_ptr<Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>>& command);
+        void onCommand(const Command::Render::CommandClear& command);
+        void onCommand(const Command::Render::CommandColor& command);
+        void onCommand(const Command::Render::CommandVertices& command);
+        void onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>& command);
     };
 }

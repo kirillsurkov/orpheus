@@ -45,22 +45,22 @@ void Orpheus::Engine::step(float delta) {
     }
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Engine::CommandQuit>&/* command*/) {
+void Orpheus::Engine::onCommand(const Command::Engine::CommandQuit&/* command*/) {
     m_alive = false;
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandScenePush>& command) {
-    auto index = command->getTypeIndex();
+void Orpheus::Engine::onCommand(const Command::Game::CommandScenePush& command) {
+    auto index = command.getTypeIndex();
     auto it = m_sceneCache.find(index);
     if (it == m_sceneCache.end()) {
-        it = m_sceneCache.emplace(index, command->createScene(m_sceneBase)).first;
+        it = m_sceneCache.emplace(index, command.createScene(m_sceneBase)).first;
     }
     m_sceneStack.push(it->second);
     m_inputManager.unbindKeys();
     m_sceneStack.top()->onShow();
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandScenePop>&/* command*/) {
+void Orpheus::Engine::onCommand(const Command::Game::CommandScenePop&/* command*/) {
     m_sceneStack.pop();
     if (m_sceneStack.size() > 0) {
         m_inputManager.unbindKeys();
@@ -68,6 +68,6 @@ void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandScen
     }
 }
 
-void Orpheus::Engine::onCommand(const std::shared_ptr<Command::Game::CommandTest>& command) {
-    Log::info(this) << command->getMessage();
+void Orpheus::Engine::onCommand(const Command::Game::CommandTest& command) {
+    Log::info(this) << command.getMessage();
 }

@@ -9,6 +9,4 @@ namespace Orpheus::Command {
 
         virtual std::string getName() const = 0;
     };
-
-    using CommandPtr = std::shared_ptr<Command>;
 }

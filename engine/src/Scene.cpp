@@ -4,12 +4,11 @@
 #include "orpheus/Entity/EntityCommand.hpp"
 
 Orpheus::Scene::Scene::Scene(Orpheus::Input::Manager& inputManager) :
-    m_inputManager(inputManager)
+    m_inputManager(inputManager),
+    m_clearColorEntity(addEntity<Entity::EntityCommand<Command::Render::CommandColor>>(0.0f, 0.0f, 0.0f, 1.0f)),
+    m_clearColor(m_clearColorEntity->getCommand())
 {
     addScope("Scene");
-
-    m_clearColorEntity = addEntity<Entity::EntityCommand<Command::Render::CommandColor>>(0.0f, 0.0f, 0.0f, 1.0f);
-    m_clearColor = m_clearColorEntity->getCommand();
 
     addEntity<Entity::EntityCommand<Command::Render::CommandClear>>();
 }

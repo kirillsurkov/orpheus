@@ -24,6 +24,6 @@ public:
     }
 
     virtual void update(float delta) override {
-        m_clearColor->setR(std::fmod(m_clearColor->getR() + delta, 1.0f));
+        m_clearColor.setR(std::fmod(m_clearColor.getR() + delta, 1.0f));
     }
 };
