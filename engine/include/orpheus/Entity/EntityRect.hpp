@@ -37,13 +37,13 @@ namespace Orpheus::Entity {
             m_vertices(),
             m_color(0.0f, 1.0f, 1.0f, 1.0f)
         {
-            auto& positions = m_vertices.addAttrib(0, 2);
-            positions->addPoint(-0.5f, -0.5f);
-            positions->addPoint( 0.5f, -0.5f);
-            positions->addPoint( 0.5f,  0.5f);
-            positions->addPoint( 0.5f,  0.5f);
-            positions->addPoint(-0.5f, -0.5f);
-            positions->addPoint(-0.5f,  0.5f);
+            auto& positions = m_vertices.addAttrib(0, 3);
+            positions->addPoint(-0.5f, -0.5f, -1.0f);
+            positions->addPoint( 0.5f, -0.5f, -1.0f);
+            positions->addPoint( 0.5f,  0.5f, -1.0f);
+            positions->addPoint( 0.5f,  0.5f, -1.0f);
+            positions->addPoint(-0.5f, -0.5f, -1.0f);
+            positions->addPoint(-0.5f,  0.5f, -1.0f);
         }
 
         void setX(float x) {

@@ -35,25 +35,28 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
         unsigned int verticesCount;
 
         for (const auto& attrib : command.getAttribs()) {
-            const auto& array = attrib->getArray();
-
-            unsigned int vbo;
-            glGenBuffers(1, &vbo);
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, array.size() * sizeof(float), array.data(), GL_STATIC_DRAW);
+            const auto& buffer = attrib->getBuffer();
+            auto it = m_buffers.find(&buffer);
+            if (it == m_buffers.end()) {
+                const auto& data = buffer.getData();
+                unsigned int vbo;
+                glGenBuffers(1, &vbo);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+                it = m_buffers.emplace(&buffer, BufferInfo{vbo, data.size()}).first;
+            }
 
             glVertexAttribPointer(attrib->getLayout(), attrib->getElements(), GL_FLOAT, GL_FALSE, 0, 0);
             glEnableVertexAttribArray(attrib->getLayout());
 
-            m_attribs.emplace(attrib, vbo);
             attrib->clearCpuData();
 
             if (first) {
-                verticesCount = array.size() / attrib->getElements();
+                verticesCount = it->second.size / attrib->getElements();
                 first = false;
             }
 
-            if (verticesCount != array.size() / attrib->getElements()) {
+            if (verticesCount != it->second.size / attrib->getElements()) {
                 throw std::runtime_error("VertexAttrib different lengths");
             }
         }
@@ -68,22 +71,6 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
     glDrawArrays(GL_TRIANGLES, 0, vertices.count);
 }
 
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>&/* command*/) {
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>&) {
     m_material->use();
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandColor& command) {
-    m_material->postMaterialCommand(command);
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixProjection& command) {
-    m_material->postMaterialCommand(command);
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixView& command) {
-    m_material->postMaterialCommand(command);
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixModel& command) {
-    m_material->postMaterialCommand(command);
 }

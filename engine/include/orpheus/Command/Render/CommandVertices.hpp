@@ -7,11 +7,30 @@
 namespace Orpheus::Command::Render {
     class CommandVertices : public Command {
     public:
+        class Buffer {
+        private:
+            std::vector<float> m_data;
+
+        public:
+            template<class... Args>
+            void addPoint(Args&&... args) {
+                (m_data.push_back(std::forward<Args>(args)), ...);
+            }
+
+            const std::vector<float>& getData() const {
+                return m_data;
+            }
+
+            void clearCpuData() {
+                m_data.clear();
+            }
+        };
+
         class AttribArray {
         private:
             unsigned int m_layout;
             unsigned int m_elements;
-            std::vector<float> m_array;
+            Buffer m_buffer;
 
         public:
             AttribArray(unsigned int layout, unsigned int elements) :
@@ -28,8 +47,8 @@ namespace Orpheus::Command::Render {
                 return m_elements;
             }
 
-            const std::vector<float> getArray() const {
-                return m_array;
+            const Buffer& getBuffer() const {
+                return m_buffer;
             }
 
             template<class... Args>
@@ -37,11 +56,11 @@ namespace Orpheus::Command::Render {
                 if (sizeof...(args) != m_elements) {
                     throw std::runtime_error("Wrong elements count");
                 }
-                (m_array.push_back(args), ...);
+                m_buffer.addPoint(std::forward<Args>(args)...);
             }
 
             void clearCpuData() {
-                m_array.clear();
+                m_buffer.clearCpuData();
             }
         };
 

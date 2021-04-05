@@ -12,6 +12,8 @@
 #include "orpheus/Command/Material/CommandMatrixView.hpp"
 #include "orpheus/Command/Material/CommandMatrixModel.hpp"
 
+#include <type_traits>
+
 namespace Orpheus::Render {
     class OpenGL::Impl {
     public:
@@ -19,24 +21,25 @@ namespace Orpheus::Render {
         using ContextPtr = std::shared_ptr<Context>;
 
     private:
+        struct BufferInfo {
+            unsigned int vbo;
+            std::size_t size;
+        };
+
         struct Vertices {
             unsigned int vao;
             unsigned int count;
         };
 
-        std::unordered_map<std::shared_ptr<Command::Render::CommandVertices::AttribArray>, unsigned int> m_attribs;
+        std::unordered_map<const Command::Render::CommandVertices::Buffer*, BufferInfo> m_buffers;
         std::unordered_map<const Command::Render::CommandVertices*, Vertices> m_vertices;
-
         OpenGLImpl::Material::MaterialPtr m_material;
 
+    private:
         void onCommand(const Command::Render::CommandClear& command);
         void onCommand(const Command::Render::CommandClearColor& command);
         void onCommand(const Command::Render::CommandVertices& command);
         void onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>& command);
-        void onCommand(const Command::Material::CommandColor& command);
-        void onCommand(const Command::Material::CommandMatrixProjection& command);
-        void onCommand(const Command::Material::CommandMatrixView& command);
-        void onCommand(const Command::Material::CommandMatrixModel& command);
 
     public:
         Impl();
@@ -44,7 +47,11 @@ namespace Orpheus::Render {
 
         template<class T>
         void postCommand(T&& command) {
-            onCommand(std::forward<T>(command));
+            if constexpr (std::is_base_of<Command::Material::Command, std::decay_t<T>>::value) {
+                m_material->postMaterialCommand(std::forward<T>(command));
+            } else {
+                onCommand(std::forward<T>(command));
+            }
         }
     };
 }

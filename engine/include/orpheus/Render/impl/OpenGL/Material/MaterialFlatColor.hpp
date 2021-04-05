@@ -11,10 +11,10 @@ namespace Orpheus::Render::OpenGLImpl::Material {
     class MaterialFlatColor : public Material {
     private:
         static const inline std::string vss = "#version 330 core\n"
-                   "layout(location = 0) in vec2 position;\n"
+                   "layout(location = 0) in vec3 position;\n"
                    "uniform mat4 u_mvp;\n"
                    "void main() {\n"
-                   "    gl_Position = u_mvp * vec4(position, -1.0, 1.0);\n"
+                   "    gl_Position = u_mvp * vec4(position, 1.0);\n"
                    "}";
 
         static const inline std::string fss = "#version 330 core\n"
