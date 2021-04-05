@@ -8,43 +8,15 @@ Orpheus::Render::OpenGL::OpenGL(const Window::WindowPtr& window) :
     addScope("OpenGL");
     Log::info(this) << "created";
 
-    registerRenderCommand<Command::Render::CommandClear>(this);
-    registerRenderCommand<Command::Render::CommandColor>(this);
-    registerRenderCommand<Command::Render::CommandVertices>(this);
-    registerRenderCommand<Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>>(this);
+    registerCommand<Command::Render::CommandClear>(*m_impl);
+    registerCommand<Command::Render::CommandClearColor>(*m_impl);
+    registerCommand<Command::Render::CommandVertices>(*m_impl);
+    registerCommand<Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>>(*m_impl);
+    registerCommand<Command::Material::CommandColor>(*m_impl);
+    registerCommand<Command::Material::CommandMatrixProjection>(*m_impl);
+    registerCommand<Command::Material::CommandMatrixView>(*m_impl);
+    registerCommand<Command::Material::CommandMatrixModel>(*m_impl);
 }
 
 Orpheus::Render::OpenGL::~OpenGL() {
-}
-
-void Orpheus::Render::OpenGL::onCommand(const Command::Render::CommandClear& command) {
-    try {
-        m_impl->onCommand(command);
-    } catch (const std::exception& e) {
-        throw Exception(this, e.what());
-    }
-}
-
-void Orpheus::Render::OpenGL::onCommand(const Command::Render::CommandColor& command) {
-    try {
-        m_impl->onCommand(command);
-    } catch (const std::exception& e) {
-        throw Exception(this, e.what());
-    }
-}
-
-void Orpheus::Render::OpenGL::onCommand(const Command::Render::CommandVertices& command) {
-    try {
-        m_impl->onCommand(command);
-    } catch (const std::exception& e) {
-        throw Exception(this, e.what());
-    }
-}
-
-void Orpheus::Render::OpenGL::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>& command) {
-    try {
-        m_impl->onCommand(command);
-    } catch (const std::exception& e) {
-        throw Exception(this, e.what());
-    }
 }

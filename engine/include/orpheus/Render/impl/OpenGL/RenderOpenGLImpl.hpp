@@ -2,8 +2,15 @@
 
 #include "orpheus/Render/RenderOpenGL.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/Material.hpp"
-#include "orpheus/Window/Window.hpp"
-#include "orpheus/Utils.hpp"
+#include "orpheus/Command/Render/CommandClear.hpp"
+#include "orpheus/Command/Render/CommandClearColor.hpp"
+#include "orpheus/Command/Render/CommandVertices.hpp"
+#include "orpheus/Command/Render/CommandMaterial.hpp"
+#include "orpheus/Material/MaterialFlatColor.hpp"
+#include "orpheus/Command/Material/CommandColor.hpp"
+#include "orpheus/Command/Material/CommandMatrixProjection.hpp"
+#include "orpheus/Command/Material/CommandMatrixView.hpp"
+#include "orpheus/Command/Material/CommandMatrixModel.hpp"
 
 namespace Orpheus::Render {
     class OpenGL::Impl {
@@ -22,15 +29,22 @@ namespace Orpheus::Render {
 
         OpenGLImpl::Material::MaterialPtr m_material;
 
-        std::array<float, 4> m_color;
+        void onCommand(const Command::Render::CommandClear& command);
+        void onCommand(const Command::Render::CommandClearColor& command);
+        void onCommand(const Command::Render::CommandVertices& command);
+        void onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>& command);
+        void onCommand(const Command::Material::CommandColor& command);
+        void onCommand(const Command::Material::CommandMatrixProjection& command);
+        void onCommand(const Command::Material::CommandMatrixView& command);
+        void onCommand(const Command::Material::CommandMatrixModel& command);
 
     public:
         Impl();
         ~Impl();
 
-        void onCommand(const Command::Render::CommandClear& command);
-        void onCommand(const Command::Render::CommandColor& command);
-        void onCommand(const Command::Render::CommandVertices& command);
-        void onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>& command);
+        template<class T>
+        void postCommand(T&& command) {
+            onCommand(std::forward<T>(command));
+        }
     };
 }

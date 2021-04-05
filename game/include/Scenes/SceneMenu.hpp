@@ -28,5 +28,9 @@ protected:
 public:
     SceneMenu(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
         addScope("Menu");
+
+        float aspect = 1.0f * getScreenHeight() / getScreenWidth();
+
+        m_projection = glm::ortho(-1.0f, 1.0f, -aspect, aspect);
     }
 };

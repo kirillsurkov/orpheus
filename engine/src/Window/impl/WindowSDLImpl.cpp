@@ -15,6 +15,24 @@ Orpheus::Window::SDL::Impl::~Impl() {
     SDL_Quit();
 }
 
+std::size_t Orpheus::Window::SDL::Impl::getWidth() const {
+    int width;
+    int height;
+
+    SDL_GetWindowSize(m_window, &width, &height);
+
+    return width;
+}
+
+std::size_t Orpheus::Window::SDL::Impl::getHeight() const {
+    int width;
+    int height;
+
+    SDL_GetWindowSize(m_window, &width, &height);
+
+    return height;
+}
+
 void Orpheus::Window::SDL::Impl::init() {
     int err = SDL_Init(SDL_INIT_VIDEO);
     if (err != 0) {

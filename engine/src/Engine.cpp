@@ -16,7 +16,7 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_window->registerCommand<Command::Engine::CommandMouse>(m_inputManager);
     m_window->registerCommand<Command::Engine::CommandKeyboard>(m_inputManager);
 
-    m_sceneBase = std::make_shared<Scene::Scene>(m_inputManager);
+    m_sceneBase = std::make_shared<Scene::Scene>(window->getWidth(), window->getHeight(), m_inputManager);
     m_sceneBase->registerCommand<Command::Game::CommandScenePush>(this);
     m_sceneBase->registerCommand<Command::Game::CommandScenePop>(this);
     m_sceneBase->registerCommand<Command::Game::CommandTest>(this);

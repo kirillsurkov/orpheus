@@ -38,5 +38,7 @@ protected:
 public:
     SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
         addScope("Level");
+
+        m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * getScreenWidth() / getScreenHeight(), 0.01f, 100.0f);
     }
 };

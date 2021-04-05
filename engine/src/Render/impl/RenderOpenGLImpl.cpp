@@ -1,10 +1,10 @@
 #include "orpheus/Render/impl/OpenGL/RenderOpenGLImpl.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/MaterialFlatColor.hpp"
+#include "orpheus/Command/Material/CommandColor.hpp"
+
 #include <GL/glew.h>
 
 Orpheus::Render::OpenGL::Impl::Impl() {
-    m_color = {0, 0, 0, 0};
-
     auto err = glewInit();
     if (err != GLEW_OK) {
         throw std::runtime_error("glewInit failed: " + std::string(reinterpret_cast<const char*>(glewGetErrorString(err))));
@@ -17,13 +17,11 @@ Orpheus::Render::OpenGL::Impl::~Impl() {
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandClear&/* command*/) {
-    glClearColor(m_color[0], m_color[1], m_color[2], m_color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandColor& command) {
-    m_color = {command.getR(), command.getG(), command.getB(), command.getA()};
-    m_material->postMaterialCommand(command);
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandClearColor& command) {
+    glClearColor(command.getR(), command.getG(), command.getB(), command.getA());
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVertices& command) {
@@ -63,6 +61,8 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
         it = m_vertices.emplace(&command, Vertices{vao, verticesCount}).first;
     }
 
+    m_material->postMaterialCommand(Command::Material::CommandPrepare());
+
     const auto& vertices = it->second;
     glBindVertexArray(vertices.vao);
     glDrawArrays(GL_TRIANGLES, 0, vertices.count);
@@ -70,4 +70,20 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>&/* command*/) {
     m_material->use();
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandColor& command) {
+    m_material->postMaterialCommand(command);
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixProjection& command) {
+    m_material->postMaterialCommand(command);
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixView& command) {
+    m_material->postMaterialCommand(command);
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Material::CommandMatrixModel& command) {
+    m_material->postMaterialCommand(command);
 }

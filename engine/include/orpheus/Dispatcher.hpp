@@ -142,6 +142,13 @@ namespace Orpheus {
             return m_dispatcher.dispatch(command);
         }
 
+        template<class T>
+        void dispatchOrThrow(const T& command) {
+            if (!m_dispatcher.dispatch(command)) {
+                throw std::runtime_error("Command '" + command.getName() + "' is not supported");
+            }
+        }
+
         template<class U, class T>
         void dispatchOrThrow(U&& loggable, const T& command) {
             if (!m_dispatcher.dispatch(command)) {

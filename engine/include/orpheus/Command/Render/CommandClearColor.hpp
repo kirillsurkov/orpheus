@@ -3,7 +3,7 @@
 #include "orpheus/Command/Render/Command.hpp"
 
 namespace Orpheus::Command::Render {
-    class CommandColor : public Command {
+    class CommandClearColor : public Command {
     private:
         float m_r;
         float m_g;
@@ -11,13 +11,13 @@ namespace Orpheus::Command::Render {
         float m_a;
 
     public:
-        CommandColor(float r, float g, float b, float a) :
+        CommandClearColor(float r, float g, float b, float a) :
             m_r(r), m_g(g), m_b(b), m_a(a)
         {
         }
 
         virtual std::string getName() const override {
-            return "CommandColor";
+            return "CommandClearColor";
         }
 
         void set(float r, float g, float b, float a) {

@@ -5,18 +5,24 @@
 #include "orpheus/InputManager.hpp"
 #include "orpheus/Entity/Entity.hpp"
 #include "orpheus/Entity/EntityCommand.hpp"
-#include "orpheus/Command/Render/CommandColor.hpp"
+#include "orpheus/Command/Render/CommandClearColor.hpp"
+
+#include <glm/ext.hpp>
 
 namespace Orpheus::Scene {
     class Scene : public Loggable {
     private:
         CommandDispatcher m_commandDispatcher;
+        std::size_t m_screenWidth;
+        std::size_t m_screenHeight;
         Input::Manager& m_inputManager;
         std::vector<Entity::EntityPtr> m_entities;
-        std::shared_ptr<Entity::EntityCommand<Command::Render::CommandColor>> m_clearColorEntity;
+        std::shared_ptr<Entity::EntityCommand<Command::Render::CommandClearColor>> m_clearColorEntity;
 
     protected:
-        Command::Render::CommandColor& m_clearColor;
+        glm::mat4x4 m_projection;
+        glm::mat4x4 m_view;
+        Command::Render::CommandClearColor& m_clearColor;
 
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
@@ -30,7 +36,7 @@ namespace Orpheus::Scene {
         }
 
     public:
-        Scene(Input::Manager& inputManager);
+        Scene(std::size_t screenWidth, std::size_t screenHeight, Input::Manager& inputManager);
         Scene(const Scene& scene);
 
         virtual ~Scene() {}
@@ -55,6 +61,22 @@ namespace Orpheus::Scene {
 
         const std::vector<Entity::EntityPtr>& getEntities() const {
             return m_entities;
+        }
+
+        const glm::mat4x4& getProjection() const {
+            return m_projection;
+        }
+
+        const glm::mat4x4& getView() const {
+            return m_view;
+        }
+
+        const std::size_t& getScreenWidth() const {
+            return m_screenWidth;
+        }
+
+        const std::size_t& getScreenHeight() const {
+            return m_screenHeight;
         }
     };
 

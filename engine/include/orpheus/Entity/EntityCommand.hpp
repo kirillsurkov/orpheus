@@ -15,12 +15,12 @@ namespace Orpheus::Entity {
         EntityCommand(Args&&... args) :
             m_command(std::forward<Args>(args)...),
             m_draw([this](Render::Render& render) {
-                render.postRenderCommand(m_command);
+                render.postCommand(m_command);
             })
         {
         }
 
-        virtual void draw(Render::Render& render) override {
+        virtual void draw(const glm::mat4x4&, const glm::mat4x4&, Render::Render& render) override {
             m_draw(render);
         }
 

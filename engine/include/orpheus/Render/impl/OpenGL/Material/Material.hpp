@@ -1,11 +1,10 @@
 #pragma once
 
-#include "orpheus/Log.hpp"
 #include "orpheus/Dispatcher.hpp"
-#include "GL/glew.h"
+#include <GL/glew.h>
 
 namespace Orpheus::Render::OpenGLImpl::Material {
-    class Material : public Orpheus::Loggable {
+    class Material {
     private:
         unsigned int m_vertexShader;
         unsigned int m_fragmentShader;
@@ -25,7 +24,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
 
             glGetShaderInfoLog(shader, bufferSize, &len, buffer.data());
 
-            throw Exception(this, std::string(buffer.data(), len));
+            throw std::runtime_error(std::string(buffer.data(), len));
         }
 
     protected:
@@ -42,8 +41,6 @@ namespace Orpheus::Render::OpenGLImpl::Material {
             m_fragmentShader(0),
             m_program(0)
         {
-            addScope("Material");
-
             auto vertexShaderSrc = vertexSource.c_str();
             m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(m_vertexShader, 1, &vertexShaderSrc, nullptr);
@@ -83,7 +80,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
 
         template<class T>
         void postMaterialCommand(T&& command) {
-            m_commandDispatcher.dispatch(std::forward<T>(command));
+            m_commandDispatcher.dispatchOrThrow(std::forward<T>(command));
         }
     };
 

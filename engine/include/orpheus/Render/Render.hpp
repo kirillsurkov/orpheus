@@ -22,7 +22,7 @@ namespace Orpheus::Render {
 
     protected:
         template<class T, class U>
-        void registerRenderCommand(U&& receiver) {
+        void registerCommand(U&& receiver) {
             m_renderCommandDispatcher.registerCommand<T>(std::forward<U>(receiver));
         }
 
@@ -37,7 +37,7 @@ namespace Orpheus::Render {
         }
 
         template<class T>
-        void postRenderCommand(T&& command) {
+        void postCommand(T&& command) {
             m_renderCommandDispatcher.dispatchOrThrow(this, command);
         }
 

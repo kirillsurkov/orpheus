@@ -40,6 +40,9 @@ namespace Orpheus::Window {
         }
 
     public:
+        virtual std::size_t getWidth() const = 0;
+        virtual std::size_t getHeight() const = 0;
+
         virtual void swapBuffers() = 0;
         virtual void pollEvents() = 0;
     };

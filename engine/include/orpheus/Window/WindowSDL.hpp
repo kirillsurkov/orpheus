@@ -15,6 +15,9 @@ namespace Orpheus::Window {
 
         void createContext(Render::OpenGL::ContextPtr& context);
 
+        virtual std::size_t getWidth() const override;
+        virtual std::size_t getHeight() const override;
+
         virtual void swapBuffers() override;
         virtual void pollEvents() override;
     };

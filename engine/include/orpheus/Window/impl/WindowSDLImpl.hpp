@@ -96,6 +96,9 @@ namespace Orpheus::Window {
         Impl(const std::string& title, unsigned int width, unsigned int height);
         ~Impl();
 
+        std::size_t getWidth() const;
+        std::size_t getHeight() const;
+
         void init();
         void createContext(Render::OpenGL::ContextPtr& context);
         void swapBuffers();

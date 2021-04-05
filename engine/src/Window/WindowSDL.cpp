@@ -26,6 +26,14 @@ void Orpheus::Window::SDL::createContext(Render::OpenGL::ContextPtr& context) {
     }
 }
 
+std::size_t Orpheus::Window::SDL::getWidth() const {
+    return m_impl->getWidth();
+}
+
+std::size_t Orpheus::Window::SDL::getHeight() const {
+    return m_impl->getHeight();
+}
+
 void Orpheus::Window::SDL::swapBuffers() {
     try {
         m_impl->swapBuffers();
