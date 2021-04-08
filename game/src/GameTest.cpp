@@ -1,6 +1,6 @@
 #include "GameTest.hpp"
 #include "Version.hpp"
-#include "Scenes/SceneMainMenu.hpp"
+#include "Scenes/SceneMenuMain.hpp"
 #include "Scenes/SceneLevel01.hpp"
 
 GameTest::GameTest(const Orpheus::EnginePtr& engine) : Orpheus::Game(engine) {

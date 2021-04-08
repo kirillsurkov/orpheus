@@ -1,5 +1,6 @@
 #include "orpheus/Render/impl/OpenGL/RenderOpenGLImpl.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/MaterialFlatColor.hpp"
+#include "orpheus/Render/impl/OpenGL/Material/MaterialText.hpp"
 #include "orpheus/Command/Material/CommandColor.hpp"
 
 #include <GL/glew.h>
@@ -10,7 +11,8 @@ Orpheus::Render::OpenGL::Impl::Impl() {
         throw std::runtime_error("glewInit failed: " + std::string(reinterpret_cast<const char*>(glewGetErrorString(err))));
     }
 
-    m_material = std::make_shared<OpenGLImpl::Material::MaterialFlatColor>();
+    m_materialFlatColor = std::make_shared<OpenGLImpl::Material::MaterialFlatColor>();
+    m_materialText = std::make_shared<OpenGLImpl::Material::MaterialText>();
 }
 
 Orpheus::Render::OpenGL::Impl::~Impl() {
@@ -64,7 +66,7 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
         it = m_vertices.emplace(&command, Vertices{vao, verticesCount}).first;
     }
 
-    m_material->postMaterialCommand(Command::Material::CommandPrepare());
+    m_currentMaterial->postMaterialCommand(Command::Material::CommandPrepare());
 
     const auto& vertices = it->second;
     glBindVertexArray(vertices.vao);
@@ -72,5 +74,11 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandVert
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialFlatColor>&) {
-    m_material->use();
+    m_currentMaterial = m_materialFlatColor;
+    m_currentMaterial->use();
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandMaterial<Orpheus::Material::MaterialText>&) {
+    m_currentMaterial = m_materialText;
+    m_currentMaterial->use();
 }

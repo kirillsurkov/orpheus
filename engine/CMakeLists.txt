@@ -29,3 +29,7 @@ target_link_libraries(Orpheus ${OPENGL_LIBRARIES})
 find_package(GLEW REQUIRED)
 include_directories(Orpheus ${GLEW_INCLUDE_DIRS})
 target_link_libraries(Orpheus ${GLEW_LIBRARIES})
+
+find_package(PNG REQUIRED)
+include_directories(Orpheus ${PNG_INCLUDE_DIRS})
+target_link_libraries(Orpheus ${PNG_LIBRARIES})

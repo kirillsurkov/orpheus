@@ -1,19 +1,18 @@
 #pragma once
 
-#include "SceneMainMenu.hpp"
+#include "SceneMenuMain.hpp"
 
 #include <orpheus/Scene.hpp>
 #include <orpheus/Command/Game/CommandTest.hpp>
 #include <orpheus/Command/Game/CommandScenePush.hpp>
 #include <orpheus/Command/Game/CommandScenePop.hpp>
-#include <orpheus/Entity/EntityRect.hpp>
 
 class SceneLevel : public Orpheus::Scene::Scene {
 protected:
     void bindKeys() {
         bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMainMenu>{});
+                postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMenuMain>{});
             }
         });
 

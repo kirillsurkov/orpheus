@@ -5,7 +5,7 @@
 #include "GameTest.hpp"
 
 int main() {
-    try {
+    //try {
         auto timerTotal = Orpheus::Utils::StopWatch();
         auto timerPart = Orpheus::Utils::StopWatch();
 
@@ -22,11 +22,11 @@ int main() {
         Orpheus::Log::info(game) << "Initialized in " << (timerTotal.split() * 1e3)  << "ms";
 
         game.run();
-    } catch (const Orpheus::Exception& e) {
+    /*} catch (const Orpheus::Exception& e) {
         Orpheus::Log::fatal(e);
     } catch (const std::exception& e) {
         Orpheus::Log::fatal() << e.what();
-    }
+    }*/
 
     return 0;
 }

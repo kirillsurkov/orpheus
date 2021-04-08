@@ -6,6 +6,8 @@
 #include <orpheus/Command/Game/CommandScenePush.hpp>
 #include <orpheus/Command/Game/CommandScenePop.hpp>
 #include <orpheus/Entity/EntityCommand.hpp>
+#include <orpheus/Entity/EntityRect.hpp>
+#include <orpheus/Entity/EntityText.hpp>
 
 #include <cmath>
 
@@ -16,6 +18,7 @@ public:
 
         addEntity<Orpheus::Entity::EntityRect>( 0.25f, 0.25f, 0.1f, 0.1f);
         addEntity<Orpheus::Entity::EntityRect>(-0.25f, 0.25f, 0.1f, 0.1f);
+        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "X");
     }
 
     virtual void onShow() override {

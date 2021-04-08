@@ -6,13 +6,13 @@
 #include <orpheus/Command/Game/CommandTest.hpp>
 #include <orpheus/Entity/EntityRect.hpp>
 
-class SceneMainMenu : public SceneMenu {
+class SceneMenuMain : public SceneMenu {
 private:
     float m_timer;
     std::shared_ptr<Orpheus::Entity::EntityRect> m_rect;
 
 public:
-    SceneMainMenu(const Orpheus::Scene::Scene& sceneBase) : SceneMenu(sceneBase) {
+    SceneMenuMain(const Orpheus::Scene::Scene& sceneBase) : SceneMenu(sceneBase) {
         addScope("Main");
         m_clearColor.set(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -21,7 +21,7 @@ public:
     }
 
     virtual void onShow() override {
-        postCommand<Orpheus::Command::Game::CommandTest>("MainMenu shown!");
+        postCommand<Orpheus::Command::Game::CommandTest>("MenuMain shown!");
 
         bindKeys();
     }
