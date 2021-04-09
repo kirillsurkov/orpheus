@@ -3,6 +3,7 @@
 #include "orpheus/Image/Image.hpp"
 
 #include <libpng/png.h>
+#include <stdexcept>
 
 namespace Orpheus::Image::Loader {
     class PNG {

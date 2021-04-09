@@ -55,7 +55,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         float m_advance;
 
         void onCommand(const Command::Material::CommandPrepare&) {
-            auto mvp = m_projection * m_view;
+            auto mvp = m_projection * m_view * m_model;
             mvp = glm::translate(mvp, glm::vec3(m_advance + m_x, m_y, 0.0f));
             mvp = glm::scale(mvp, glm::vec3(m_width, m_height, 1.0f));
             glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
@@ -77,7 +77,6 @@ namespace Orpheus::Render::OpenGLImpl::Material {
 
         void onCommand(const Command::Material::CommandMatrixProjection& command) {
             m_projection = command.getMatrix();
-            m_model = glm::mat4(1.0f);
         }
 
         void onCommand(const Command::Material::CommandMatrixView& command) {
@@ -85,7 +84,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         }
 
         void onCommand(const Command::Material::CommandMatrixModel& command) {
-            m_model = m_model * command.getMatrix();
+            m_model = command.getMatrix();
         }
 
         void onCommand(const Command::Material::Text::CommandRect& command) {

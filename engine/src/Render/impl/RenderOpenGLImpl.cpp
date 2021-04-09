@@ -65,12 +65,12 @@ Orpheus::Render::OpenGL::Impl::Impl() {
     registerMaterial<Material::MaterialText>(m_materialText);
 
     auto& positions = m_verticesRect.addAttrib(0, 2);
-    positions->addPoint(-0.5f, -0.5f);
-    positions->addPoint( 0.5f, -0.5f);
-    positions->addPoint( 0.5f,  0.5f);
-    positions->addPoint( 0.5f,  0.5f);
-    positions->addPoint(-0.5f, -0.5f);
-    positions->addPoint(-0.5f,  0.5f);
+    positions->addPoint(0.0f, 0.0f);
+    positions->addPoint(1.0f, 0.0f);
+    positions->addPoint(1.0f, 1.0f);
+    positions->addPoint(1.0f, 1.0f);
+    positions->addPoint(0.0f, 0.0f);
+    positions->addPoint(0.0f, 1.0f);
 }
 
 Orpheus::Render::OpenGL::Impl::~Impl() {
@@ -153,6 +153,6 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Command::Render::CommandText
         postCommand(Command::Material::Text::CommandRect(worldRect.x, worldRect.y, worldRect.width, worldRect.height, advance));
         postCommand(glyph.command);
 
-        advance += glyphModel.getAdvance();
+        advance += glyphModel.getAdvance();// + worldRect.x;
     }
 }

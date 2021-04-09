@@ -73,10 +73,8 @@ namespace Orpheus {
                 if (worldIt != glyph.end()) {
                     worldOffset.x = worldIt->at("left");
                     worldOffset.y = worldIt->at("bottom");
-                    worldOffset.width = worldIt->at("right");
-                    worldOffset.width -= worldOffset.x;
-                    worldOffset.height = worldIt->at("top");
-                    worldOffset.height -= worldOffset.y;
+                    worldOffset.width = static_cast<float>(worldIt->at("right")) - worldOffset.x;
+                    worldOffset.height = static_cast<float>(worldIt->at("top")) - worldOffset.y;
                 }
 
                 Glyph::Rect atlasOffset;

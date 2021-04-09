@@ -18,13 +18,13 @@ namespace Orpheus::Entity {
         float m_height;
         std::string m_text;
         std::string m_font;
-        //float m_size;
+        float m_size;
         Command::Render::CommandMaterial<Material::MaterialText> m_material;
 
         glm::mat4x4 getTransform() const {
             glm::mat4x4 res(1.0f);
-            /*res = glm::translate(res, glm::vec3(m_x, m_y, 0.0f));
-            res = glm::scale(res, glm::vec3(0.1f, 0.1f, 1.0f));*/
+            res = glm::scale(res, glm::vec3(5.0f - m_size, 5.0f - m_size, 1.0f));
+            res = glm::translate(res, glm::vec3(m_x - 2, m_y, 0.0f));
             return res;
         }
 
@@ -47,8 +47,8 @@ namespace Orpheus::Entity {
         }
 
         virtual void update(float delta) override {
-            //static float m_timer = 0.0f;
-            //m_size = 0.1f;//std::abs(std::sin(m_timer += delta * 0.5f)) * 5;
+            static float m_timer = 0.0f;
+            m_size = std::abs(std::cos(m_timer += delta * 0.1f)) * 5.0f;
         }
     };
 }

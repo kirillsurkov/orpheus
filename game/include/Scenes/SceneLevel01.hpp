@@ -18,7 +18,8 @@ public:
 
         addEntity<Orpheus::Entity::EntityRect>( 0.25f, 0.25f, 0.1f, 0.1f);
         addEntity<Orpheus::Entity::EntityRect>(-0.25f, 0.25f, 0.1f, 0.1f);
-        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "Test");
+        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "Te st");
+        addEntity<Orpheus::Entity::EntityText>(0.0f, -1.0f, 16.0f, "Yy-Qq");
     }
 
     virtual void onShow() override {
