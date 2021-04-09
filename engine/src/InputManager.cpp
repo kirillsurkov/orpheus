@@ -1,4 +1,4 @@
-#include "orpheus/InputManager.hpp"
+#include "orpheus/Input/InputManager.hpp"
 #include "orpheus/Exception.hpp"
 
 Orpheus::Input::Manager::Manager() {

@@ -18,7 +18,7 @@ public:
 
         addEntity<Orpheus::Entity::EntityRect>( 0.25f, 0.25f, 0.1f, 0.1f);
         addEntity<Orpheus::Entity::EntityRect>(-0.25f, 0.25f, 0.1f, 0.1f);
-        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "X");
+        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "Test");
     }
 
     virtual void onShow() override {
@@ -28,6 +28,6 @@ public:
     }
 
     virtual void update(float delta) override {
-        m_clearColor.setR(std::fmod(m_clearColor.getR() + delta, 1.0f));
+        //m_clearColor.setR(std::fmod(m_clearColor.getR() + delta, 1.0f));
     }
 };

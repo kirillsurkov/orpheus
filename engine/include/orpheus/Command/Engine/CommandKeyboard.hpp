@@ -1,7 +1,7 @@
 #pragma once
 
 #include "orpheus/Command/Engine/Command.hpp"
-#include "orpheus/Keys.hpp"
+#include "orpheus/Input/Keys.hpp"
 
 namespace Orpheus::Command::Engine {
     class CommandKeyboard : public Command {

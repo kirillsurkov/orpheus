@@ -2,7 +2,7 @@
 
 #include "orpheus/Log.hpp"
 #include "orpheus/Dispatcher.hpp"
-#include "orpheus/InputManager.hpp"
+#include "orpheus/Input/InputManager.hpp"
 #include "orpheus/Entity/Entity.hpp"
 #include "orpheus/Entity/EntityCommand.hpp"
 #include "orpheus/Command/Render/CommandClearColor.hpp"

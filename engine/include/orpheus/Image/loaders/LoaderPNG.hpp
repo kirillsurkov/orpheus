@@ -4,7 +4,7 @@
 
 #include <libpng/png.h>
 
-namespace Orpheus::ImageLoader {
+namespace Orpheus::Image::Loader {
     class PNG {
     public:
         static void load(const std::string& path, std::size_t& width, std::size_t& height, std::vector<float>& dest) {
@@ -76,15 +76,15 @@ namespace Orpheus::ImageLoader {
 
             dest.clear();
             dest.reserve(width * height * 4);
-            for (std::size_t y = 0; y < height; y++) {
-                png_bytep src = row_pointers[y];
+            for (std::size_t y = height; y > 0; y--) {
+                png_bytep src = row_pointers[y - 1];
                 for (std::size_t x = 0; x < width; x++) {
                     dest.push_back(src[x * 4 + 0] / 255.0f);
                     dest.push_back(src[x * 4 + 1] / 255.0f);
                     dest.push_back(src[x * 4 + 2] / 255.0f);
                     dest.push_back(src[x * 4 + 3] / 255.0f);
                 }
-                delete[] row_pointers[y];
+                delete[] row_pointers[y - 1];
             }
 
             delete[] row_pointers;

@@ -2,7 +2,7 @@
 
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Render/Render.hpp"
-#include "orpheus/InputManager.hpp"
+#include "orpheus/Input/InputManager.hpp"
 #include "orpheus/Command/Engine/CommandQuit.hpp"
 #include "orpheus/Command/Game/CommandScenePush.hpp"
 #include "orpheus/Command/Game/CommandScenePop.hpp"

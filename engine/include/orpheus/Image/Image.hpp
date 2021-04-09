@@ -3,14 +3,14 @@
 #include <vector>
 #include <memory>
 
-namespace Orpheus {
+namespace Orpheus::Image {
     class Image {
     private:
         std::size_t m_width;
         std::size_t m_height;
         std::vector<float> m_data;
 
-        Image();
+        Image() {}
 
     public:
         static Image loadPNG(const std::string& path);

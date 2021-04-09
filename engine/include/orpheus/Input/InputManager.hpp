@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Log.hpp"
-#include "orpheus/Keys.hpp"
+#include "orpheus/Log.hpp"
 #include "orpheus/Dispatcher.hpp"
+#include "orpheus/Input/Keys.hpp"
 #include "orpheus/Command/Engine/CommandKeyboard.hpp"
 #include "orpheus/Command/Engine/CommandMouse.hpp"
 

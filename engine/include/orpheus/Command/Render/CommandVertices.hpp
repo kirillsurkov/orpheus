@@ -80,5 +80,10 @@ namespace Orpheus::Command::Render {
             m_attribs.push_back(std::make_shared<AttribArray>(layout, elements));
             return m_attribs.back();
         }
+
+        const std::shared_ptr<AttribArray>& addAttrib(const std::shared_ptr<AttribArray>& array) {
+            m_attribs.push_back(array);
+            return m_attribs.back();
+        }
     };
 }
