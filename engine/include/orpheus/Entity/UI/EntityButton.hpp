@@ -16,9 +16,9 @@ namespace Orpheus::Entity::UI {
         bool m_clicked = false;
 
     public:
-        Button(Vertex::BufferCache& bufferCache, float x, float y, const std::string& text) :
+        Button(Vertex::BufferCache& bufferCache, float x, float y, const std::string& text, float height = 32.0f) :
             m_rect(bufferCache, x, y, 0.2f, 32.0f / 400.0f),
-            m_text(bufferCache, x, y, 32.0f, text)
+            m_text(bufferCache, x, y, height, text)
         {
             m_text.getColor().set(0.0f, 0.0f, 0.0f, 1.0f);
         }
@@ -30,21 +30,32 @@ namespace Orpheus::Entity::UI {
         }
 
         virtual void update(float delta) override {
-            m_timer = std::fmod(m_timer + delta, 1.0f);
+            m_timer = std::fmod(m_timer + delta, 2.0f);
 
             bool insideX = m_mouseX >= m_rect.getX() && m_mouseX <= m_rect.getX() + m_rect.getWidth();
             bool insideY = m_mouseY >= m_rect.getY() && m_mouseY <= m_rect.getY() + m_rect.getHeight();
             if (insideX && insideY) {
-                if (m_clicked) {
-                    auto color = glm::rgbColor(glm::vec3(m_timer * 360.0f, 0.5f, 0.5f));
-                    m_rect.getColor().set(color.x, color.y, color.z, 1.0f);
-                } else {
-                    auto color = glm::rgbColor(glm::vec3(m_timer * 360.0f, 0.5f, 1.0f));
-                    m_rect.getColor().set(color.x, color.y, color.z, 1.0f);
-                }
+                auto color = glm::rgbColor(glm::vec3(m_timer * 180.0f, 0.5f, m_clicked ? 0.5f : 1.0f));
+                m_rect.getColor().set(color.x, color.y, color.z, 1.0f);
             } else {
                 m_rect.getColor().set(0.75f, 0.75f, 0.75f, 1.0f);
             }
+        }
+
+        float getX() const {
+            return m_rect.getX();
+        }
+
+        float getY() const {
+            return m_rect.getY();
+        }
+
+        float getWidth() const {
+            return m_rect.getWidth();
+        }
+
+        float getHeight() const {
+            return m_rect.getHeight();
         }
 
         void setMousePos(float x, float y) {
@@ -52,8 +63,18 @@ namespace Orpheus::Entity::UI {
             m_mouseY = y;
         }
 
-        void setClicked(bool clicked) {
+        void setMouseClicked(bool clicked) {
             m_clicked = clicked;
+        }
+
+        void setX(float x) {
+            m_rect.setX(x);
+            m_text.setX(x);
+        }
+
+        void setY(float y) {
+            m_rect.setY(y);
+            m_text.setY(y);
         }
     };
 }
