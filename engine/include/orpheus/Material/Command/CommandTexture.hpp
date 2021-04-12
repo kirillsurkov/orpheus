@@ -1,14 +1,14 @@
 #pragma once
 
-#include "orpheus/Command/Material/Command.hpp"
+#include "orpheus/Material/Command/Command.hpp"
 
-namespace Orpheus::Command::Material {
-    class CommandTexture : public Command {
+namespace Orpheus::Material::Command {
+    class Texture : public Command {
     private:
         unsigned int m_textureId;
 
     public:
-        CommandTexture(unsigned int textureId) :
+        Texture(unsigned int textureId) :
             m_textureId(textureId)
         {
         }

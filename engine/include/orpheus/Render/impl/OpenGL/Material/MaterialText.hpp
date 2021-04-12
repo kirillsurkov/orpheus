@@ -1,18 +1,18 @@
 #pragma once
 
 #include "orpheus/Render/impl/OpenGL/Material/Material.hpp"
-#include "orpheus/Command/Material/CommandPrepare.hpp"
-#include "orpheus/Command/Material/CommandColor.hpp"
-#include "orpheus/Command/Material/CommandTexture.hpp"
-#include "orpheus/Command/Material/CommandMatrixProjection.hpp"
-#include "orpheus/Command/Material/CommandMatrixView.hpp"
-#include "orpheus/Command/Material/CommandMatrixModel.hpp"
-#include "orpheus/Command/Material/CommandTextRect.hpp"
+#include "orpheus/Material/Command/CommandPrepare.hpp"
+#include "orpheus/Material/Command/CommandColor.hpp"
+#include "orpheus/Material/Command/CommandTexture.hpp"
+#include "orpheus/Material/Command/CommandMatrixProjection.hpp"
+#include "orpheus/Material/Command/CommandMatrixView.hpp"
+#include "orpheus/Material/Command/CommandMatrixModel.hpp"
+#include "orpheus/Material/Text/Command/CommandGlyphRect.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Orpheus::Render::OpenGLImpl::Material {
-    class MaterialText : public Material {
+    class Text : public Material {
     private:
         static const inline std::string vss = "#version 330 core\n"
                    "layout(location = 0) in vec2 position;\n"
@@ -37,7 +37,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "    float dist = median(msdf.r, msdf.g, msdf.b);\n"
                    "    float width = fwidth(dist);\n"
                    "    float alpha = smoothstep(0.5 - width, 0.5 + width, dist);\n"
-                   "    color = vec4(1.0, 0.0, 0.0, alpha);\n"
+                   "    color = vec4(u_color.rgb, alpha);\n"
                    "}";
 
         int m_uMVP;
@@ -54,9 +54,9 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         float m_height;
         float m_advance;
 
-        void onCommand(const Command::Material::CommandPrepare&) {
+        void onCommand(const Orpheus::Material::Command::Prepare&) {
             auto mvp = m_projection * m_view * m_model;
-            mvp = glm::translate(mvp, glm::vec3(m_advance + m_x, m_y, 0.0f));
+            mvp = glm::translate(mvp, glm::vec3(m_advance + m_x, m_y + 0.5f * 0.75f * 0.133f, 0.0f));
             mvp = glm::scale(mvp, glm::vec3(m_width, m_height, 1.0f));
             glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
 
@@ -64,30 +64,30 @@ namespace Orpheus::Render::OpenGLImpl::Material {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        void onCommand(const Command::Material::CommandColor& command) {
+        void onCommand(const Orpheus::Material::Command::Color& command) {
             glUniform4f(m_uColor, command.getR(), command.getG(), command.getB(), command.getA());
         }
 
-        void onCommand(const Command::Material::CommandTexture& command) {
+        void onCommand(const Orpheus::Material::Command::Texture& command) {
             const auto& id = command.getTextureId();
             glBindTexture(GL_TEXTURE_2D, id);
             glActiveTexture(GL_TEXTURE0);
             glUniform1i(m_uTexture, 0);
         }
 
-        void onCommand(const Command::Material::CommandMatrixProjection& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixProjection& command) {
             m_projection = command.getMatrix();
         }
 
-        void onCommand(const Command::Material::CommandMatrixView& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixView& command) {
             m_view = command.getMatrix();
         }
 
-        void onCommand(const Command::Material::CommandMatrixModel& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixModel& command) {
             m_model = command.getMatrix();
         }
 
-        void onCommand(const Command::Material::Text::CommandRect& command) {
+        void onCommand(const Orpheus::Material::Text::Command::GlyphRect& command) {
             m_x = command.getX();
             m_y = command.getY();
             m_width = command.getWidth();
@@ -96,18 +96,18 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         }
 
     public:
-        MaterialText() : Material(vss, fss) {
+        Text() : Material(vss, fss) {
             m_uMVP = glGetUniformLocation(m_program, "u_mvp");
             m_uColor = glGetUniformLocation(m_program, "u_color");
             m_uTexture = glGetUniformLocation(m_program, "u_texture");
 
-            registerMaterialCommand<Command::Material::CommandPrepare>(this);
-            registerMaterialCommand<Command::Material::CommandColor>(this);
-            registerMaterialCommand<Command::Material::CommandTexture>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixProjection>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixView>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixModel>(this);
-            registerMaterialCommand<Command::Material::Text::CommandRect>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Prepare>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Color>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Texture>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixProjection>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixView>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixModel>(this);
+            registerMaterialCommand<Orpheus::Material::Text::Command::GlyphRect>(this);
         }
 
         template<class T>

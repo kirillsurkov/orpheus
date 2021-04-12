@@ -1,16 +1,16 @@
 #pragma once
 
-#include "orpheus/Command/Material/Command.hpp"
+#include "orpheus/Material/Command/Command.hpp"
 
 #include <glm/mat4x4.hpp>
 
-namespace Orpheus::Command::Material {
-    class CommandMatrix : public Command {
+namespace Orpheus::Material::Command {
+    class Matrix : public Command {
     private:
         glm::mat4x4 m_matrix;
 
     public:
-        CommandMatrix(const glm::mat4x4& matrix) :
+        Matrix(const glm::mat4x4& matrix) :
             m_matrix(matrix)
         {
         }

@@ -5,7 +5,7 @@
 #include "orpheus/Input/InputManager.hpp"
 #include "orpheus/Entity/Entity.hpp"
 #include "orpheus/Entity/EntityCommand.hpp"
-#include "orpheus/Command/Render/CommandClearColor.hpp"
+#include "orpheus/Render/Command/CommandClearColor.hpp"
 
 #include <glm/ext.hpp>
 
@@ -16,18 +16,19 @@ namespace Orpheus::Scene {
         std::size_t m_screenWidth;
         std::size_t m_screenHeight;
         Input::Manager& m_inputManager;
+        Vertex::BufferCache& m_bufferCache;
         std::vector<Entity::EntityPtr> m_entities;
-        std::shared_ptr<Entity::EntityCommand<Command::Render::CommandClearColor>> m_clearColorEntity;
+        std::shared_ptr<Entity::Command<Render::Command::ClearColor>> m_clearColorEntity;
 
     protected:
         glm::mat4x4 m_projection;
         glm::mat4x4 m_view;
-        Command::Render::CommandClearColor& m_clearColor;
+        Render::Command::ClearColor& m_clearColor;
 
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
             try {
-                auto entity = std::make_shared<T>(std::forward<Args>(args)...);
+                auto entity = std::make_shared<T>(m_bufferCache, std::forward<Args>(args)...);
                 m_entities.push_back(entity);
                 return entity;
             } catch (const std::exception& e) {
@@ -36,7 +37,7 @@ namespace Orpheus::Scene {
         }
 
     public:
-        Scene(std::size_t screenWidth, std::size_t screenHeight, Input::Manager& inputManager);
+        Scene(std::size_t screenWidth, std::size_t screenHeight, Input::Manager& inputManager, Vertex::BufferCache& bufferCache);
         Scene(const Scene& scene);
 
         virtual ~Scene() {}
@@ -77,6 +78,16 @@ namespace Orpheus::Scene {
 
         const std::size_t& getScreenHeight() const {
             return m_screenHeight;
+        }
+
+        float getMouseX() const {
+            float x = 2.0f * m_inputManager.getMouseX() / m_screenWidth - 1.0f;
+            return (glm::inverse(m_projection * m_view) * glm::vec4(x, 0.0f, 0.0f, 1.0f)).x;
+        }
+
+        float getMouseY() const {
+            float y = 2.0f * (1.0f - 1.0f * m_inputManager.getMouseY() / m_screenHeight) - 1.0f;
+            return (glm::inverse(m_projection * m_view) * glm::vec4(0.0f, y, 0.0f, 1.0f)).y;
         }
     };
 

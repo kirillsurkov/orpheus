@@ -1,9 +1,9 @@
 #pragma once
 
-#include "orpheus/Command/Render/Command.hpp"
+#include "orpheus/Render/Command/Command.hpp"
 
-namespace Orpheus::Command::Render {
-    class CommandClearColor : public Command {
+namespace Orpheus::Render::Command {
+    class ClearColor : public Command {
     private:
         float m_r;
         float m_g;
@@ -11,7 +11,7 @@ namespace Orpheus::Command::Render {
         float m_a;
 
     public:
-        CommandClearColor(float r, float g, float b, float a) :
+        ClearColor(float r, float g, float b, float a) :
             m_r(r), m_g(g), m_b(b), m_a(a)
         {
         }

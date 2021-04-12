@@ -1,9 +1,10 @@
 #pragma once
 
-#include "orpheus/Command/Material/Command.hpp"
+#include "orpheus/Material/Command/Command.hpp"
+#include "orpheus/Material/Text/MaterialText.hpp"
 
-namespace Orpheus::Command::Material::Text {
-    class CommandRect : public Command {
+namespace Orpheus::Material {
+    class Text::Command::GlyphRect : public Orpheus::Material::Command::Command {
     private:
         float m_x;
         float m_y;
@@ -12,7 +13,7 @@ namespace Orpheus::Command::Material::Text {
         float m_advance;
 
     public:
-        CommandRect(float x, float y, float width, float height, float advance) :
+        GlyphRect(float x, float y, float width, float height, float advance) :
             m_x(x),
             m_y(y),
             m_width(width),
@@ -22,7 +23,7 @@ namespace Orpheus::Command::Material::Text {
         }
 
         virtual std::string getName() const override {
-            return "CommandRectSize";
+            return "CommandRect";
         }
 
         float getX() const {

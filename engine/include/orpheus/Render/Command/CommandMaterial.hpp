@@ -1,13 +1,13 @@
 #pragma once
 
-#include "orpheus/Command/Render/Command.hpp"
+#include "orpheus/Render/Command/Command.hpp"
 #include "orpheus/Utils.hpp"
 
-namespace Orpheus::Command::Render {
+namespace Orpheus::Render::Command {
     template<class T>
-    class CommandMaterial : public Command {
+    class Material : public Command {
     public:
-        CommandMaterial() {
+        Material() {
         }
 
         virtual std::string getName() const override {

@@ -38,6 +38,9 @@ public:
     SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
         addScope("Level");
 
-        m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * getScreenWidth() / getScreenHeight(), 0.01f, 100.0f);
+        float aspect = 1.0f * getScreenHeight() / getScreenWidth();
+
+        //m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * getScreenWidth() / getScreenHeight(), 0.01f, 100.0f);
+        m_projection = glm::ortho(-1.0f, 1.0f, -aspect, aspect);
     }
 };

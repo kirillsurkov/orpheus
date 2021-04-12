@@ -1,9 +1,9 @@
 #pragma once
 
-#include "orpheus/Command/Material/Command.hpp"
+#include "orpheus/Material/Command/Command.hpp"
 
-namespace Orpheus::Command::Material {
-    class CommandColor : public Command {
+namespace Orpheus::Material::Command {
+    class Color : public Command {
     private:
         float m_r;
         float m_g;
@@ -11,7 +11,7 @@ namespace Orpheus::Command::Material {
         float m_a;
 
     public:
-        CommandColor(float r, float g, float b, float a) :
+        Color(float r, float g, float b, float a) :
             m_r(r), m_g(g), m_b(b), m_a(a)
         {
         }

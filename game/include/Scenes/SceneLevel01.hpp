@@ -8,27 +8,47 @@
 #include <orpheus/Entity/EntityCommand.hpp>
 #include <orpheus/Entity/EntityRect.hpp>
 #include <orpheus/Entity/EntityText.hpp>
+#include <orpheus/Entity/UI/EntityButton.hpp>
 
 #include <cmath>
 
 class SceneLevel01 : public SceneLevel {
+private:
+    std::size_t m_fpsCounter = 0;
+    float m_fpsTimer = 0.0f;
+    const float m_fpsInterval = 0.2f;
+    std::shared_ptr<Orpheus::Entity::Text> m_fpsIndicator;
+    std::shared_ptr<Orpheus::Entity::UI::Button> m_button;
+
 public:
     SceneLevel01(const Orpheus::Scene::Scene& sceneBase) : SceneLevel(sceneBase) {
         addScope("01");
 
-        addEntity<Orpheus::Entity::EntityRect>( 0.25f, 0.25f, 0.1f, 0.1f);
-        addEntity<Orpheus::Entity::EntityRect>(-0.25f, 0.25f, 0.1f, 0.1f);
-        addEntity<Orpheus::Entity::EntityText>(0.0f, 0.0f, 16.0f, "Te st");
-        addEntity<Orpheus::Entity::EntityText>(0.0f, -1.0f, 16.0f, "Yy-Qq");
+        m_fpsIndicator = addEntity<Orpheus::Entity::Text>(-1.0f, 0.667f, 32.0f, "FPS: ");
+        m_fpsIndicator->getColor().set(0.0f, 1.0f, 1.0f, 1.0f);
+
+        m_button = addEntity<Orpheus::Entity::UI::Button>(0.5f, -0.5f, "CLICK ME");
     }
 
     virtual void onShow() override {
         postCommand<Orpheus::Command::Game::CommandTest>("Level01 shown!");
 
         bindKeys();
+
+        bindKey(Orpheus::Input::Key::LMB, [this](bool down) {
+            m_button->setClicked(down);
+        });
     }
 
     virtual void update(float delta) override {
-        //m_clearColor.setR(std::fmod(m_clearColor.getR() + delta, 1.0f));
+        m_fpsCounter++;
+        m_fpsTimer += delta;
+        if (m_fpsTimer >= m_fpsInterval) {
+            m_fpsTimer -= m_fpsInterval;
+            m_fpsIndicator->setText("FPS: " + std::to_string(static_cast<int>(m_fpsCounter / m_fpsInterval)));
+            m_fpsCounter = 0;
+        }
+
+        m_button->setMousePos(getMouseX(), getMouseY());
     }
 };

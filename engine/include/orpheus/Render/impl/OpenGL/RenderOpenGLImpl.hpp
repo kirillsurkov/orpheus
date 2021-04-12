@@ -2,17 +2,18 @@
 
 #include "orpheus/Render/RenderOpenGL.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/Material.hpp"
-#include "orpheus/Command/Render/CommandClear.hpp"
-#include "orpheus/Command/Render/CommandClearColor.hpp"
-#include "orpheus/Command/Render/CommandVertices.hpp"
-#include "orpheus/Command/Render/CommandText.hpp"
-#include "orpheus/Command/Render/CommandMaterial.hpp"
-#include "orpheus/Material/MaterialFlatColor.hpp"
-#include "orpheus/Material/MaterialText.hpp"
-#include "orpheus/Command/Material/CommandColor.hpp"
-#include "orpheus/Command/Material/CommandMatrixProjection.hpp"
-#include "orpheus/Command/Material/CommandMatrixView.hpp"
-#include "orpheus/Command/Material/CommandMatrixModel.hpp"
+#include "orpheus/Render/Command/CommandClear.hpp"
+#include "orpheus/Render/Command/CommandClearColor.hpp"
+#include "orpheus/Render/Command/CommandVertices.hpp"
+#include "orpheus/Render/Command/CommandText.hpp"
+#include "orpheus/Render/Command/CommandGetTextWidth.hpp"
+#include "orpheus/Render/Command/CommandMaterial.hpp"
+#include "orpheus/Material/FlatColor/MaterialFlatColor.hpp"
+#include "orpheus/Material/Text/MaterialText.hpp"
+#include "orpheus/Material/Command/CommandColor.hpp"
+#include "orpheus/Material/Command/CommandMatrixProjection.hpp"
+#include "orpheus/Material/Command/CommandMatrixView.hpp"
+#include "orpheus/Material/Command/CommandMatrixModel.hpp"
 
 #include "orpheus/Font.hpp"
 
@@ -30,7 +31,7 @@ namespace Orpheus::Render {
             std::size_t size;
         };
 
-        struct Vertices {
+        struct VerticesInfo {
             unsigned int vao;
             unsigned int count;
         };
@@ -39,7 +40,7 @@ namespace Orpheus::Render {
         private:
             struct Glyph {
                 const Orpheus::Font::Glyph& glyph;
-                Command::Render::CommandVertices command;
+                Vertex::Vertices vertices;
 
                 Glyph(const Orpheus::Font::Glyph& glyph) : glyph(glyph) {}
             };
@@ -49,7 +50,7 @@ namespace Orpheus::Render {
             unsigned int m_textureId;
 
         public:
-            Font(const std::string& name, const std::shared_ptr<Command::Render::CommandVertices::AttribArray>& rectVertices);
+            Font(const std::string& name, Vertex::BufferCache& bufferCache);
             ~Font();
 
             const Orpheus::Font& getFont() const;
@@ -57,24 +58,24 @@ namespace Orpheus::Render {
             const Glyph& getGlyph(std::size_t code) const;
         };
 
-        std::unordered_map<const Command::Render::CommandVertices::AttribArray*, BufferInfo> m_buffers;
-        std::unordered_map<const Command::Render::CommandVertices*, Vertices> m_vertices;
+        Vertex::BufferCache& m_vertexBufferCache;
+        std::unordered_map<const Vertex::Buffer*, BufferInfo> m_buffers;
+        std::unordered_map<const Vertex::Vertices*, VerticesInfo> m_vertices;
         std::unordered_map<std::string, Font> m_fontCache;
         TypeDispatcher m_materialDispatcher;
         OpenGLImpl::Material::MaterialPtr m_currentMaterial;
         OpenGLImpl::Material::MaterialPtr m_materialFlatColor;
         OpenGLImpl::Material::MaterialPtr m_materialText;
 
-        Command::Render::CommandVertices m_verticesRect;
-
     private:
-        void onCommand(const Command::Render::CommandClear& command);
-        void onCommand(const Command::Render::CommandClearColor& command);
-        void onCommand(const Command::Render::CommandVertices& command);
-        void onCommand(const Command::Render::CommandText& command);
+        void onCommand(const Orpheus::Render::Command::Clear& command);
+        void onCommand(const Orpheus::Render::Command::ClearColor& command);
+        void onCommand(const Orpheus::Render::Command::Vertices& command);
+        void onCommand(const Orpheus::Render::Command::Text& command);
+        void onCommand(const Orpheus::Render::Command::GetTextWidth& command);
 
         template<class T>
-        void onCommand(const Command::Render::CommandMaterial<T>&) {
+        void onCommand(const Orpheus::Render::Command::Material<T>&) {
             m_materialDispatcher.dispatch(Utils::TypeIdentity<T>{});
         }
 
@@ -87,12 +88,12 @@ namespace Orpheus::Render {
         }
 
     public:
-        Impl();
+        Impl(Caches& caches);
         ~Impl();
 
         template<class T>
         void postCommand(T&& command) {
-            if constexpr (std::is_base_of<Command::Material::Command, std::decay_t<T>>::value) {
+            if constexpr (std::is_base_of<Material::Command::Command, std::decay_t<T>>::value) {
                 m_currentMaterial->postCommand(std::forward<T>(command));
             } else {
                 onCommand(std::forward<T>(command));

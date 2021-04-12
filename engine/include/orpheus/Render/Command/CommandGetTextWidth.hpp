@@ -1,19 +1,18 @@
 #pragma once
 
-#include "orpheus/Command/Render/Command.hpp"
+#include "orpheus/Render/Command/Command.hpp"
 
-namespace Orpheus::Command::Render {
-    class CommandText : public Command {
+namespace Orpheus::Render::Command {
+    class GetTextWidth : public Command {
     private:
-        float m_x;
-        float m_y;
+        mutable float m_res;
         float m_height;
         std::string m_text;
         std::string m_font;
 
     public:
-        CommandText(float x, float y, float height, const std::string& text, const std::string& font) :
-            m_x(x), m_y(y),
+        GetTextWidth(float height, const std::string& text, const std::string& font) :
+            m_res(0.0f),
             m_height(height),
             m_text(text),
             m_font(font)
@@ -21,15 +20,7 @@ namespace Orpheus::Command::Render {
         }
 
         virtual std::string getName() const override {
-            return "CommandText";
-        }
-
-        float getX() const {
-            return m_x;
-        }
-
-        float getY() const {
-            return m_y;
+            return "CommandGetTextWidth";
         }
 
         float getHeight() const {
@@ -42,6 +33,14 @@ namespace Orpheus::Command::Render {
 
         const std::string& getFont() const {
             return m_font;
+        }
+
+        float getResult() const {
+            return m_res;
+        }
+
+        void setResult(float width) const {
+            m_res = width;
         }
     };
 }

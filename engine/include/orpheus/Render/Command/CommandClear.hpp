@@ -1,9 +1,9 @@
 #pragma once
 
-#include "orpheus/Command/Render/Command.hpp"
+#include "orpheus/Render/Command/Command.hpp"
 
-namespace Orpheus::Command::Render {
-    class CommandClear : public Command {
+namespace Orpheus::Render::Command {
+    class Clear : public Command {
     public:
         virtual std::string getName() const override {
             return "CommandClear";

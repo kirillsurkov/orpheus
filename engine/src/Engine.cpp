@@ -4,7 +4,8 @@
 #include "orpheus/Entity/Entity.hpp"
 #include "orpheus/Entity/EntityCommand.hpp"
 
-Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr& render) :
+Orpheus::Engine::Engine(Caches& caches, const Window::WindowPtr& window, const Render::RenderPtr& render) :
+    m_caches(caches),
     m_window(window),
     m_render(render),
     m_alive(true)
@@ -16,10 +17,28 @@ Orpheus::Engine::Engine(const Window::WindowPtr& window, const Render::RenderPtr
     m_window->registerCommand<Command::Engine::CommandMouse>(m_inputManager);
     m_window->registerCommand<Command::Engine::CommandKeyboard>(m_inputManager);
 
-    m_sceneBase = std::make_shared<Scene::Scene>(window->getWidth(), window->getHeight(), m_inputManager);
+    auto& vertexBufferCache = m_caches.vertexBufferCache();
+
+    m_sceneBase = std::make_shared<Scene::Scene>(window->getWidth(), window->getHeight(), m_inputManager, vertexBufferCache);
     m_sceneBase->registerCommand<Command::Game::CommandScenePush>(this);
     m_sceneBase->registerCommand<Command::Game::CommandScenePop>(this);
     m_sceneBase->registerCommand<Command::Game::CommandTest>(this);
+
+    auto& rectLB = vertexBufferCache.add("rect_left_bottom", 2);
+    rectLB.addPoint(0.0f, 0.0f);
+    rectLB.addPoint(1.0f, 0.0f);
+    rectLB.addPoint(1.0f, 1.0f);
+    rectLB.addPoint(1.0f, 1.0f);
+    rectLB.addPoint(0.0f, 0.0f);
+    rectLB.addPoint(0.0f, 1.0f);
+
+    auto& rectCC = vertexBufferCache.add("rect_center_center", 2);
+    rectCC.addPoint(-0.5f, -0.5f);
+    rectCC.addPoint( 0.5f, -0.5f);
+    rectCC.addPoint( 0.5f,  0.5f);
+    rectCC.addPoint( 0.5f,  0.5f);
+    rectCC.addPoint(-0.5f, -0.5f);
+    rectCC.addPoint(-0.5f,  0.5f);
 }
 
 Orpheus::Engine::~Engine() {

@@ -9,7 +9,7 @@
 class SceneMenuMain : public SceneMenu {
 private:
     float m_timer;
-    std::shared_ptr<Orpheus::Entity::EntityRect> m_rect;
+    std::shared_ptr<Orpheus::Entity::Rect> m_rect;
 
 public:
     SceneMenuMain(const Orpheus::Scene::Scene& sceneBase) : SceneMenu(sceneBase) {
@@ -17,7 +17,7 @@ public:
         m_clearColor.set(0.0f, 0.0f, 0.0f, 1.0f);
 
         m_timer = 0.0f;
-        m_rect = addEntity<Orpheus::Entity::EntityRect>(0.0f, 0.0f, 0.1f, 0.1f);
+        m_rect = addEntity<Orpheus::Entity::Rect>(0.0f, 0.0f, 0.1f, 0.1f);
     }
 
     virtual void onShow() override {

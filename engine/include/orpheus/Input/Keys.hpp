@@ -14,6 +14,9 @@ namespace Orpheus::Input {
         UP, DOWN, LEFT, RIGHT,
         L_CTRL, L_SHIFT, L_ALT,
         R_CTRL, R_SHIFT, R_ALT,
+
+        LMB, MMB, RMB,
+
         UNKNOWN
     };
 }

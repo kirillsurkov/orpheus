@@ -25,7 +25,8 @@ void Orpheus::Input::Manager::onCommand(const Command::Engine::CommandKeyboard& 
 }
 
 void Orpheus::Input::Manager::onCommand(const Command::Engine::CommandMouse& command) {
-    Log::info(this) << command.getX() << ", " << command.getY() << ", " << command.getDX() << ", " << command.getDY();
+    m_mouseX = command.getX();
+    m_mouseY = command.getY();
 }
 
 void Orpheus::Input::Manager::unbindKeys() {

@@ -2,8 +2,9 @@
 
 #include "orpheus/Dispatcher.hpp"
 #include "orpheus/Render/Render.hpp"
+#include "orpheus/Vertex.hpp"
 
-#include <glm/mat4x4.hpp>
+#include <glm/ext.hpp>
 
 namespace Orpheus::Entity {
     class Entity {

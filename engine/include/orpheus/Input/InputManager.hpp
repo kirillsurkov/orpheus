@@ -14,6 +14,8 @@ namespace Orpheus::Input {
         std::unordered_map<Key, bool> m_state;
         Dispatcher<Input::Key> m_keysDownDispatcher;
         Dispatcher<Input::Key> m_keysUpDispatcher;
+        int m_mouseX;
+        int m_mouseY;
 
         void onCommand(const Command::Engine::CommandKeyboard& command);
         void onCommand(const Command::Engine::CommandMouse& command);
@@ -33,6 +35,14 @@ namespace Orpheus::Input {
         void bindKey(const Input::Key key, T&& function) {
             m_keysDownDispatcher.registerKey(key, [function]() { function(true); });
             m_keysUpDispatcher.registerKey(key,  [function]() { function(false); });
+        }
+
+        int getMouseX() const {
+            return m_mouseX;
+        }
+
+        int getMouseY() const {
+            return m_mouseY;
         }
     };
 }

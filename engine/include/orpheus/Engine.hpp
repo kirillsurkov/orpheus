@@ -1,5 +1,6 @@
 #pragma once
 
+#include "orpheus/Caches.hpp"
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Render/Render.hpp"
 #include "orpheus/Input/InputManager.hpp"
@@ -13,6 +14,7 @@
 namespace Orpheus {
     class Engine : public Loggable {
     private:
+        Caches& m_caches;
         Window::WindowPtr m_window;
         Render::RenderPtr m_render;
         Input::Manager m_inputManager;
@@ -27,7 +29,7 @@ namespace Orpheus {
         void onCommand(const Command::Game::CommandTest& command);
 
     public:
-        Engine(const Window::WindowPtr& window, const Render::RenderPtr& render);
+        Engine(Caches& caches, const Window::WindowPtr& window, const Render::RenderPtr& render);
         ~Engine();
 
         bool isAlive() const;

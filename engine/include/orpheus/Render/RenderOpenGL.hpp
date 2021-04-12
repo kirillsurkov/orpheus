@@ -1,6 +1,7 @@
 #pragma once
 
 #include "orpheus/Render/Render.hpp"
+#include "orpheus/Caches.hpp"
 
 namespace Orpheus::Render {
     class OpenGL : public Render {
@@ -13,7 +14,7 @@ namespace Orpheus::Render {
         std::unique_ptr<Impl> m_impl;
 
     public:
-        OpenGL(const Window::WindowPtr& window);
+        OpenGL(Caches& caches, const Window::WindowPtr& window);
         ~OpenGL();
     };
 }

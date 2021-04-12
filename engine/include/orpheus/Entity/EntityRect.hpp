@@ -1,26 +1,24 @@
 #pragma once
 
 #include "orpheus/Entity/Entity.hpp"
-#include "orpheus/Command/Render/CommandMaterial.hpp"
-#include "orpheus/Command/Render/CommandVertices.hpp"
-#include "orpheus/Command/Material/CommandColor.hpp"
-#include "orpheus/Command/Material/CommandMatrixProjection.hpp"
-#include "orpheus/Command/Material/CommandMatrixView.hpp"
-#include "orpheus/Command/Material/CommandMatrixModel.hpp"
-#include "orpheus/Material/MaterialFlatColor.hpp"
-
-#include <glm/ext/matrix_transform.hpp>
+#include "orpheus/Render/Command/CommandMaterial.hpp"
+#include "orpheus/Render/Command/CommandVertices.hpp"
+#include "orpheus/Material/Command/CommandColor.hpp"
+#include "orpheus/Material/Command/CommandMatrixProjection.hpp"
+#include "orpheus/Material/Command/CommandMatrixView.hpp"
+#include "orpheus/Material/Command/CommandMatrixModel.hpp"
+#include "orpheus/Material/FlatColor/MaterialFlatColor.hpp"
 
 namespace Orpheus::Entity {
-    class EntityRect : public Entity {
+    class Rect : public Entity {
     private:
         float m_x;
         float m_y;
         float m_w;
         float m_h;
-        Command::Render::CommandMaterial<Material::MaterialFlatColor> m_material;
-        Command::Render::CommandVertices m_vertices;
-        Command::Material::CommandColor m_color;
+        Vertex::Vertices m_mesh;
+        Render::Command::Material<Material::FlatColor> m_material;
+        Material::Command::Color m_color;
 
         glm::mat4x4 getTransform() const {
             glm::mat4x4 res(1.0f);
@@ -30,20 +28,29 @@ namespace Orpheus::Entity {
         }
 
     public:
-        EntityRect(float x, float y, float w, float h) :
+        Rect(const Vertex::BufferCache& bufferCache, float x, float y, float w, float h) :
             m_x(x), m_y(y),
             m_w(w), m_h(h),
             m_material(),
-            m_vertices(),
             m_color(0.0f, 1.0f, 1.0f, 1.0f)
         {
-            auto& positions = m_vertices.addAttrib(0, 3);
-            positions->addPoint(-0.5f, -0.5f, -1.0f);
-            positions->addPoint( 0.5f, -0.5f, -1.0f);
-            positions->addPoint( 0.5f,  0.5f, -1.0f);
-            positions->addPoint( 0.5f,  0.5f, -1.0f);
-            positions->addPoint(-0.5f, -0.5f, -1.0f);
-            positions->addPoint(-0.5f,  0.5f, -1.0f);
+            m_mesh.addAttrib(0, bufferCache.get("rect_left_bottom"));
+        }
+
+        float getX() const {
+            return m_x;
+        }
+
+        float getY() const {
+            return m_y;
+        }
+
+        float getWidth() const {
+            return m_w;
+        }
+
+        float getHeight() const {
+            return m_h;
         }
 
         void setX(float x) {
@@ -54,13 +61,25 @@ namespace Orpheus::Entity {
             m_y = y;
         }
 
+        void setWidth(float width) {
+            m_w = width;
+        }
+
+        void setHeight(float height) {
+            m_h = height;
+        }
+
+        Material::Command::Color& getColor() {
+            return m_color;
+        }
+
         virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) override {
             render.postCommand(m_material);
-            render.postCommand(Command::Material::CommandMatrixProjection(projection));
-            render.postCommand(Command::Material::CommandMatrixView(view));
-            render.postCommand(Command::Material::CommandMatrixModel(getTransform()));
+            render.postCommand(Material::Command::MatrixProjection(projection));
+            render.postCommand(Material::Command::MatrixView(view));
+            render.postCommand(Material::Command::MatrixModel(getTransform()));
             render.postCommand(m_color);
-            render.postCommand(m_vertices);
+            render.postCommand(Render::Command::Vertices(m_mesh));
         }
     };
 }

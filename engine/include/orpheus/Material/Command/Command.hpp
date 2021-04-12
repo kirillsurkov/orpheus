@@ -2,7 +2,7 @@
 
 #include "orpheus/Command/Command.hpp"
 
-namespace Orpheus::Command::Render {
+namespace Orpheus::Material::Command {
     class Command : public Orpheus::Command::Command {
     };
 
