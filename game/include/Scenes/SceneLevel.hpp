@@ -19,6 +19,7 @@ private:
     const std::size_t m_margin = 10;
     std::shared_ptr<Orpheus::Entity::UI::Button> m_buttonSplit;
     std::shared_ptr<Orpheus::Entity::UI::Button> m_buttonStart;
+    std::shared_ptr<Orpheus::Entity::UI::Button> m_buttonExit;
 
     const float m_fieldHeight = 0.6f;
     std::shared_ptr<EntityRoll> m_roll;

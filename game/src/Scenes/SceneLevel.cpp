@@ -41,6 +41,10 @@ SceneLevel::SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Scene(sceneBase
         m_buttonSplit->setEnabled(true);
         m_roll->start();
     });
+
+    m_buttonExit = addEntity<Orpheus::Entity::UI::Button>(0.0f, 0.0f, "EXIT", [this]() {
+        postCommand<Orpheus::Command::Game::CommandScenePop>();
+    });
 }
 
 void SceneLevel::onShow() {
@@ -55,6 +59,7 @@ void SceneLevel::onShow() {
     bindKey(Orpheus::Input::Key::LMB, [this](bool down) {
         m_buttonSplit->setMouseClicked(down);
         m_buttonStart->setMouseClicked(down);
+        m_buttonExit->setMouseClicked(down);
     });
 }
 
@@ -67,6 +72,9 @@ void SceneLevel::update(float delta) {
         m_fpsCounter = 0;
     }
 
+    auto worldLeftDown = screenToWorld(0.0f, 0.0f);
+    float marginWorld = screenToWorld(m_margin, 0.0f).x - worldLeftDown.x;
+
     auto coords = screenToWorld(getScreenWidth() - m_margin, m_margin);
     m_buttonStart->setX(coords.x - m_buttonStart->getWidth());
     m_buttonStart->setY(coords.y);
@@ -75,16 +83,18 @@ void SceneLevel::update(float delta) {
     m_buttonSplit->setX(m_buttonStart->getX());
     m_buttonSplit->setY(screenToWorld(0.0f, yScreen).y);
 
+    m_buttonExit->setX(worldLeftDown.x + marginWorld);
+    m_buttonExit->setY(worldLeftDown.y + marginWorld);
+
     m_buttonSplit->setMousePos(getMouseX(), getMouseY());
     m_buttonStart->setMousePos(getMouseX(), getMouseY());
+    m_buttonExit->setMousePos(getMouseX(), getMouseY());
 
-    auto worldLeftDown = screenToWorld(0.0f, 0.0f);
-    float margin = screenToWorld(m_margin, 0.0f).x - worldLeftDown.x;
-    m_roll->setX(worldLeftDown.x + margin);
+    m_roll->setX(worldLeftDown.x + marginWorld);
     m_roll->setY(screenToWorld(0.0f, 0.5f * (1.0f - m_fieldHeight) * getScreenHeight()).y);
     m_roll->setWidth(screenToWorld(getScreenWidth(), 0.0f).x - worldLeftDown.x);
     m_roll->setHeight(screenToWorld(0.0f, m_fieldHeight * getScreenHeight()).y - worldLeftDown.y);
-    m_roll->setMargin(margin);
+    m_roll->setMargin(marginWorld);
 
     if (!m_buttonStart->isEnabled() && !m_roll->isSpinning()) {
         m_buttonStart->setEnabled(true);
