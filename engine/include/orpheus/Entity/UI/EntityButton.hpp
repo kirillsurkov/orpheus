@@ -61,6 +61,10 @@ namespace Orpheus::Entity::UI {
             m_lastClicked = m_clicked;
         }
 
+        bool isEnabled() const {
+            return m_enabled;
+        }
+
         float getX() const {
             return m_rect.getX();
         }

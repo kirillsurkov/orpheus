@@ -41,6 +41,10 @@ public:
     }
 
     std::string getRow(std::size_t row) const {
+        if (isSpinning()) {
+            throw std::runtime_error("Roll is spinning");
+        }
+
         std::string res;
         for (const auto& reel : m_reels) {
             res += reel.getRow(row);
@@ -57,10 +61,10 @@ public:
     }
 
     bool split() {
-        if (isSpinning()) {
+        if (m_spinningReel < m_reels.size()) {
             m_reels[m_spinningReel++].stop();
         }
-        return isSpinning();
+        return m_spinningReel < m_reels.size();
     }
 
     void setX(float x) {
@@ -84,6 +88,10 @@ public:
     }
 
     bool isSpinning() const {
-        return m_spinningReel < m_reels.size();
+        bool res = false;
+        for (const auto& reel : m_reels) {
+            res |= reel.isSpinning();
+        }
+        return res;
     }
 };

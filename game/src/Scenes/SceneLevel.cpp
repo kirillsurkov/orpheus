@@ -31,9 +31,7 @@ SceneLevel::SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Scene(sceneBase
 
     m_buttonSplit = addEntity<Orpheus::Entity::UI::Button>(0.0f, 0.0f, "SPLIT", [this]() {
         if (!m_roll->split()) {
-            m_buttonStart->setEnabled(true);
             m_buttonSplit->setEnabled(false);
-            m_lastResult->setText("Last result: " + m_roll->getRow(1));
         }
     });
     m_buttonSplit->setEnabled(false);
@@ -87,4 +85,9 @@ void SceneLevel::update(float delta) {
     m_roll->setWidth(screenToWorld(getScreenWidth(), 0.0f).x - worldLeftDown.x);
     m_roll->setHeight(screenToWorld(0.0f, m_fieldHeight * getScreenHeight()).y - worldLeftDown.y);
     m_roll->setMargin(margin);
+
+    if (!m_buttonStart->isEnabled() && !m_roll->isSpinning()) {
+        m_buttonStart->setEnabled(true);
+        m_lastResult->setText("Last result: " + m_roll->getRow(1));
+    }
 }

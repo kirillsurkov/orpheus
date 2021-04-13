@@ -16,12 +16,13 @@ private:
     float m_offset = 0.0f;
     float m_speed = 0.0f;
     bool m_needStop = false;
+    bool m_stopped = true;
 
 public:
     EntityReel(Orpheus::Vertex::BufferCache& bufferCache, std::size_t rows) {
         for (std::size_t i = 0; i < rows; i++) {
             m_cells.emplace_back(bufferCache, std::to_string(i + 1));
-            auto color = glm::rgbColor(glm::vec3(360.0f * i / rows, 0.5f, 1.0f));
+            auto color = glm::rgbColor(glm::vec3(360.0f * i / rows, 0.5f, 0.1f));
             m_cells.back().getColor().set(color.r, color.g, color.b, 1.0f);
         }
     }
@@ -29,9 +30,9 @@ public:
     virtual void update(float delta) override {
         if (m_needStop && m_offset > 0) {
             m_offset += (0 - m_offset) * (delta / 0.1f);
-        } else {
+            m_stopped = true;
+        } else
             m_offset -= delta * m_speed;
-        }
     }
 
     virtual void draw(const glm::mat4& projection, const glm::mat4& view, Orpheus::Render::Render& render) override {
@@ -54,6 +55,10 @@ public:
         }
     }
 
+    bool isSpinning() const {
+        return !m_stopped;
+    }
+
     std::string getRow(std::size_t index) const {
         return m_cells[index].getText();
     }
@@ -61,6 +66,7 @@ public:
     void start(float speed) {
         m_speed = speed;
         m_needStop = false;
+        m_stopped = false;
     }
 
     void stop() {
