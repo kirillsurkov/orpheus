@@ -21,7 +21,7 @@ public:
     EntityReel(Orpheus::Vertex::BufferCache& bufferCache, std::size_t rows) {
         for (std::size_t i = 0; i < rows; i++) {
             m_cells.emplace_back(bufferCache, std::to_string(i + 1));
-            auto color = glm::rgbColor(glm::vec3(360.0f * i / rows, 0.5f, 0.1f));
+            auto color = glm::rgbColor(glm::vec3(360.0f * i / rows, 0.5f, 1.0f));
             m_cells.back().getColor().set(color.r, color.g, color.b, 1.0f);
         }
     }
