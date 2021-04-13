@@ -80,21 +80,20 @@ namespace Orpheus::Scene {
             return m_screenHeight;
         }
 
-        glm::vec2 worldToScreen(const glm::vec3& world) const {
-            auto res = glm::vec2(m_projection * m_view * glm::vec4(world, 1.0f));
-            return glm::vec2(0.5f * (res.x + 1.0f), 0.5f * (1.0f - res.y)) * glm::vec2(m_screenWidth, m_screenHeight);
+        glm::vec2 worldToScreen(float x, float y, float z) const {
+            return 0.5f * (glm::vec2(m_projection * m_view * glm::vec4(x, y, z, 1.0f)) + 1.0f) * glm::vec2(m_screenWidth, m_screenHeight);
         }
 
-        glm::vec3 screenToWorld(const glm::vec2& screen) const {
-            return glm::inverse(m_projection * m_view) * glm::vec4(2.0f * screen.x / m_screenWidth - 1.0f, 2.0f * (1.0f - static_cast<float>(screen.y) / m_screenHeight) - 1.0f, 0.0f, 1.0f);
+        glm::vec3 screenToWorld(float x, float y) const {
+            return glm::inverse(m_projection * m_view) * glm::vec4(2.0f * x / m_screenWidth - 1.0f, 2.0f * y / m_screenHeight - 1.0f, 0.0f, 1.0f);
         }
 
         float getMouseX() const {
-            return screenToWorld(glm::vec3(m_inputManager.getMouseX(), 0.0f, 0.0f)).x;
+            return screenToWorld(m_inputManager.getMouseX(), 0.0f).x;
         }
 
         float getMouseY() const {
-            return screenToWorld(glm::vec3(0.0f, m_inputManager.getMouseY(), 0.0f)).y;
+            return screenToWorld(0.0f, m_screenHeight - m_inputManager.getMouseY()).y;
         }
     };
 

@@ -60,6 +60,14 @@ namespace Orpheus::Entity {
             return cmd.getResult() * m_height / HALF_SCREEN_W;
         }
 
+        const std::string& getText() const {
+            return m_text;
+        }
+
+        float getHeight() const {
+            return m_height / HALF_SCREEN_W;
+        }
+
         float getTextHeight() const {
             return m_height;
         }

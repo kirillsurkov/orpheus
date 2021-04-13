@@ -1,46 +1,32 @@
 #pragma once
 
-#include "SceneMenuMain.hpp"
-
 #include <orpheus/Scene.hpp>
 #include <orpheus/Command/Game/CommandTest.hpp>
-#include <orpheus/Command/Game/CommandScenePush.hpp>
 #include <orpheus/Command/Game/CommandScenePop.hpp>
+#include <orpheus/Entity/UI/EntityButton.hpp>
+
+#include "Entities/EntityRoll.hpp"
 
 class SceneLevel : public Orpheus::Scene::Scene {
-protected:
-    void bindKeys() {
-        bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
-            if (down) {
-                postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMenuMain>{});
-            }
-        });
+private:
+    std::size_t m_fpsCounter  = 0;
+          float m_fpsTimer    = 0.0f;
+    const float m_fpsInterval = 0.2f;
+    std::shared_ptr<Orpheus::Entity::Text> m_fpsIndicator;
 
-        bindKey(Orpheus::Input::Key::W,   [this](bool down) { Orpheus::Log::info(this) << "Forward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::A,   [this](bool down) { Orpheus::Log::info(this) << "Left " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::S,   [this](bool down) { Orpheus::Log::info(this) << "Backward " << (down ? "down" : "up"); });
-        bindKey(Orpheus::Input::Key::D,   [this](bool down) { Orpheus::Log::info(this) << "Right " << (down ? "down" : "up"); });
+    std::shared_ptr<Orpheus::Entity::Text> m_lastResult;
 
-        bindKey(Orpheus::Input::Key::Z,   [this](bool down) {
-            if (down) {
-                postCommand<Orpheus::Command::Game::CommandTest>("It works from Level!");
-            }
-        });
+    const std::size_t m_margin = 10;
+    std::shared_ptr<Orpheus::Entity::UI::Button> m_buttonSplit;
+    std::shared_ptr<Orpheus::Entity::UI::Button> m_buttonStart;
 
-        bindKey(Orpheus::Input::Key::X,   [this](bool down) {
-            if (down) {
-                postCommand<Orpheus::Command::Game::CommandScenePop>();
-            }
-        });
-    }
+    const float m_fieldHeight = 0.6f;
+    std::shared_ptr<EntityRoll> m_roll;
+    std::vector<float> m_speeds;
 
 public:
-    SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
-        addScope("Level");
+    SceneLevel(const Orpheus::Scene::Scene& sceneBase);
 
-        float aspect = 1.0f * getScreenHeight() / getScreenWidth();
-
-        //m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * getScreenWidth() / getScreenHeight(), 0.01f, 100.0f);
-        m_projection = glm::ortho(-1.0f, 1.0f, -aspect, aspect);
-    }
+    virtual void onShow() override;
+    virtual void update(float delta) override;
 };
