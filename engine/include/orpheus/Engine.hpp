@@ -15,8 +15,8 @@ namespace Orpheus {
     class Engine : public Loggable {
     private:
         Caches& m_caches;
-        Window::WindowPtr m_window;
-        Render::RenderPtr m_render;
+        Window::Window& m_window;
+        Render::Render& m_render;
         Input::Manager m_inputManager;
         std::unordered_map<std::type_index, std::shared_ptr<Scene::Scene>> m_sceneCache;
         std::stack<std::shared_ptr<Scene::Scene>> m_sceneStack;
@@ -29,7 +29,7 @@ namespace Orpheus {
         void onCommand(const Command::Game::CommandTest& command);
 
     public:
-        Engine(Caches& caches, const Window::WindowPtr& window, const Render::RenderPtr& render);
+        Engine(Caches& caches, Window::Window& window, Render::Render& render);
         ~Engine();
 
         bool isAlive() const;

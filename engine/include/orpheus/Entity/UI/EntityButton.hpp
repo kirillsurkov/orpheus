@@ -30,9 +30,7 @@ namespace Orpheus::Entity::UI {
             m_text.getColor().set(0.0f, 0.0f, 0.0f, 1.0f);
         }
 
-        virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) override {
-            m_rect.setWidth(m_text.getWidth(render));
-            m_rectDisabled.setWidth(m_text.getWidth(render));
+        virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) const override {
             m_rect.draw(projection, view, render);
             m_text.draw(projection, view, render);
             if (!m_enabled) {
@@ -57,6 +55,9 @@ namespace Orpheus::Entity::UI {
             } else {
                 m_rect.getColor().set(0.75f, 0.75f, 0.75f, 1.0f);
             }
+
+            m_rect.setWidth(m_text.getWidth());
+            m_rectDisabled.setWidth(m_text.getWidth());
 
             m_lastClicked = m_clicked;
         }

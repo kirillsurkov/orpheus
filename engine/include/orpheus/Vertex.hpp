@@ -64,12 +64,12 @@ namespace Orpheus::Vertex {
     class Attrib {
     private:
         std::size_t m_layout;
-        const Buffer& m_buffer;
+        const Buffer* m_buffer;
 
     public:
         Attrib(std::size_t layout, const Buffer& buffer) :
             m_layout(layout),
-            m_buffer(buffer)
+            m_buffer(&buffer)
         {
         }
 
@@ -78,7 +78,7 @@ namespace Orpheus::Vertex {
         }
 
         const Buffer& getBuffer() const {
-            return m_buffer;
+            return *m_buffer;
         }
     };
 

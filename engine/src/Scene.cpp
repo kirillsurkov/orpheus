@@ -12,7 +12,7 @@ Orpheus::Scene::Scene::Scene(std::size_t screenWidth, std::size_t screenHeight, 
     m_clearColorEntity(addEntity<Entity::Command<Render::Command::ClearColor>>(0.0f, 0.0f, 0.0f, 1.0f)),
     m_projection(1.0f),
     m_view(1.0f),
-    m_clearColor(m_clearColorEntity->getCommand())
+    m_clearColor(m_clearColorEntity.getCommand())
 {
     addScope("Scene");
 

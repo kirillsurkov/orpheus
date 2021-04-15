@@ -14,7 +14,7 @@ namespace Orpheus::Render {
         std::unique_ptr<Impl> m_impl;
 
     public:
-        OpenGL(Caches& caches, const Window::WindowPtr& window);
+        OpenGL(Caches& caches, Window::Window& window);
         ~OpenGL();
     };
 }

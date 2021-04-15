@@ -4,7 +4,7 @@
 #include "orpheus/Entity/Entity.hpp"
 #include "orpheus/Entity/EntityCommand.hpp"
 
-Orpheus::Engine::Engine(Caches& caches, const Window::WindowPtr& window, const Render::RenderPtr& render) :
+Orpheus::Engine::Engine(Caches& caches, Window::Window& window, Render::Render& render) :
     m_caches(caches),
     m_window(window),
     m_render(render),
@@ -13,13 +13,13 @@ Orpheus::Engine::Engine(Caches& caches, const Window::WindowPtr& window, const R
     addScope("Engine");
     Log::info(this) << "Version " << Version::Major << "." << Version::Minor;
 
-    m_window->registerCommand<Command::Engine::CommandQuit>(this);
-    m_window->registerCommand<Command::Engine::CommandMouse>(m_inputManager);
-    m_window->registerCommand<Command::Engine::CommandKeyboard>(m_inputManager);
+    m_window.registerCommand<Command::Engine::CommandQuit>(this);
+    m_window.registerCommand<Command::Engine::CommandMouse>(m_inputManager);
+    m_window.registerCommand<Command::Engine::CommandKeyboard>(m_inputManager);
 
     auto& vertexBufferCache = m_caches.vertexBufferCache();
 
-    m_sceneBase = std::make_shared<Scene::Scene>(window->getWidth(), window->getHeight(), m_inputManager, vertexBufferCache);
+    m_sceneBase = std::make_shared<Scene::Scene>(window.getWidth(), window.getHeight(), m_inputManager, vertexBufferCache);
     m_sceneBase->registerCommand<Command::Game::CommandScenePush>(this);
     m_sceneBase->registerCommand<Command::Game::CommandScenePop>(this);
     m_sceneBase->registerCommand<Command::Game::CommandTest>(this);
@@ -49,16 +49,13 @@ bool Orpheus::Engine::isAlive() const {
 }
 
 void Orpheus::Engine::step(float delta) {
-    m_window->pollEvents();
+    m_window.pollEvents();
 
     if (m_sceneStack.size() > 0) {
         auto scene = m_sceneStack.top();
-        for (const auto& entity : scene->getEntities()) {
-            entity->update(delta);
-        }
-        scene->update(delta);
-        m_render->drawScene(scene);
-        m_window->swapBuffers();
+        scene->step(delta);
+        scene->draw(m_render);
+        m_window.swapBuffers();
     } else {
         postCommand<Command::Engine::CommandQuit>();
     }
@@ -76,14 +73,14 @@ void Orpheus::Engine::onCommand(const Command::Game::CommandScenePush& command) 
     }
     m_sceneStack.push(it->second);
     m_inputManager.unbindKeys();
-    m_sceneStack.top()->onShow();
+    m_sceneStack.top()->show();
 }
 
 void Orpheus::Engine::onCommand(const Command::Game::CommandScenePop&/* command*/) {
     m_sceneStack.pop();
     if (m_sceneStack.size() > 0) {
         m_inputManager.unbindKeys();
-        m_sceneStack.top()->onShow();
+        m_sceneStack.top()->show();
     }
 }
 

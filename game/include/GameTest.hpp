@@ -4,6 +4,6 @@
 
 class GameTest : public Orpheus::Game {
 public:
-    GameTest(const Orpheus::EnginePtr& engine);
+    GameTest(Orpheus::Engine& engine);
     ~GameTest();
 };

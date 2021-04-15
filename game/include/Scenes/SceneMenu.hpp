@@ -1,18 +1,15 @@
 #pragma once
 
-#include "SceneMenuMain.hpp"
-
 #include <orpheus/Scene.hpp>
-#include <orpheus/Command/Game/CommandTest.hpp>
-#include <orpheus/Command/Game/CommandScenePush.hpp>
 #include <orpheus/Command/Game/CommandScenePop.hpp>
+#include <orpheus/Command/Game/CommandTest.hpp>
 
-class SceneLevel : public Orpheus::Scene::Scene {
+class SceneMenu : public Orpheus::Scene::Scene {
 protected:
     void bindKeys() {
         bindKey(Orpheus::Input::Key::ESC, [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::Game::CommandScenePush>(Orpheus::Utils::TypeIdentity<SceneMenuMain>{});
+                postCommand<Orpheus::Command::Game::CommandScenePop>();
             }
         });
 
@@ -23,24 +20,17 @@ protected:
 
         bindKey(Orpheus::Input::Key::Z,   [this](bool down) {
             if (down) {
-                postCommand<Orpheus::Command::Game::CommandTest>("It works from Level!");
-            }
-        });
-
-        bindKey(Orpheus::Input::Key::X,   [this](bool down) {
-            if (down) {
-                postCommand<Orpheus::Command::Game::CommandScenePop>();
+                postCommand<Orpheus::Command::Game::CommandTest>("It works from Menu!");
             }
         });
     }
 
 public:
-    SceneLevel(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
-        addScope("Level");
+    SceneMenu(const Orpheus::Scene::Scene& sceneBase) : Orpheus::Scene::Scene(sceneBase) {
+        addScope("Menu");
 
         float aspect = 1.0f * getScreenHeight() / getScreenWidth();
 
-        //m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * getScreenWidth() / getScreenHeight(), 0.01f, 100.0f);
         m_projection = glm::ortho(-1.0f, 1.0f, -aspect, aspect);
     }
 };

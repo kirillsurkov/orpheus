@@ -15,7 +15,7 @@ namespace Orpheus::Entity {
 
         virtual void draw(const glm::mat4x4&/* projection*/,
                           const glm::mat4x4&/* view*/,
-                          Render::Render&   /* render*/) {}
+                          Render::Render&   /* render*/) const {}
     };
 
     using EntityPtr = std::shared_ptr<Entity>;

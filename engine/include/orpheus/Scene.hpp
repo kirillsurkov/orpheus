@@ -17,8 +17,8 @@ namespace Orpheus::Scene {
         std::size_t m_screenHeight;
         Input::Manager& m_inputManager;
         Vertex::BufferCache& m_bufferCache;
-        std::vector<Entity::EntityPtr> m_entities;
-        std::shared_ptr<Entity::Command<Render::Command::ClearColor>> m_clearColorEntity;
+        std::vector<std::unique_ptr<Entity::Entity>> m_entities;
+        Entity::Command<Render::Command::ClearColor>& m_clearColorEntity;
 
     protected:
         glm::mat4x4 m_projection;
@@ -26,15 +26,17 @@ namespace Orpheus::Scene {
         Render::Command::ClearColor& m_clearColor;
 
         template<class T, class... Args>
-        std::shared_ptr<T> addEntity(Args&&... args) {
+        T& addEntity(Args&&... args) {
             try {
-                auto entity = std::make_shared<T>(m_bufferCache, std::forward<Args>(args)...);
-                m_entities.push_back(entity);
-                return entity;
+                m_entities.emplace_back(std::make_unique<T>(m_bufferCache, std::forward<Args>(args)...));
+                return *static_cast<T*>(m_entities.back().get());
             } catch (const std::exception& e) {
                 throw Exception(this, e.what());
             }
         }
+
+        virtual void onShow() {}
+        virtual void update(float/* delta*/) {}
 
     public:
         Scene(std::size_t screenWidth, std::size_t screenHeight, Input::Manager& inputManager, Vertex::BufferCache& bufferCache);
@@ -42,8 +44,22 @@ namespace Orpheus::Scene {
 
         virtual ~Scene() {}
 
-        virtual void onShow() {}
-        virtual void update(float/* delta*/) {}
+        void show() {
+            onShow();
+        }
+
+        void step(float delta) {
+            for (auto& entity : m_entities) {
+                entity->update(delta);
+            }
+            update(delta);
+        }
+
+        void draw(Render::Render& render) {
+            for (auto& entity : m_entities) {
+                entity->draw(m_projection, m_view, render);
+            }
+        }
 
         template<class T, class U>
         void registerCommand(U&& receiver) {
@@ -58,10 +74,6 @@ namespace Orpheus::Scene {
         template<class T>
         void bindKey(const Input::Key key, T&& function) {
             m_inputManager.bindKey(key, std::forward<T>(function));
-        }
-
-        const std::vector<Entity::EntityPtr>& getEntities() const {
-            return m_entities;
         }
 
         const glm::mat4x4& getProjection() const {

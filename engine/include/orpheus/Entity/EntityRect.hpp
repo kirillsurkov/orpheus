@@ -73,7 +73,7 @@ namespace Orpheus::Entity {
             return m_color;
         }
 
-        virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) override {
+        virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) const override {
             render.postCommand(m_material);
             render.postCommand(Material::Command::MatrixProjection(projection));
             render.postCommand(Material::Command::MatrixView(view));

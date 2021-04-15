@@ -1,7 +1,7 @@
 #include "orpheus/Render/RenderOpenGL.hpp"
 #include "orpheus/Render/impl/OpenGL/RenderOpenGLImpl.hpp"
 
-Orpheus::Render::OpenGL::OpenGL(Caches& caches, const Window::WindowPtr& window) :
+Orpheus::Render::OpenGL::OpenGL(Caches& caches, Window::Window& window) :
     Orpheus::Render::Render(this, window),
     m_impl(std::make_unique<Impl>(caches))
 {

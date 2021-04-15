@@ -2,10 +2,6 @@
 
 #include "orpheus/Window/Window.hpp"
 
-namespace Orpheus::Scene {
-    class Scene;
-}
-
 namespace Orpheus::Render {
     class Render : public Loggable {
     public:
@@ -28,11 +24,11 @@ namespace Orpheus::Render {
 
     public:
         template<class T>
-        Render(T*, const Window::WindowPtr& window) {
+        Render(T*, Window::Window& window) {
             addScope("Render");
 
             typename T::ContextPtr ctx;
-            window->createContext(ctx);
+            window.createContext(ctx);
             m_context = std::move(ctx);
         }
 
@@ -40,8 +36,6 @@ namespace Orpheus::Render {
         void postCommand(T&& command) {
             m_renderCommandDispatcher.dispatchOrThrow(this, command);
         }
-
-        void drawScene(const std::shared_ptr<Orpheus::Scene::Scene>& scene);
     };
 
     using RenderPtr = std::shared_ptr<Render>;

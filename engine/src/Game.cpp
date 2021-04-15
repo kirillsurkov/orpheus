@@ -2,7 +2,7 @@
 #include "orpheus/Log.hpp"
 #include "orpheus/Utils.hpp"
 
-Orpheus::Game::Game(const EnginePtr& engine) :
+Orpheus::Game::Game(Engine& engine) :
     m_engine(engine)
 {
     addScope("Game");
@@ -10,7 +10,7 @@ Orpheus::Game::Game(const EnginePtr& engine) :
 
 void Orpheus::Game::run() {
     Utils::StopWatch timer;
-    while (m_engine->isAlive()) {
-        m_engine->step(timer.split());
+    while (m_engine.isAlive()) {
+        m_engine.step(timer.split());
     }
 }
