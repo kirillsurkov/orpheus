@@ -50,7 +50,7 @@ unsigned int Orpheus::Render::OpenGL::Impl::Font::getTextureId() const {
 const Orpheus::Render::OpenGL::Impl::Font::Glyph& Orpheus::Render::OpenGL::Impl::Font::getGlyph(std::size_t code) const {
     auto it = m_glyphs.find(code);
     if (it == m_glyphs.end()) {
-        throw std::runtime_error("Glyph not found");
+        it = m_glyphs.find('?');
     }
     return it->second;
 }
@@ -79,6 +79,12 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Cl
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::ClearColor& command) {
     glClearColor(command.getR(), command.getG(), command.getB(), command.getA());
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Viewport& command) {
+    m_width = command.getWidth();
+    m_height = command.getHeight();
+    glViewport(command.getX(), command.getY(), m_width, m_height);
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Vertices& command) {
@@ -141,21 +147,34 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Te
 
     postCommand(Material::Command::Texture(textureId));
 
+    float descender = font.getFont().getDescender();
     float advance = 0.0f;
 
-    for (const auto& c : command.getText()) {
+    float size = 2.0f * command.getHeight() / m_height;
+    glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(size, size, 1.0f));
+
+    std::wstring_convert<codecvt, char32_t> cvt;
+    for (const auto& c : cvt.from_bytes(command.getText())) {
         const auto& glyph = font.getGlyph(c);
         const auto& glyphModel = glyph.glyph;
         const auto& worldRect = glyphModel.getWorldRect();
 
-        postCommand(Material::Text::Command::GlyphRect(worldRect.x, worldRect.y, worldRect.width, worldRect.height, advance));
+        postCommand(Material::Text::Command::GlyphModel(
+                        glm::scale(
+                            glm::translate(
+                                transform,
+                                glm::vec3(worldRect.x + advance, worldRect.y - descender, 0.0f)
+                            ),
+                            glm::vec3(worldRect.width, worldRect.height, 1.0f)
+                        )
+                    ));
         postCommand(Orpheus::Render::Command::Vertices(glyph.vertices));
 
         advance += glyphModel.getAdvance();
     }
 }
 
-void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::GetTextWidth& command) {
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::GetTextSize& command) {
     const auto& fontName = command.getFont();
     auto it = m_fontCache.find(fontName);
     if (it == m_fontCache.end()) {
@@ -165,9 +184,11 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Ge
     const auto& font = it->second;
 
     float width = 0.0f;
-    for (const auto& c : command.getText()) {
+    std::wstring_convert<codecvt, char32_t> cvt;
+    for (const auto& c : cvt.from_bytes(command.getText())) {
         width += font.getGlyph(c).glyph.getAdvance();
     }
 
-    command.setResult(width);
+    float height = 2.0f * command.getTextHeight() / m_height;
+    command.setResult(width * height, height);
 }

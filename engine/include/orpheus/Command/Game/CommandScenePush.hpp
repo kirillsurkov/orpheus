@@ -11,14 +11,14 @@ namespace Orpheus::Command::Game {
     class CommandScenePush : public Command {
     private:
         std::type_index m_typeIndex;
-        std::function<std::shared_ptr<Scene::Scene>(const std::shared_ptr<Scene::Scene>&)> m_createScene;
+        std::function<Scene::ScenePtr(const Scene::Scene&)> m_createScene;
 
     public:
         template<class T, class... Args>
         CommandScenePush(Utils::TypeIdentity<T>, Args&&... args) :
             m_typeIndex(std::type_index(typeid(T))),
-            m_createScene([args...](const std::shared_ptr<Scene::Scene>& sceneBase) {
-                return std::make_shared<T>(*sceneBase, std::forward<Args>(args)...);
+            m_createScene([args...](const Scene::Scene& sceneBase) {
+                return std::make_shared<T>(sceneBase, std::forward<Args>(args)...);
             })
         {
         }
@@ -31,7 +31,7 @@ namespace Orpheus::Command::Game {
             return m_typeIndex;
         }
 
-        std::shared_ptr<Scene::Scene> createScene(const std::shared_ptr<Scene::Scene>& sceneBase) const {
+        Scene::ScenePtr createScene(const Scene::Scene& sceneBase) const {
             return m_createScene(sceneBase);
         }
     };

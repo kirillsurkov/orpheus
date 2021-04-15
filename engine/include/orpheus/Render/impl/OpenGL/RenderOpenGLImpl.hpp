@@ -4,9 +4,10 @@
 #include "orpheus/Render/impl/OpenGL/Material/Material.hpp"
 #include "orpheus/Render/Command/CommandClear.hpp"
 #include "orpheus/Render/Command/CommandClearColor.hpp"
+#include "orpheus/Render/Command/CommandViewport.hpp"
 #include "orpheus/Render/Command/CommandVertices.hpp"
 #include "orpheus/Render/Command/CommandText.hpp"
-#include "orpheus/Render/Command/CommandGetTextWidth.hpp"
+#include "orpheus/Render/Command/CommandGetTextSize.hpp"
 #include "orpheus/Render/Command/CommandMaterial.hpp"
 #include "orpheus/Material/FlatColor/MaterialFlatColor.hpp"
 #include "orpheus/Material/Text/MaterialText.hpp"
@@ -26,6 +27,10 @@ namespace Orpheus::Render {
         using ContextPtr = std::shared_ptr<Context>;
 
     private:
+        struct codecvt : std::codecvt<char32_t, char, std::mbstate_t> {
+            ~codecvt() {}
+        };
+
         struct BufferInfo {
             unsigned int vbo;
             std::size_t size;
@@ -66,13 +71,16 @@ namespace Orpheus::Render {
         OpenGLImpl::Material::MaterialPtr m_currentMaterial;
         OpenGLImpl::Material::MaterialPtr m_materialFlatColor;
         OpenGLImpl::Material::MaterialPtr m_materialText;
+        float m_width;
+        float m_height;
 
     private:
         void onCommand(const Orpheus::Render::Command::Clear& command);
         void onCommand(const Orpheus::Render::Command::ClearColor& command);
+        void onCommand(const Orpheus::Render::Command::Viewport& command);
         void onCommand(const Orpheus::Render::Command::Vertices& command);
         void onCommand(const Orpheus::Render::Command::Text& command);
-        void onCommand(const Orpheus::Render::Command::GetTextWidth& command);
+        void onCommand(const Orpheus::Render::Command::GetTextSize& command);
 
         template<class T>
         void onCommand(const Orpheus::Render::Command::Material<T>&) {

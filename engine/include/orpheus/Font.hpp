@@ -47,10 +47,12 @@ namespace Orpheus {
     private:
         Image::Image m_atlas;
         std::unordered_map<std::size_t, Glyph> m_glyphs;
+        float m_descender;
 
-        Font(const Image::Image& atlas, const std::unordered_map<std::size_t, Glyph> glyphs) :
+        Font(const Image::Image& atlas, const std::unordered_map<std::size_t, Glyph> glyphs, float descender) :
             m_atlas(atlas),
-            m_glyphs(glyphs)
+            m_glyphs(glyphs),
+            m_descender(descender)
         {
         }
 
@@ -91,7 +93,7 @@ namespace Orpheus {
                 glyphs.try_emplace(glyph["unicode"], glyph["advance"], worldOffset, atlasOffset);
             }
 
-            return Font(atlas, glyphs);
+            return Font(atlas, glyphs, json["metrics"]["descender"]);
         }
 
         const Image::Image& getAtlas() const {
@@ -100,6 +102,10 @@ namespace Orpheus {
 
         const std::unordered_map<std::size_t, Glyph>& getGlyphs() const {
             return m_glyphs;
+        }
+
+        float getDescender() const {
+            return m_descender;
         }
     };
 }

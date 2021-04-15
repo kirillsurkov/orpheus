@@ -15,6 +15,6 @@ namespace Orpheus::Material {
     };
 
     struct Text::Command {
-        class GlyphRect;
+        class GlyphModel;
     };
 }

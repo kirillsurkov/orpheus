@@ -138,7 +138,7 @@ namespace Orpheus::Window {
                     break;
                 }
                 case SDL_MOUSEMOTION: {
-                    receiver(Command::Engine::CommandMouse(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
+                    receiver(Command::Engine::CommandMouse(sdlEvent.motion.x, getHeight() - sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
                     break;
                 }
                 }

@@ -69,7 +69,7 @@ void Orpheus::Engine::onCommand(const Command::Game::CommandScenePush& command) 
     auto index = command.getTypeIndex();
     auto it = m_sceneCache.find(index);
     if (it == m_sceneCache.end()) {
-        it = m_sceneCache.emplace(index, command.createScene(m_sceneBase)).first;
+        it = m_sceneCache.emplace(index, command.createScene(*m_sceneBase)).first;
     }
     m_sceneStack.push(it->second);
     m_inputManager.unbindKeys();

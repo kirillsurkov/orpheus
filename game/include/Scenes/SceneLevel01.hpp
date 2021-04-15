@@ -23,8 +23,8 @@ private:
 public:
     SceneLevel01(const Orpheus::Scene::Scene& sceneBase) :
         SceneLevel(sceneBase),
-        m_fpsIndicator(addEntity<Orpheus::Entity::Text>(-1.0f, 0.667f, 32.0f, "FPS: ")),
-        m_button(addEntity<Orpheus::Entity::UI::Button>(0.5f, -0.5f, "CLICK ME", [this]() {
+        m_fpsIndicator(addEntity<Orpheus::Entity::Text>(0.0f, 0.0f, 16.0f, "FPS: ")),
+        m_button(addEntity<Orpheus::Entity::UI::Button>(-0.5f, -0.5f, "Test (Проверка)", [this]() {
             Orpheus::Log::info(this) << "Clicked";
         }))
     {
@@ -35,6 +35,8 @@ public:
 
     virtual void onShow() override {
         postCommand<Orpheus::Command::Game::CommandTest>("Level01 shown!");
+
+        projectionOrtho();
 
         bindKeys();
 
@@ -51,6 +53,10 @@ public:
             m_fpsIndicator.setText("FPS: " + std::to_string(static_cast<int>(m_fpsCounter / m_fpsInterval)));
             m_fpsCounter = 0;
         }
+
+        auto leftRight = screenToWorld(0.0f, 0.0f);
+        m_fpsIndicator.setX(leftRight.x);
+        m_fpsIndicator.setY(screenToWorld(0.0f, getHeight()).y - m_fpsIndicator.getHeight());
 
         m_button.setMousePos(getMouseX(), getMouseY());
     }

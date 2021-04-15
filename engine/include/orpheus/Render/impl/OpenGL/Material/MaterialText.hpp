@@ -7,7 +7,7 @@
 #include "orpheus/Material/Command/CommandMatrixProjection.hpp"
 #include "orpheus/Material/Command/CommandMatrixView.hpp"
 #include "orpheus/Material/Command/CommandMatrixModel.hpp"
-#include "orpheus/Material/Text/Command/CommandGlyphRect.hpp"
+#include "orpheus/Material/Text/Command/CommandGlyphModel.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -15,9 +15,9 @@ namespace Orpheus::Render::OpenGLImpl::Material {
     class Text : public Material {
     private:
         static const inline std::string vss = "#version 330 core\n"
+                   "uniform mat4 u_mvp;\n"
                    "layout(location = 0) in vec2 position;\n"
                    "layout(location = 1) in vec2 uv;\n"
-                   "uniform mat4 u_mvp;\n"
                    "out vec2 v_uv;\n"
                    "void main() {\n"
                    "    v_uv = uv;\n"
@@ -47,17 +47,10 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         glm::mat4x4 m_projection;
         glm::mat4x4 m_view;
         glm::mat4x4 m_model;
-
-        float m_x;
-        float m_y;
-        float m_width;
-        float m_height;
-        float m_advance;
+        glm::mat4x4 m_glyphModel;
 
         void onCommand(const Orpheus::Material::Command::Prepare&) {
-            auto mvp = m_projection * m_view * m_model;
-            mvp = glm::translate(mvp, glm::vec3(m_advance + m_x, m_y + 0.5f * 0.75f * 0.133f, 0.0f));
-            mvp = glm::scale(mvp, glm::vec3(m_width, m_height, 1.0f));
+            auto mvp = m_projection * m_view * m_model * m_glyphModel;
             glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
 
             glEnable(GL_BLEND);
@@ -87,12 +80,8 @@ namespace Orpheus::Render::OpenGLImpl::Material {
             m_model = command.getMatrix();
         }
 
-        void onCommand(const Orpheus::Material::Text::Command::GlyphRect& command) {
-            m_x = command.getX();
-            m_y = command.getY();
-            m_width = command.getWidth();
-            m_height = command.getHeight();
-            m_advance = command.getAdvance();
+        void onCommand(const Orpheus::Material::Text::Command::GlyphModel& command) {
+            m_glyphModel = command.getMatrix();
         }
 
     public:
@@ -107,7 +96,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
             registerMaterialCommand<Orpheus::Material::Command::MatrixProjection>(this);
             registerMaterialCommand<Orpheus::Material::Command::MatrixView>(this);
             registerMaterialCommand<Orpheus::Material::Command::MatrixModel>(this);
-            registerMaterialCommand<Orpheus::Material::Text::Command::GlyphRect>(this);
+            registerMaterialCommand<Orpheus::Material::Text::Command::GlyphModel>(this);
         }
 
         template<class T>

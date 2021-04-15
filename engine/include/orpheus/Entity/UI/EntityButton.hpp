@@ -22,8 +22,8 @@ namespace Orpheus::Entity::UI {
     public:
         Button(Vertex::BufferCache& bufferCache, float x, float y, const std::string& text, const std::function<void()>& onClick, float height = 32.0f) :
             m_onClick(onClick),
-            m_rect(bufferCache, x, y, 0.0f, 32.0f / 400.0f),
-            m_rectDisabled(bufferCache, x, y, 0.0f, 32.0f / 400.0f),
+            m_rect(bufferCache, x, y, 0.0f, 0.0f),
+            m_rectDisabled(bufferCache, x, y, 0.0f, 0.0f),
             m_text(bufferCache, x, y, height, text)
         {
             m_rectDisabled.getColor().set(0.5f, 0.5f, 0.5f, 0.75f);
@@ -57,7 +57,9 @@ namespace Orpheus::Entity::UI {
             }
 
             m_rect.setWidth(m_text.getWidth());
+            m_rect.setHeight(m_text.getHeight());
             m_rectDisabled.setWidth(m_text.getWidth());
+            m_rectDisabled.setHeight(m_text.getHeight());
 
             m_lastClicked = m_clicked;
         }

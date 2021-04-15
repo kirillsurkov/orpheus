@@ -10,9 +10,10 @@ Orpheus::Render::OpenGL::OpenGL(Caches& caches, Window::Window& window) :
 
     registerCommand<Orpheus::Render::Command::Clear>(*m_impl);
     registerCommand<Orpheus::Render::Command::ClearColor>(*m_impl);
+    registerCommand<Orpheus::Render::Command::Viewport>(*m_impl);
     registerCommand<Orpheus::Render::Command::Vertices>(*m_impl);
     registerCommand<Orpheus::Render::Command::Text>(*m_impl);
-    registerCommand<Orpheus::Render::Command::GetTextWidth>(*m_impl);
+    registerCommand<Orpheus::Render::Command::GetTextSize>(*m_impl);
     registerCommand<Orpheus::Render::Command::Material<Orpheus::Material::FlatColor>>(*m_impl);
     registerCommand<Orpheus::Render::Command::Material<Orpheus::Material::Text>>(*m_impl);
     registerCommand<Material::Command::Color>(*m_impl);

@@ -18,9 +18,9 @@ namespace Orpheus {
         Window::Window& m_window;
         Render::Render& m_render;
         Input::Manager m_inputManager;
-        std::unordered_map<std::type_index, std::shared_ptr<Scene::Scene>> m_sceneCache;
-        std::stack<std::shared_ptr<Scene::Scene>> m_sceneStack;
-        std::shared_ptr<Scene::Scene> m_sceneBase;
+        std::unordered_map<std::type_index, Scene::ScenePtr> m_sceneCache;
+        std::stack<Scene::ScenePtr> m_sceneStack;
+        Scene::ScenePtr m_sceneBase;
         bool m_alive;
 
         void onCommand(const Command::Engine::CommandQuit& command);
