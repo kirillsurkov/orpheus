@@ -9,6 +9,7 @@
 #include "orpheus/Material/Command/CommandMatrixView.hpp"
 #include "orpheus/Material/Command/CommandMatrixModel.hpp"
 #include "orpheus/Material/Text/MaterialText.hpp"
+#include "orpheus/Material/Text/Command/CommandGlyphAppearance.hpp"
 
 namespace Orpheus::Entity {
     class Text : public Entity {
@@ -23,6 +24,7 @@ namespace Orpheus::Entity {
         Material::Command::Color m_color;
         Render::Command::GetTextSize m_sizeGetter;
         Render::Command::Material<Material::Text> m_material;
+        Material::Text::Command::GlyphAppearance m_appearance;
 
         glm::mat4x4 getTransform() const {
             return glm::translate(glm::mat4(1.0f), glm::vec3(m_x, m_y, 0.0f));
@@ -36,7 +38,8 @@ namespace Orpheus::Entity {
             m_text(text),
             m_font(font),
             m_color(0.0f, 0.0f, 0.0f, 1.0f),
-            m_sizeGetter(m_width, m_height, m_textHeight, m_text, m_font)
+            m_sizeGetter(m_width, m_height, m_textHeight, m_text, m_font),
+            m_appearance(0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
         {
         }
 
@@ -46,7 +49,7 @@ namespace Orpheus::Entity {
             render.postCommand(Material::Command::MatrixProjection(projection));
             render.postCommand(Material::Command::MatrixView(view));
             render.postCommand(Material::Command::MatrixModel(getTransform()));
-            render.postCommand(Render::Command::Text(m_textHeight, m_text, m_font));
+            render.postCommand(Render::Command::Text(m_textHeight, m_text, m_font, m_appearance));
             render.postCommand(m_sizeGetter);
         }
 
@@ -54,8 +57,20 @@ namespace Orpheus::Entity {
             return m_color;
         }
 
+        Material::Text::Command::GlyphAppearance& getAppearance() {
+            return m_appearance;
+        }
+
         const std::string& getText() const {
             return m_text;
+        }
+
+        float getX() const {
+            return m_x;
+        }
+
+        float getY() const {
+            return m_y;
         }
 
         float getWidth() const {

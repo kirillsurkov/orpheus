@@ -1,11 +1,11 @@
 #pragma once
 
-#include "orpheus/Image/Image.hpp"
+#include "orpheus/Texture/Texture.hpp"
 
 #include <libpng/png.h>
 #include <stdexcept>
 
-namespace Orpheus::Image::Loader {
+namespace Orpheus::Texture::Loader {
     class PNG {
     public:
         static void load(const std::string& path, std::size_t& width, std::size_t& height, std::vector<float>& dest) {

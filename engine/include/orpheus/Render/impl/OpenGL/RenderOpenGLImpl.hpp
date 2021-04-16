@@ -52,20 +52,18 @@ namespace Orpheus::Render {
 
             Orpheus::Font m_font;
             std::unordered_map<std::size_t, Glyph> m_glyphs;
-            unsigned int m_textureId;
 
         public:
             Font(const std::string& name, Vertex::BufferCache& bufferCache);
-            ~Font();
 
             const Orpheus::Font& getFont() const;
-            unsigned int getTextureId() const;
             const Glyph& getGlyph(std::size_t code) const;
         };
 
         Vertex::BufferCache& m_vertexBufferCache;
         std::unordered_map<const Vertex::Buffer*, BufferInfo> m_buffers;
         std::unordered_map<const Vertex::Vertices*, VerticesInfo> m_vertices;
+        std::unordered_map<const Texture::Texture*, unsigned int> m_textures;
         std::unordered_map<std::string, Font> m_fontCache;
         TypeDispatcher m_materialDispatcher;
         OpenGLImpl::Material::MaterialPtr m_currentMaterial;
@@ -75,6 +73,9 @@ namespace Orpheus::Render {
         float m_height;
 
     private:
+        void bindTexture(const Texture::Texture& texture);
+        const Font& getFont(const std::string& name);
+
         void onCommand(const Orpheus::Render::Command::Clear& command);
         void onCommand(const Orpheus::Render::Command::ClearColor& command);
         void onCommand(const Orpheus::Render::Command::Viewport& command);
@@ -88,8 +89,8 @@ namespace Orpheus::Render {
         }
 
         template<class T, class U>
-        void registerMaterial(U&& material) {
-            m_materialDispatcher.registerType<Utils::TypeIdentity<T>>([this, material](auto&&) {
+        void registerMaterial() {
+            m_materialDispatcher.registerType<Utils::TypeIdentity<T>>([this, material = std::make_shared<U>()](auto&&) {
                 m_currentMaterial = material;
                 m_currentMaterial->use();
             });

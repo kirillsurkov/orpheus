@@ -18,19 +18,37 @@ private:
     float m_fpsTimer = 0.0f;
     const float m_fpsInterval = 0.2f;
     Orpheus::Entity::Text& m_fpsIndicator;
-    Orpheus::Entity::UI::Button& m_button;
+    std::vector<Orpheus::Entity::Text*> m_labels;
 
 public:
     SceneLevel01(const Orpheus::Scene::Scene& sceneBase) :
         SceneLevel(sceneBase),
-        m_fpsIndicator(addEntity<Orpheus::Entity::Text>(0.0f, 0.0f, 16.0f, "FPS: ")),
-        m_button(addEntity<Orpheus::Entity::UI::Button>(-0.5f, -0.5f, "Test (Проверка)", [this]() {
-            Orpheus::Log::info(this) << "Clicked";
-        }))
+        m_fpsIndicator(addEntity<Orpheus::Entity::Text>(0.0f, 0.0f, 16.0f, "FPS: "))
     {
         addScope("01");
 
         m_fpsIndicator.getColor().set(0.0f, 1.0f, 1.0f, 1.0f);
+        m_fpsIndicator.getAppearance().set(0.0f, 0.0f, 0.0f, 1.0f, 0.1f);
+
+        const std::size_t cnt = 5;
+
+        for (std::size_t i = 0; i < cnt; i++) {
+            auto* label = &addEntity<Orpheus::Entity::Text>(0.0f, 0.0f, 12.0f + 72.0f * i / cnt, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "bad-script");
+            auto color = glm::rgbColor(glm::vec3(360.0f * i / cnt, 1.0f, 0.5f));
+            label->getColor().set(color.x, color.y, color.z, 1.0f);
+            auto color2 = glm::rgbColor(glm::vec3(360.0f * std::fmod(1.0f * i / cnt + 0.6f, 1.0f), 1.0f, 1.0f));
+            label->getAppearance().set(color2.x, color2.y, color2.z, 1.0f, 4.0f);
+            m_labels.push_back(label);
+        }
+
+        for (std::size_t i = 0; i < cnt; i++) {
+            auto* label = &addEntity<Orpheus::Entity::Text>(0.0f, 0.0f, 12.0f + 72.0f * i / cnt, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "ubuntu-mono");
+            auto color = glm::rgbColor(glm::vec3(360.0f * i / cnt, 0.0f, 1.0f));
+            label->getColor().set(color.x, color.y, color.z, 1.0f);
+            auto color2 = glm::rgbColor(glm::vec3(360.0f * std::fmod(1.0f * i / cnt + 0.6f, 1.0f), 1.0f, 1.0f));
+            label->getAppearance().set(color2.x, color2.y, color2.z, 0.0f, 0.0f);
+            m_labels.push_back(label);
+        }
     }
 
     virtual void onShow() override {
@@ -39,10 +57,6 @@ public:
         projectionOrtho();
 
         bindKeys();
-
-        bindKey(Orpheus::Input::Key::LMB, [this](bool down) {
-            m_button.setMouseClicked(down);
-        });
     }
 
     virtual void update(float delta) override {
@@ -58,6 +72,12 @@ public:
         m_fpsIndicator.setX(leftRight.x);
         m_fpsIndicator.setY(screenToWorld(0.0f, getHeight()).y - m_fpsIndicator.getHeight());
 
-        m_button.setMousePos(getMouseX(), getMouseY());
+        float textX = screenToWorld(10.0f, 0.0f).x;
+        float textY = m_fpsIndicator.getY();
+
+        for (auto* label : m_labels) {
+            label->setX(textX);
+            label->setY(textY -= label->getHeight());
+        }
     }
 };

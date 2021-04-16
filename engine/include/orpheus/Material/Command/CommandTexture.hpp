@@ -5,11 +5,11 @@
 namespace Orpheus::Material::Command {
     class Texture : public Command {
     private:
-        unsigned int m_textureId;
+        std::size_t m_index;
 
     public:
-        Texture(unsigned int textureId) :
-            m_textureId(textureId)
+        Texture(const std::size_t& index) :
+            m_index(index)
         {
         }
 
@@ -17,8 +17,8 @@ namespace Orpheus::Material::Command {
             return "CommandTexture";
         }
 
-        unsigned int getTextureId() const {
-            return m_textureId;
+        const std::size_t& getIndex() const {
+            return m_index;
         }
     };
 }

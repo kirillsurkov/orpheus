@@ -1,6 +1,6 @@
 #pragma once
 
-#include "orpheus/Image/Image.hpp"
+#include "orpheus/Texture/Texture.hpp"
 
 #include <fstream>
 #include <unordered_map>
@@ -45,21 +45,25 @@ namespace Orpheus {
         };
 
     private:
-        Image::Image m_atlas;
+        Texture::Texture m_atlas;
         std::unordered_map<std::size_t, Glyph> m_glyphs;
+        float m_distanceRange;
         float m_descender;
+        float m_lineHeight;
 
-        Font(const Image::Image& atlas, const std::unordered_map<std::size_t, Glyph> glyphs, float descender) :
+        Font(const Texture::Texture& atlas, const std::unordered_map<std::size_t, Glyph> glyphs, float distanceRange, float descender, float lineHeight) :
             m_atlas(atlas),
             m_glyphs(glyphs),
-            m_descender(descender)
+            m_distanceRange(distanceRange),
+            m_descender(descender),
+            m_lineHeight(lineHeight)
         {
         }
 
     public:
         static Font load(const std::string& name) {
             std::string basePath = "./res/fonts/" + name;
-            auto atlas = Image::Image::loadPNG(basePath + "/atlas.png");
+            auto atlas = Texture::Texture::loadPNG(basePath + "/atlas.png");
             std::size_t atlasWidth = atlas.getWidth();
             std::size_t atlasHeight = atlas.getHeight();
 
@@ -93,10 +97,10 @@ namespace Orpheus {
                 glyphs.try_emplace(glyph["unicode"], glyph["advance"], worldOffset, atlasOffset);
             }
 
-            return Font(atlas, glyphs, json["metrics"]["descender"]);
+            return Font(atlas, glyphs, json["atlas"]["distanceRange"], json["metrics"]["descender"], json["metrics"]["lineHeight"]);
         }
 
-        const Image::Image& getAtlas() const {
+        const Texture::Texture& getAtlas() const {
             return m_atlas;
         }
 
@@ -104,8 +108,16 @@ namespace Orpheus {
             return m_glyphs;
         }
 
+        float getDistanceRange() const {
+            return m_distanceRange;
+        }
+
         float getDescender() const {
             return m_descender;
+        }
+
+        float getLineHeight() const {
+            return m_lineHeight;
         }
     };
 }

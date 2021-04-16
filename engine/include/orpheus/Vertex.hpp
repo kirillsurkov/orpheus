@@ -7,7 +7,7 @@
 namespace Orpheus::Vertex {
     class Buffer {
     private:
-        std::vector<float> m_data;
+        mutable std::vector<float> m_data;
         std::size_t m_elements;
 
     public:
@@ -35,7 +35,7 @@ namespace Orpheus::Vertex {
             return m_data;
         }
 
-        void clearCpuData() {
+        void clearCpuData() const {
             m_data.clear();
         }
     };
