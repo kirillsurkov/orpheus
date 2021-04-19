@@ -1,18 +1,18 @@
 #pragma once
 
 #include "orpheus/Command/Engine/Command.hpp"
+#include "orpheus/Math/Vector.hpp"
 
 namespace Orpheus::Command::Engine {
     class CommandMouse : public Command {
     private:
-        int m_x;
-        int m_y;
-        int m_dx;
-        int m_dy;
+        Math::Vector2 m_coords;
+        Math::Vector2 m_delta;
 
     public:
         CommandMouse(int x, int y, int dx, int dy) :
-            m_x(x), m_y(y), m_dx(dx), m_dy(dy)
+            m_coords(x, y),
+            m_delta(dx, dy)
         {
         }
 
@@ -21,19 +21,19 @@ namespace Orpheus::Command::Engine {
         }
 
         int getX() const {
-            return m_x;
+            return m_coords.getX();
         }
 
         int getY() const {
-            return m_y;
+            return m_coords.getY();
         }
 
         int getDX() const {
-            return m_dx;
+            return m_delta.getX();
         }
 
         int getDY() const {
-            return m_dy;
+            return m_delta.getY();
         }
     };
 }

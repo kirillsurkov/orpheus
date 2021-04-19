@@ -1,8 +1,9 @@
 #pragma once
 
+#include "orpheus/Caches.hpp"
 #include "orpheus/Window/Window.hpp"
 #include "orpheus/Render/Render.hpp"
-#include "orpheus/InputManager.hpp"
+#include "orpheus/Input/InputManager.hpp"
 #include "orpheus/Command/Engine/CommandQuit.hpp"
 #include "orpheus/Command/Game/CommandScenePush.hpp"
 #include "orpheus/Command/Game/CommandScenePop.hpp"
@@ -13,12 +14,13 @@
 namespace Orpheus {
     class Engine : public Loggable {
     private:
-        Window::WindowPtr m_window;
-        Render::RenderPtr m_render;
+        Caches& m_caches;
+        Window::Window& m_window;
+        Render::Render& m_render;
         Input::Manager m_inputManager;
-        std::unordered_map<std::type_index, std::shared_ptr<Scene::Scene>> m_sceneCache;
-        std::stack<std::shared_ptr<Scene::Scene>> m_sceneStack;
-        std::shared_ptr<Scene::Scene> m_sceneBase;
+        std::unordered_map<std::type_index, Scene::ScenePtr> m_sceneCache;
+        std::stack<Scene::ScenePtr> m_sceneStack;
+        Scene::ScenePtr m_sceneBase;
         bool m_alive;
 
         void onCommand(const Command::Engine::CommandQuit& command);
@@ -27,7 +29,7 @@ namespace Orpheus {
         void onCommand(const Command::Game::CommandTest& command);
 
     public:
-        Engine(const Window::WindowPtr& window, const Render::RenderPtr& render);
+        Engine(Caches& caches, Window::Window& window, Render::Render& render);
         ~Engine();
 
         bool isAlive() const;

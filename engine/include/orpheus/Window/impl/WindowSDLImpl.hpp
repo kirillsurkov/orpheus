@@ -92,6 +92,15 @@ namespace Orpheus::Window {
             return Input::Key::UNKNOWN;
         }
 
+        Input::Key s2eMouseButton(Uint8 button) {
+            switch (button) {
+                case SDL_BUTTON_LEFT: return Input::Key::LMB;
+                case SDL_BUTTON_MIDDLE: return Input::Key::MMB;
+                case SDL_BUTTON_RIGHT: return Input::Key::RMB;
+            }
+            return Input::Key::UNKNOWN;
+        }
+
     public:
         Impl(const std::string& title, unsigned int width, unsigned int height);
         ~Impl();
@@ -120,8 +129,16 @@ namespace Orpheus::Window {
                     receiver(Command::Engine::CommandKeyboard(s2eKey(sdlEvent.key.keysym), false));
                     break;
                 }
+                case SDL_MOUSEBUTTONDOWN: {
+                    receiver(Command::Engine::CommandKeyboard(s2eMouseButton(sdlEvent.button.button), true));
+                    break;
+                }
+                case SDL_MOUSEBUTTONUP: {
+                    receiver(Command::Engine::CommandKeyboard(s2eMouseButton(sdlEvent.button.button), false));
+                    break;
+                }
                 case SDL_MOUSEMOTION: {
-                    receiver(Command::Engine::CommandMouse(sdlEvent.motion.x, sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
+                    receiver(Command::Engine::CommandMouse(sdlEvent.motion.x, getHeight() - sdlEvent.motion.y, sdlEvent.motion.xrel, sdlEvent.motion.yrel));
                     break;
                 }
                 }

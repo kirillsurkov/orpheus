@@ -14,4 +14,7 @@ add_executable(Game ${SOURCES} ${INCLUDES})
 
 target_include_directories(Game PUBLIC "${PROJECT_BINARY_DIR}" "./include" "../engine/include")
 
+add_custom_target(CopyResources COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res)
+add_dependencies(Game CopyResources)
+
 target_link_libraries(Game Orpheus)

@@ -1,20 +1,20 @@
 #pragma once
 
 #include "orpheus/Render/impl/OpenGL/Material/Material.hpp"
-#include "orpheus/Command/Material/CommandPrepare.hpp"
-#include "orpheus/Command/Material/CommandColor.hpp"
-#include "orpheus/Command/Material/CommandMatrixProjection.hpp"
-#include "orpheus/Command/Material/CommandMatrixView.hpp"
-#include "orpheus/Command/Material/CommandMatrixModel.hpp"
+#include "orpheus/Material/Command/CommandPrepare.hpp"
+#include "orpheus/Material/Command/CommandColor.hpp"
+#include "orpheus/Material/Command/CommandMatrixProjection.hpp"
+#include "orpheus/Material/Command/CommandMatrixView.hpp"
+#include "orpheus/Material/Command/CommandMatrixModel.hpp"
 
 namespace Orpheus::Render::OpenGLImpl::Material {
-    class MaterialFlatColor : public Material {
+    class FlatColor : public Material {
     private:
         static const inline std::string vss = "#version 330 core\n"
-                   "layout(location = 0) in vec3 position;\n"
+                   "layout(location = 0) in vec2 position;\n"
                    "uniform mat4 u_mvp;\n"
                    "void main() {\n"
-                   "    gl_Position = u_mvp * vec4(position, 1.0);\n"
+                   "    gl_Position = u_mvp * vec4(position, 0.0f, 1.0);\n"
                    "}";
 
         static const inline std::string fss = "#version 330 core\n"
@@ -27,41 +27,42 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         int m_uColor;
         int m_uMVP;
 
-        glm::mat4x4 m_projection;
-        glm::mat4x4 m_view;
-        glm::mat4x4 m_model;
+        Math::Matrix4 m_projection;
+        Math::Matrix4 m_view;
+        Math::Matrix4 m_model;
 
-        void onCommand(const Command::Material::CommandPrepare&) {
-            auto mvp = m_projection * m_view * m_model;
-            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
+        void onCommand(const Orpheus::Material::Command::Prepare&) {
+            auto mvp = m_projection.mul(m_view).mul(m_model);
+            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, mvp.getData());
         }
 
-        void onCommand(const Command::Material::CommandColor& command) {
-            glUniform4f(m_uColor, command.getR(), command.getG(), command.getB(), command.getA());
+        void onCommand(const Orpheus::Material::Command::Color& command) {
+            const auto& color = command.getColor();
+            glUniform4f(m_uColor, color.getR(), color.getG(), color.getB(), color.getA());
         }
 
-        void onCommand(const Command::Material::CommandMatrixProjection& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixProjection& command) {
             m_projection = command.getMatrix();
         }
 
-        void onCommand(const Command::Material::CommandMatrixView& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixView& command) {
             m_view = command.getMatrix();
         }
 
-        void onCommand(const Command::Material::CommandMatrixModel& command) {
+        void onCommand(const Orpheus::Material::Command::MatrixModel& command) {
             m_model = command.getMatrix();
         }
 
     public:
-        MaterialFlatColor() : Material(vss, fss) {
+        FlatColor() : Material(vss, fss) {
             m_uColor = glGetUniformLocation(m_program, "u_color");
             m_uMVP = glGetUniformLocation(m_program, "u_mvp");
 
-            registerMaterialCommand<Command::Material::CommandPrepare>(this);
-            registerMaterialCommand<Command::Material::CommandColor>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixProjection>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixView>(this);
-            registerMaterialCommand<Command::Material::CommandMatrixModel>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Prepare>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Color>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixProjection>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixView>(this);
+            registerMaterialCommand<Orpheus::Material::Command::MatrixModel>(this);
         }
 
         template<class T>

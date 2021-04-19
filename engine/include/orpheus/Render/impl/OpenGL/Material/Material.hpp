@@ -79,7 +79,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         }
 
         template<class T>
-        void postMaterialCommand(T&& command) {
+        void postCommand(T&& command) {
             m_commandDispatcher.dispatchOrThrow(std::forward<T>(command));
         }
     };
