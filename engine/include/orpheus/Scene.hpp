@@ -7,8 +7,7 @@
 #include "orpheus/Entity/EntityCommand.hpp"
 #include "orpheus/Render/Command/CommandClearColor.hpp"
 #include "orpheus/Render/Command/CommandViewport.hpp"
-
-#include <glm/ext.hpp>
+#include <cmath>
 
 namespace Orpheus::Scene {
     class Scene : public Loggable {
@@ -20,11 +19,11 @@ namespace Orpheus::Scene {
         Vertex::BufferCache& m_bufferCache;
         std::vector<std::unique_ptr<Entity::Entity>> m_entities;
         Entity::Command<Render::Command::ClearColor>& m_clearColorEntity;
-        glm::mat4x4 m_projection;
-        glm::mat4x4 m_view;
+        Math::Matrix4 m_projection;
+        Math::Matrix4 m_view;
 
     protected:
-        Render::Command::ClearColor& m_clearColor;
+        Math::Color& m_clearColor;
 
         template<class T, class... Args>
         T& addEntity(Args&&... args) {
@@ -40,12 +39,12 @@ namespace Orpheus::Scene {
         virtual void update(float/* delta*/) {}
 
         void projectionPerspective() {
-            m_projection = glm::perspective(static_cast<float>(M_PI / 3.0), 1.0f * m_width / m_height, 0.01f, 1000.0f);
+            m_projection = Math::Matrix4().perspective(static_cast<float>(M_PI / 3.0), 1.0f * m_width / m_height, 0.01f, 1000.0f);
         }
 
         void projectionOrtho() {
             float aspect = 1.0f * m_width / m_height;
-            m_projection = glm::ortho(-aspect, aspect, -1.0f, 1.0f);
+            m_projection = Math::Matrix4().orthogonal(-aspect, aspect, -1.0f, 1.0f);
         }
 
     public:
@@ -87,36 +86,36 @@ namespace Orpheus::Scene {
             m_inputManager.bindKey(key, std::forward<T>(function));
         }
 
-        const glm::mat4x4& getProjection() const {
+        const Math::Matrix4& getProjection() const {
             return m_projection;
         }
 
-        const glm::mat4x4& getView() const {
+        const Math::Matrix4& getView() const {
             return m_view;
         }
 
-        const std::size_t& getWidth() const {
+        std::size_t getWidth() const {
             return m_width;
         }
 
-        const std::size_t& getHeight() const {
+        std::size_t getHeight() const {
             return m_height;
         }
 
-        glm::vec2 worldToScreen(float x, float y, float z) const {
-            return 0.5f * (glm::vec2(m_projection * m_view * glm::vec4(x, y, z, 1.0f)) + 1.0f) * glm::vec2(m_width, m_height);
+        Math::Vector2 worldToScreen(float x, float y, float z) const {
+            return m_projection.mul(m_view).mul(Math::Vector4(x, y, z, 1.0f)).getXY().add(1.0f, 1.0f).mul(0.5f * m_width, 0.5f * m_height);
         }
 
-        glm::vec3 screenToWorld(float x, float y) const {
-            return glm::inverse(m_projection * m_view) * glm::vec4(2.0f * x / m_width - 1.0f, 2.0f * y / m_height - 1.0f, 0.0f, 1.0f);
+        Math::Vector3 screenToWorld(float x, float y) const {
+            return m_projection.mul(m_view).inverse().mul(Math::Vector4(2.0f * x / m_width - 1.0f, 2.0f * y / m_height - 1.0f, 0.0f, 1.0f)).getXYZ();
         }
 
-        float getMouseX() const {
-            return screenToWorld(m_inputManager.getMouseX(), 0.0f).x;
+        Math::Vector2 getMouseCoordsScreen() const {
+            return Math::Vector2(m_inputManager.getMouseX(), m_inputManager.getMouseY());
         }
 
-        float getMouseY() const {
-            return screenToWorld(0.0f, m_inputManager.getMouseY()).y;
+        Math::Vector2 getMouseCoordsWorld() const {
+            return screenToWorld(m_inputManager.getMouseX(), m_inputManager.getMouseY()).getXY();
         }
     };
 

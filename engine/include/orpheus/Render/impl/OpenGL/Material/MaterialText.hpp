@@ -9,8 +9,7 @@
 #include "orpheus/Material/Command/CommandMatrixModel.hpp"
 #include "orpheus/Material/Text/Command/CommandGlyphModel.hpp"
 #include "orpheus/Material/Text/Command/CommandGlyphAppearance.hpp"
-
-#include <glm/gtc/matrix_transform.hpp>
+#include "orpheus/Material/Text/TextAppearance.hpp"
 
 namespace Orpheus::Render::OpenGLImpl::Material {
     class Text : public Material {
@@ -36,16 +35,15 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "float median(float r, float g, float b) {\n"
                    "    return max(min(r, g), min(max(r, g), b));\n"
                    "}\n"
-                   "float antialias(in vec2 uv, in vec2 size) {\n"
-                   "    vec2 dpdx = dFdx(uv);\n"
-                   "    vec2 dpdy = dFdy(uv);\n"
-                   "    return 0.70710678118654757 * length(vec2(size.x * length(dpdx), size.y * length(dpdy)));\n"
+                   "float antialias(float aa, float value) {\n"
+                   "    return smoothstep(-0.75, 0.75, aa * (value - 0.5));\n"
                    "}\n"
                    "void main() {\n"
+                   "    vec2 dPx = vec2(dFdx(v_uv.x), dFdy(v_uv.y)) * u_textureSize * textureSize(u_texture, 0);\n"
+                   "    float aa = 1.4142135623730950488 * inversesqrt(dPx.x * dPx.x + dPx.y * dPx.y);\n"
                    "    vec4 mtsdf = texture(u_texture, v_uv);\n"
-                   "    float aa = antialias(v_uv, u_textureSize * textureSize(u_texture, 0));\n"
-                   "    float alpha = smoothstep(-0.75, 0.75, (median(mtsdf.r, mtsdf.g, mtsdf.b) - 0.5) / aa);\n"
-                   "    float outline = smoothstep(-0.75, 0.75, (mtsdf.a - 0.5 + u_outline) / aa);\n"
+                   "    float alpha = antialias(aa, median(mtsdf.r, mtsdf.g, mtsdf.b));\n"
+                   "    float outline = antialias(aa, mtsdf.a + u_outline);\n"
                    "    vec4 glyphColor = vec4(u_textColor.xyz, 1.0) * u_textColor.a * alpha;\n"
                    "    vec4 outlineColor = vec4(u_outlineColor.xyz, 1.0) * u_outlineColor.a * outline * (1.0 - glyphColor.a);\n"
                    "    color = glyphColor + outlineColor;\n"
@@ -58,18 +56,19 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         int m_uOutlineColor;
         int m_uOutline;
 
-        glm::mat4x4 m_projection;
-        glm::mat4x4 m_view;
-        glm::mat4x4 m_model;
-        glm::mat4x4 m_glyphModel;
+        Math::Matrix4 m_projection;
+        Math::Matrix4 m_view;
+        Math::Matrix4 m_model;
+        Math::Matrix4 m_glyphModel;
 
         void onCommand(const Orpheus::Material::Command::Prepare&) {
-            auto mvp = m_projection * m_view * m_model * m_glyphModel;
-            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
+            auto mvp = m_projection.mul(m_view).mul(m_model).mul(m_glyphModel);
+            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, mvp.getData());
         }
 
         void onCommand(const Orpheus::Material::Command::Color& command) {
-            glUniform4f(m_uTextColor, command.getR(), command.getG(), command.getB(), command.getA());
+            const auto& color = command.getColor();
+            glUniform4f(m_uTextColor, color.getR(), color.getG(), color.getB(), color.getA());
         }
 
         void onCommand(const Orpheus::Material::Command::Texture& command) {
@@ -95,7 +94,8 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         }
 
         void onCommand(const Orpheus::Material::Text::Command::GlyphAppearance& command) {
-            glUniform4f(m_uOutlineColor, command.getR(), command.getG(), command.getB(), command.getA());
+            const auto& outlineColor = command.getOutlineColor();
+            glUniform4f(m_uOutlineColor, outlineColor.getR(), outlineColor.getG(), outlineColor.getB(), outlineColor.getA());
             glUniform1f(m_uOutline, command.getOutline());
         }
 
@@ -108,7 +108,7 @@ namespace Orpheus::Render::OpenGLImpl::Material {
             m_uOutlineColor = glGetUniformLocation(m_program, "u_outlineColor");
             m_uOutline = glGetUniformLocation(m_program, "u_outline");
 
-            postCommand(Orpheus::Material::Text::Command::GlyphAppearance(0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+            postCommand(Orpheus::Material::Text::Command::GlyphAppearance(Orpheus::Material::Text::Appearance(), 0.0f));
 
             registerMaterialCommand<Orpheus::Material::Command::Prepare>(this);
             registerMaterialCommand<Orpheus::Material::Command::Color>(this);

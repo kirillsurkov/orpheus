@@ -1,7 +1,7 @@
 #pragma once
 
 #include "orpheus/Render/Command/Command.hpp"
-#include "orpheus/Material/Text/Command/CommandGlyphAppearance.hpp"
+#include "orpheus/Material/Text/TextAppearance.hpp"
 
 namespace Orpheus::Render::Command {
     class Text : public Command {
@@ -9,10 +9,10 @@ namespace Orpheus::Render::Command {
         float m_height;
         std::string m_text;
         std::string m_font;
-        Orpheus::Material::Text::Command::GlyphAppearance m_appearance;
+        Orpheus::Material::Text::Appearance m_appearance;
 
     public:
-        Text(float height, const std::string& text, const std::string& font, const Orpheus::Material::Text::Command::GlyphAppearance& appearance) :
+        Text(float height, const std::string& text, const std::string& font, const Orpheus::Material::Text::Appearance& appearance) :
             m_height(height),
             m_text(text),
             m_font(font),
@@ -36,7 +36,7 @@ namespace Orpheus::Render::Command {
             return m_font;
         }
 
-        const Orpheus::Material::Text::Command::GlyphAppearance& getAppearance() const {
+        const Orpheus::Material::Text::Appearance& getAppearance() const {
             return m_appearance;
         }
     };

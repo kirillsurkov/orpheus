@@ -5,7 +5,7 @@
 namespace Orpheus::Material::Command {
     class MatrixModel : public Matrix {
     public:
-        MatrixModel(const glm::mat4x4& matrix) : Matrix(matrix) {
+        MatrixModel(const Math::Matrix4& matrix) : Matrix(matrix) {
         }
 
         virtual std::string getName() const override {

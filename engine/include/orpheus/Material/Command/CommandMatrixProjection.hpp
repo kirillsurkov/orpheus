@@ -5,7 +5,7 @@
 namespace Orpheus::Material::Command {
     class MatrixProjection : public Matrix {
     public:
-        MatrixProjection(const glm::mat4x4& matrix) : Matrix(matrix) {
+        MatrixProjection(const Math::Matrix4& matrix) : Matrix(matrix) {
         }
 
         virtual std::string getName() const override {

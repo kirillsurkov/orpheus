@@ -27,17 +27,18 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         int m_uColor;
         int m_uMVP;
 
-        glm::mat4x4 m_projection;
-        glm::mat4x4 m_view;
-        glm::mat4x4 m_model;
+        Math::Matrix4 m_projection;
+        Math::Matrix4 m_view;
+        Math::Matrix4 m_model;
 
         void onCommand(const Orpheus::Material::Command::Prepare&) {
-            auto mvp = m_projection * m_view * m_model;
-            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, &mvp[0][0]);
+            auto mvp = m_projection.mul(m_view).mul(m_model);
+            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, mvp.getData());
         }
 
         void onCommand(const Orpheus::Material::Command::Color& command) {
-            glUniform4f(m_uColor, command.getR(), command.getG(), command.getB(), command.getA());
+            const auto& color = command.getColor();
+            glUniform4f(m_uColor, color.getR(), color.getG(), color.getB(), color.getA());
         }
 
         void onCommand(const Orpheus::Material::Command::MatrixProjection& command) {

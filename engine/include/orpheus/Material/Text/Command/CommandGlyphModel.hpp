@@ -2,18 +2,17 @@
 
 #include "orpheus/Material/Command/CommandMatrix.hpp"
 #include "orpheus/Material/Text/MaterialText.hpp"
+#include "orpheus/Math/Vector.hpp"
 
 namespace Orpheus::Material {
     class Text::Command::GlyphModel : public Orpheus::Material::Command::Matrix::Matrix {
     private:
-        float m_textureWidth;
-        float m_textureHeight;
+        Math::Vector2 m_textureSize;
 
     public:
-        GlyphModel(float textureWidth, float textureHeight, const glm::mat4& matrix) :
+        GlyphModel(float textureWidth, float textureHeight, const Math::Matrix4& matrix) :
             Matrix(matrix),
-            m_textureWidth(textureWidth),
-            m_textureHeight(textureHeight)
+            m_textureSize(textureWidth, textureHeight)
         {
         }
 
@@ -22,11 +21,11 @@ namespace Orpheus::Material {
         }
 
         float getTextureWidth() const {
-            return m_textureWidth;
+            return m_textureSize.getX();
         }
 
         float getTextureHeight() const {
-            return m_textureHeight;
+            return m_textureSize.getY();
         }
     };
 }

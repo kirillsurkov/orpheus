@@ -7,6 +7,7 @@ namespace Orpheus::Material {
     class Text : public Material {
     public:
         struct Command;
+        class Appearance;
 
     public:
         virtual std::string getName() const override {

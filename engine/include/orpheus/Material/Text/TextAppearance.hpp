@@ -5,20 +5,13 @@
 #include "orpheus/Math/Color.hpp"
 
 namespace Orpheus::Material {
-    class Text::Command::GlyphAppearance : public Orpheus::Material::Command::Command {
+    class Text::Appearance {
     private:
         Math::Color m_outlineColor;
         float m_outline;
 
     public:
-        GlyphAppearance(const Text::Appearance& appearance, float distanceRange) {
-        }
-
-        virtual std::string getName() const override {
-            return "CommandGlyphAppearance";
-        }
-
-        const Math::Color& getOutlineColor() const {
+        const Math::Color& getOutlineColor() {
             return m_outlineColor;
         }
 

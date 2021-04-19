@@ -4,7 +4,7 @@
 #include "orpheus/Material/Command/CommandColor.hpp"
 
 #include <GL/glew.h>
-#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
 Orpheus::Render::OpenGL::Impl::Font::Font(const std::string& name, Vertex::BufferCache& bufferCache) :
     m_font(Orpheus::Font::load(name))
@@ -26,7 +26,7 @@ Orpheus::Render::OpenGL::Impl::Font::Font(const std::string& name, Vertex::Buffe
     }
 }
 
-const Orpheus::Font& Orpheus::Render::OpenGL::Impl::Font::getFont() const {
+const Orpheus::Font& Orpheus::Render::OpenGL::Impl::Font::getFontModel() const {
     return m_font;
 }
 
@@ -84,7 +84,8 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Cl
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::ClearColor& command) {
-    glClearColor(command.getR(), command.getG(), command.getB(), command.getA());
+    const auto& color = command.getColor();
+    glClearColor(color.getR(), color.getG(), color.getB(), color.getA());
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Viewport& command) {
@@ -143,19 +144,18 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Ve
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Text& command) {
     const auto& font = getFont(command.getFont());
-    const auto& fontModel = font.getFont();
+    const auto& fontModel = font.getFontModel();
 
     bindTexture(fontModel.getAtlas());
     postCommand(Material::Command::Texture(0));
 
-    auto appearance(command.getAppearance());
-    postCommand(Material::Text::Command::GlyphAppearance(appearance.getR(), appearance.getG(), appearance.getB(), appearance.getA(), appearance.getOutline() / (fontModel.getDistanceRange() * fontModel.getLineHeight())));
+    postCommand(Material::Text::Command::GlyphAppearance(command.getAppearance(), fontModel.getDistanceRange()));
 
     float descender = fontModel.getDescender();
     float advance = 0.0f;
 
     float size = 2.0f * command.getHeight() / (m_height * fontModel.getLineHeight());
-    glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(size, size, 1.0f));
+    auto transform = Math::Matrix4().scale(size, size, 1.0f);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -170,13 +170,7 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Te
         postCommand(Material::Text::Command::GlyphModel(
                         atlasRect.width,
                         atlasRect.height,
-                        glm::scale(
-                            glm::translate(
-                                transform,
-                                glm::vec3(worldRect.x + advance, worldRect.y - descender, 0.0f)
-                            ),
-                            glm::vec3(worldRect.width, worldRect.height, 1.0f)
-                        )
+                        transform.translate(worldRect.x + advance, worldRect.y - descender, 0.0f).scale(worldRect.width, worldRect.height, 1.0f)
                     ));
         postCommand(Orpheus::Render::Command::Vertices(glyph.vertices));
 
@@ -193,6 +187,7 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Ge
         width += font.getGlyph(c).glyph.getAdvance();
     }
 
-    float height = 2.0f * command.getTextHeight() / (m_height * font.getFont().getLineHeight());
-    command.setResult(width * height, height * font.getFont().getLineHeight());
+    float lineHeight = font.getFontModel().getLineHeight();
+    float ratio = 2.0f * command.getTextHeight() / (m_height * lineHeight);
+    command.setResult(width * ratio, lineHeight * ratio);
 }

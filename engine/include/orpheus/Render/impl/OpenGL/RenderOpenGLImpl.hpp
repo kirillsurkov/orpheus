@@ -56,7 +56,7 @@ namespace Orpheus::Render {
         public:
             Font(const std::string& name, Vertex::BufferCache& bufferCache);
 
-            const Orpheus::Font& getFont() const;
+            const Orpheus::Font& getFontModel() const;
             const Glyph& getGlyph(std::size_t code) const;
         };
 

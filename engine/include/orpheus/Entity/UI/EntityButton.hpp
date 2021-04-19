@@ -3,8 +3,6 @@
 #include "orpheus/Entity/EntityText.hpp"
 #include "orpheus/Entity/EntityRect.hpp"
 
-#include <glm/gtx/color_space.hpp>
-
 namespace Orpheus::Entity::UI {
     class Button : public Entity {
     private:
@@ -30,7 +28,7 @@ namespace Orpheus::Entity::UI {
             m_text.getColor().set(0.0f, 0.0f, 0.0f, 1.0f);
         }
 
-        virtual void draw(const glm::mat4x4& projection, const glm::mat4x4& view, Render::Render& render) const override {
+        virtual void draw(const Math::Matrix4& projection, const Math::Matrix4& view, Render::Render& render) const override {
             m_rect.draw(projection, view, render);
             m_text.draw(projection, view, render);
             if (!m_enabled) {
@@ -46,8 +44,7 @@ namespace Orpheus::Entity::UI {
             if (insideX && insideY) {
                 float value = m_clicked ? 0.5f : 0.75f;
 
-                auto color = glm::rgbColor(glm::vec3(m_timer * 180.0f, 0.5f, value));
-                m_rect.getColor().set(color.x, color.y, color.z, 1.0f);
+                m_rect.getColor().set(Math::Color::fromHSV(m_timer * 180.0f, 0.5f, value));
 
                 if (m_enabled && !m_clicked && m_lastClicked) {
                     m_onClick();

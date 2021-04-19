@@ -20,7 +20,7 @@ namespace Orpheus::Entity {
         {
         }
 
-        virtual void draw(const glm::mat4x4&, const glm::mat4x4&, Render::Render& render) const override {
+        virtual void draw(const Math::Matrix4&, const Math::Matrix4&, Render::Render& render) const override {
             m_draw(render);
         }
 

@@ -1,20 +1,19 @@
 #pragma once
 
 #include "orpheus/Render/Command/Command.hpp"
+#include "orpheus/Math/Vector.hpp"
 
 namespace Orpheus::Render::Command {
     class GetTextSize : public Command {
     private:
-        float& m_resWidth;
-        float& m_resHeight;
+        Math::Vector2& m_res;
         float m_textHeight;
         std::string m_text;
         std::string m_font;
 
     public:
-        GetTextSize(float& resWidth, float& resHeight, float textHeight, const std::string& text, const std::string& font) :
-            m_resWidth(resWidth),
-            m_resHeight(resHeight),
+        GetTextSize(Math::Vector2& res, float textHeight, const std::string& text, const std::string& font) :
+            m_res(res),
             m_textHeight(textHeight),
             m_text(text),
             m_font(font)
@@ -38,8 +37,7 @@ namespace Orpheus::Render::Command {
         }
 
         void setResult(float width, float height) const {
-            m_resWidth = width;
-            m_resHeight = height;
+            m_res.set(width, height);
         }
     };
 }
