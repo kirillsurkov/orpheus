@@ -31,6 +31,10 @@ Orpheus::Math::Matrix4 Orpheus::Math::Matrix4::scale(float x, float y, float z) 
     return Matrix4(glm::value_ptr(glm::scale(glm::make_mat4(m_data), glm::vec3(x, y, z))));
 }
 
+Orpheus::Math::Matrix4 Orpheus::Math::Matrix4::rotate(float angle, float x, float y, float z) const {
+    return Matrix4(glm::value_ptr(glm::rotate(glm::make_mat4(m_data), angle, glm::vec3(x, y, z))));
+}
+
 Orpheus::Math::Matrix4 Orpheus::Math::Matrix4::inverse() const {
     return Matrix4(glm::value_ptr(glm::inverse(glm::make_mat4(m_data))));
 }

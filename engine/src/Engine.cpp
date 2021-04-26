@@ -39,6 +39,18 @@ Orpheus::Engine::Engine(Caches& caches, Window::Window& window, Render::Render& 
     rectCC.addPoint( 0.5f,  0.5f);
     rectCC.addPoint(-0.5f, -0.5f);
     rectCC.addPoint(-0.5f,  0.5f);
+
+    auto& cubeCC = vertexBufferCache.add("cube_center_center", 3);
+    for (std::size_t i = 0; i < 6; i++) {
+        float data[3];
+        std::size_t anchor = i / 2;
+        data[anchor] = 0.5f * (i % 2 ? -1 : 1);
+        for (std::size_t j = 0; j < 6; j++) {
+            data[(anchor + 1) % 3] = 0.5f * ((j + 4) % 6 < 3 ? -1 : 1);
+            data[(anchor + 2) % 3] = 0.5f * ((j + 5) % 6 < 3 ? -1 : 1);
+            cubeCC.addPoint(data[0], data[1], data[2]);
+        }
+    }
 }
 
 Orpheus::Engine::~Engine() {

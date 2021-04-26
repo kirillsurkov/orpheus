@@ -1,5 +1,5 @@
 #include "orpheus/Render/RenderOpenGL.hpp"
-#include "orpheus/Render/impl/OpenGL/RenderOpenGLImpl.hpp"
+#include "orpheus/Render/impl/OpenGL/OpenGL.hpp"
 
 Orpheus::Render::OpenGL::OpenGL(Caches& caches, Window::Window& window) :
     Orpheus::Render::Render(this, window),

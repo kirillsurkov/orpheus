@@ -14,7 +14,7 @@
 namespace Orpheus::Render::OpenGLImpl::Material {
     class Text : public Material {
     private:
-        static const inline std::string vss = "#version 330 core\n"
+        static const inline std::string vss_2d = "#version 330 core\n"
                    "uniform mat4 u_mvp;\n"
                    "layout(location = 0) in vec2 position;\n"
                    "layout(location = 1) in vec2 uv;\n"
@@ -22,6 +22,16 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "void main() {\n"
                    "    v_uv = uv;\n"
                    "    gl_Position = u_mvp * vec4(position, -1.0, 1.0);\n"
+                   "}";
+
+        static const inline std::string vss_3d = "#version 330 core\n"
+                   "uniform mat4 u_mvp;\n"
+                   "layout(location = 0) in vec3 position;\n"
+                   "layout(location = 1) in vec2 uv;\n"
+                   "out vec2 v_uv;\n"
+                   "void main() {\n"
+                   "    v_uv = uv;\n"
+                   "    gl_Position = u_mvp * vec4(position, 1.0);\n"
                    "}";
 
         static const inline std::string fss = "#version 330 core\n"
@@ -49,31 +59,46 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "    color = glyphColor + outlineColor;\n"
                    "}";
 
-        int m_uMVP;
-        int m_uTexture;
-        int m_uTextureSize;
-        int m_uTextColor;
-        int m_uOutlineColor;
-        int m_uOutline;
+        Shader::Shader m_vertex2D;
+        Shader::Shader m_vertex3D;
+        Shader::Shader m_fragment;
+        Shader::Program m_program2D;
+        Shader::Program m_program3D;
 
         Math::Matrix4 m_projection;
         Math::Matrix4 m_view;
         Math::Matrix4 m_model;
         Math::Matrix4 m_glyphModel;
 
-        void onCommand(const Orpheus::Material::Command::Prepare&) {
+        std::size_t m_textureIndex;
+        Math::Vector2 m_textureSize;
+        float m_outline;
+        Math::Color m_outlineColor;
+        Math::Color m_textColor;
+
+        void onCommand(const Orpheus::Material::Command::Prepare& command) {
+            Shader::Program* program;
+
+            const auto& vertices = command.getVertices();
+            if (m_program2D.matchLayout(vertices)) {
+                program = &m_program2D;
+            } else if (m_program3D.matchLayout(vertices)) {
+                program = &m_program3D;
+            } else {
+                throw std::runtime_error("Unsupported layout for material Text");
+            }
+
             auto mvp = m_projection.mul(m_view).mul(m_model).mul(m_glyphModel);
-            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, mvp.getData());
-        }
 
-        void onCommand(const Orpheus::Material::Command::Color& command) {
-            const auto& color = command.getColor();
-            glUniform4f(m_uTextColor, color.getR(), color.getG(), color.getB(), color.getA());
-        }
+            program->use();
 
-        void onCommand(const Orpheus::Material::Command::Texture& command) {
-            glActiveTexture(GL_TEXTURE0 + command.getIndex());
-            glUniform1i(m_uTexture, command.getIndex());
+            glActiveTexture(GL_TEXTURE0 + m_textureIndex);
+            glUniform1i(program->getUniform("u_texture"), m_textureIndex);
+            glUniform2f(program->getUniform("u_textureSize"), m_textureSize.getX(), m_textureSize.getY());
+            glUniform1f(program->getUniform("u_outline"), m_outline);
+            glUniform4f(program->getUniform("u_outlineColor"), m_outlineColor.getR(), m_outlineColor.getG(), m_outlineColor.getB(), m_outlineColor.getA());
+            glUniform4f(program->getUniform("u_textColor"), m_textColor.getR(), m_textColor.getG(), m_textColor.getB(), m_textColor.getA());
+            glUniformMatrix4fv(program->getUniform("u_mvp"), 1, GL_FALSE, mvp.getData());
         }
 
         void onCommand(const Orpheus::Material::Command::MatrixProjection& command) {
@@ -90,33 +115,51 @@ namespace Orpheus::Render::OpenGLImpl::Material {
 
         void onCommand(const Orpheus::Material::Text::Command::GlyphModel& command) {
             m_glyphModel = command.getMatrix();
-            glUniform2f(m_uTextureSize, command.getTextureWidth(), command.getTextureHeight());
+            m_textureSize.set(command.getTextureWidth(), command.getTextureHeight());
+        }
+
+        void onCommand(const Orpheus::Material::Command::Texture& command) {
+            m_textureIndex = command.getIndex();
+        }
+
+        void onCommand(const Orpheus::Material::Command::Color& command) {
+            m_textColor = command.getColor();
         }
 
         void onCommand(const Orpheus::Material::Text::Command::GlyphAppearance& command) {
-            const auto& outlineColor = command.getOutlineColor();
-            glUniform4f(m_uOutlineColor, outlineColor.getR(), outlineColor.getG(), outlineColor.getB(), outlineColor.getA());
-            glUniform1f(m_uOutline, command.getOutline());
+            m_outline = command.getOutline();
+            m_outlineColor = command.getOutlineColor();
         }
 
     public:
-        Text() : Material(vss, fss) {
-            m_uMVP = glGetUniformLocation(m_program, "u_mvp");
-            m_uTexture = glGetUniformLocation(m_program, "u_texture");
-            m_uTextureSize = glGetUniformLocation(m_program, "u_textureSize");
-            m_uTextColor = glGetUniformLocation(m_program, "u_textColor");
-            m_uOutlineColor = glGetUniformLocation(m_program, "u_outlineColor");
-            m_uOutline = glGetUniformLocation(m_program, "u_outline");
+        Text() :
+            m_vertex2D(Shader::Type::VERTEX, vss_2d),
+            m_vertex3D(Shader::Type::VERTEX, vss_3d),
+            m_fragment(Shader::Type::FRAGMENT, fss)
+        {
+            m_program2D
+                .attach(m_vertex2D)
+                .attach(m_fragment)
+                .addLayout(0, 2)
+                .addLayout(1, 2)
+                .link();
+
+            m_program3D
+                .attach(m_vertex3D)
+                .attach(m_fragment)
+                .addLayout(0, 3)
+                .addLayout(1, 2)
+                .link();
 
             postCommand(Orpheus::Material::Text::Command::GlyphAppearance(Orpheus::Material::Text::Appearance(), 0.0f));
 
             registerMaterialCommand<Orpheus::Material::Command::Prepare>(this);
-            registerMaterialCommand<Orpheus::Material::Command::Color>(this);
-            registerMaterialCommand<Orpheus::Material::Command::Texture>(this);
             registerMaterialCommand<Orpheus::Material::Command::MatrixProjection>(this);
             registerMaterialCommand<Orpheus::Material::Command::MatrixView>(this);
             registerMaterialCommand<Orpheus::Material::Command::MatrixModel>(this);
             registerMaterialCommand<Orpheus::Material::Text::Command::GlyphModel>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Texture>(this);
+            registerMaterialCommand<Orpheus::Material::Command::Color>(this);
             registerMaterialCommand<Orpheus::Material::Text::Command::GlyphAppearance>(this);
         }
 

@@ -1,4 +1,4 @@
-#include "orpheus/Render/impl/OpenGL/RenderOpenGLImpl.hpp"
+#include "orpheus/Render/impl/OpenGL/OpenGL.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/MaterialFlatColor.hpp"
 #include "orpheus/Render/impl/OpenGL/Material/MaterialText.hpp"
 #include "orpheus/Material/Command/CommandColor.hpp"
@@ -70,31 +70,7 @@ void Orpheus::Render::OpenGL::Impl::bindTexture(const Texture::Texture& texture)
     }
 }
 
-const Orpheus::Render::OpenGL::Impl::Font& Orpheus::Render::OpenGL::Impl::getFont(const std::string& name) {
-    auto it = m_fontCache.find(name);
-    if (it == m_fontCache.end()) {
-        it = m_fontCache.try_emplace(name, name, m_vertexBufferCache).first;
-    }
-    return it->second;
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Clear&) {
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::ClearColor& command) {
-    const auto& color = command.getColor();
-    glClearColor(color.getR(), color.getG(), color.getB(), color.getA());
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Viewport& command) {
-    m_width = command.getWidth();
-    m_height = command.getHeight();
-    glViewport(command.getX(), command.getY(), m_width, m_height);
-}
-
-void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Vertices& command) {
-    const auto& vertices = command.getVertices();
+const Orpheus::Render::OpenGL::Impl::VerticesInfo& Orpheus::Render::OpenGL::Impl::getVertices(const Vertex::Vertices& vertices) {
     auto it = m_vertices.find(&vertices);
     if (it == m_vertices.end()) {
         unsigned int vao;
@@ -134,11 +110,39 @@ void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Ve
         it = m_vertices.emplace(&vertices, VerticesInfo{vao, verticesCount}).first;
     }
 
-    m_currentMaterial->postCommand(Material::Command::Prepare());
+    return it->second;
+}
 
-    const auto& info = it->second;
-    glBindVertexArray(info.vao);
-    glDrawArrays(GL_TRIANGLES, 0, info.count);
+const Orpheus::Render::OpenGL::Impl::Font& Orpheus::Render::OpenGL::Impl::getFont(const std::string& name) {
+    auto it = m_fontCache.find(name);
+    if (it == m_fontCache.end()) {
+        it = m_fontCache.try_emplace(name, name, m_vertexBufferCache).first;
+    }
+    return it->second;
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Clear&) {
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::ClearColor& command) {
+    const auto& color = command.getColor();
+    glClearColor(color.getR(), color.getG(), color.getB(), color.getA());
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Viewport& command) {
+    m_width = command.getWidth();
+    m_height = command.getHeight();
+    glViewport(command.getX(), command.getY(), m_width, m_height);
+}
+
+void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Vertices& command) {
+    const auto& vertices = getVertices(command.getVertices());
+
+    m_currentMaterial->postCommand(Material::Command::Prepare(command.getVertices()));
+
+    glBindVertexArray(vertices.vao);
+    glDrawArrays(GL_TRIANGLES, 0, vertices.count);
 }
 
 void Orpheus::Render::OpenGL::Impl::onCommand(const Orpheus::Render::Command::Text& command) {

@@ -10,11 +10,18 @@
 namespace Orpheus::Render::OpenGLImpl::Material {
     class FlatColor : public Material {
     private:
-        static const inline std::string vss = "#version 330 core\n"
+        static const inline std::string vss_2d = "#version 330 core\n"
                    "layout(location = 0) in vec2 position;\n"
                    "uniform mat4 u_mvp;\n"
                    "void main() {\n"
                    "    gl_Position = u_mvp * vec4(position, 0.0f, 1.0);\n"
+                   "}";
+
+        static const inline std::string vss_3d = "#version 330 core\n"
+                   "layout(location = 0) in vec3 position;\n"
+                   "uniform mat4 u_mvp;\n"
+                   "void main() {\n"
+                   "    gl_Position = u_mvp * vec4(position, 1.0);\n"
                    "}";
 
         static const inline std::string fss = "#version 330 core\n"
@@ -24,21 +31,38 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                    "    color = vec4(u_color.r, u_color.g, u_color.b, u_color.a);\n"
                    "}";
 
-        int m_uColor;
-        int m_uMVP;
+        Shader::Shader m_vertex2D;
+        Shader::Shader m_vertex3D;
+        Shader::Shader m_fragment;
+        Shader::Program m_program2D;
+        Shader::Program m_program3D;
 
+        Math::Color m_color;
         Math::Matrix4 m_projection;
         Math::Matrix4 m_view;
         Math::Matrix4 m_model;
 
-        void onCommand(const Orpheus::Material::Command::Prepare&) {
+        void onCommand(const Orpheus::Material::Command::Prepare& command) {
+            Shader::Program* program;
+
+            const auto& vertices = command.getVertices();
+            if (m_program2D.matchLayout(vertices)) {
+                program = &m_program2D;
+            } else if (m_program3D.matchLayout(vertices)) {
+                program = &m_program3D;
+            } else {
+                throw std::runtime_error("Unsupported layout for material FlatColor");
+            }
+
             auto mvp = m_projection.mul(m_view).mul(m_model);
-            glUniformMatrix4fv(m_uMVP, 1, GL_FALSE, mvp.getData());
+
+            program->use();
+            glUniformMatrix4fv(program->getUniform("u_mvp"), 1, GL_FALSE, mvp.getData());
+            glUniform4f(program->getUniform("u_color"), m_color.getR(), m_color.getG(), m_color.getB(), m_color.getA());
         }
 
         void onCommand(const Orpheus::Material::Command::Color& command) {
-            const auto& color = command.getColor();
-            glUniform4f(m_uColor, color.getR(), color.getG(), color.getB(), color.getA());
+            m_color = command.getColor();
         }
 
         void onCommand(const Orpheus::Material::Command::MatrixProjection& command) {
@@ -54,9 +78,22 @@ namespace Orpheus::Render::OpenGLImpl::Material {
         }
 
     public:
-        FlatColor() : Material(vss, fss) {
-            m_uColor = glGetUniformLocation(m_program, "u_color");
-            m_uMVP = glGetUniformLocation(m_program, "u_mvp");
+        FlatColor() :
+            m_vertex2D(Shader::Type::VERTEX, vss_2d),
+            m_vertex3D(Shader::Type::VERTEX, vss_3d),
+            m_fragment(Shader::Type::FRAGMENT, fss)
+        {
+            m_program2D
+                .attach(m_vertex2D)
+                .attach(m_fragment)
+                .addLayout(0, 2)
+                .link();
+
+            m_program3D
+                .attach(m_vertex3D)
+                .attach(m_fragment)
+                .addLayout(0, 3)
+                .link();
 
             registerMaterialCommand<Orpheus::Material::Command::Prepare>(this);
             registerMaterialCommand<Orpheus::Material::Command::Color>(this);

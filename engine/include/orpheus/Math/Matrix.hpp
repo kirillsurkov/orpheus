@@ -22,6 +22,7 @@ namespace Orpheus::Math {
 
         Matrix4 translate(float x, float y, float z) const;
         Matrix4 scale(float x, float y, float z) const;
+        Matrix4 rotate(float angle, float x, float y, float z) const;
 
         Matrix4 inverse() const;
 

@@ -74,6 +74,7 @@ namespace Orpheus::Render {
 
     private:
         void bindTexture(const Texture::Texture& texture);
+        const VerticesInfo& getVertices(const Vertex::Vertices& vertices);
         const Font& getFont(const std::string& name);
 
         void onCommand(const Orpheus::Render::Command::Clear& command);
@@ -92,7 +93,6 @@ namespace Orpheus::Render {
         void registerMaterial() {
             m_materialDispatcher.registerType<Utils::TypeIdentity<T>>([this, material = std::make_shared<U>()](auto&&) {
                 m_currentMaterial = material;
-                m_currentMaterial->use();
             });
         }
 
