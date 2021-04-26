@@ -88,9 +88,9 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                 throw std::runtime_error("Unsupported layout for material Text");
             }
 
-            auto mvp = m_projection.mul(m_view).mul(m_model).mul(m_glyphModel);
-
             program->use();
+
+            auto mvp = m_projection.mul(m_view).mul(m_model).mul(m_glyphModel);
 
             glActiveTexture(GL_TEXTURE0 + m_textureIndex);
             glUniform1i(program->getUniform("u_texture"), m_textureIndex);

@@ -54,9 +54,10 @@ namespace Orpheus::Render::OpenGLImpl::Material {
                 throw std::runtime_error("Unsupported layout for material FlatColor");
             }
 
+            program->use();
+
             auto mvp = m_projection.mul(m_view).mul(m_model);
 
-            program->use();
             glUniformMatrix4fv(program->getUniform("u_mvp"), 1, GL_FALSE, mvp.getData());
             glUniform4f(program->getUniform("u_color"), m_color.getR(), m_color.getG(), m_color.getB(), m_color.getA());
         }
