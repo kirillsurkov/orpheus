@@ -49,6 +49,11 @@ public:
             m_fpsCounter = 0;
         }
 
+        auto topLeft = screenToWorld(0, getHeight());
+
+        m_fpsIndicator.setX(topLeft.getX());
+        m_fpsIndicator.setY(topLeft.getY() - m_fpsIndicator.getHeight());
+
         m_cube.rotate(delta);
     }
 };
