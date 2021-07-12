@@ -1,0 +1,8 @@
+#pragma once
+
+namespace orpheus::physics::version::bullet {
+    enum {
+        Major = @RenderOpenGL_VERSION_MAJOR@,
+        Minor = @RenderOpenGL_VERSION_MINOR@
+    };
+}
