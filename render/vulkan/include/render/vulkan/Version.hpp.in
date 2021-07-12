@@ -1,0 +1,8 @@
+#pragma once
+
+namespace orpheus::render::version::vulkan {
+    enum {
+        Major = @RenderVulkan_VERSION_MAJOR@,
+        Minor = @RenderVulkan_VERSION_MINOR@
+    };
+}

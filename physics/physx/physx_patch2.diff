@@ -1,0 +1,18 @@
+diff --git a/physx/buildtools/presets/linux-cross.xml b/physx/buildtools/presets/linux-cross.xml
+new file mode 100644
+index 00000000..e7adfc25
+--- /dev/null
++++ b/physx/buildtools/presets/linux-cross.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<preset name="linux-cross" comment="Linux clang PhysX SDK general settings">
++  <platform targetPlatform="linux" compiler="clang-crosscompile" />
++  <CMakeSwitches>
++    <cmakeSwitch name="PX_BUILDSNIPPETS" value="True" comment="Generate the snippets" />
++    <cmakeSwitch name="PX_BUILDPUBLICSAMPLES" value="True" comment="Generate the samples" />
++    <cmakeSwitch name="PX_GENERATE_STATIC_LIBRARIES" value="True" comment="Generate static libs" />
++  </CMakeSwitches>
++  <CMakeParams>
++    <cmakeParam name="CMAKE_INSTALL_PREFIX" value="install/linux/PhysX" comment="Install path relative to PhysX SDK root" />
++  </CMakeParams>
++</preset>

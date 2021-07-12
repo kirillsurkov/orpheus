@@ -1,0 +1,8 @@
+#pragma once
+
+namespace orpheus::math::version::cglm {
+    enum {
+        Major = @MathCGLM_VERSION_MAJOR@,
+        Minor = @MathCGLM_VERSION_MINOR@
+    };
+}
