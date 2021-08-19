@@ -26,13 +26,13 @@ function(build)
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         execute_process(COMMAND bash generate_projects.sh windows
-                        result_variable retcode
-                        working_directory ${argv0}/physx)
+                        RESULT_VARIABLE retcode
+                        WORKING_DIRECTORY ${ARGV0}/physx)
         check_retcode()
     else()
         execute_process(COMMAND bash generate_projects.sh linux
-                        result_variable retcode
-                        working_directory ${argv0}/physx)
+                        RESULT_VARIABLE retcode
+                        WORKING_DIRECTORY ${ARGV0}/physx)
         check_retcode()
     endif()
 
