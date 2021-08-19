@@ -211,33 +211,17 @@ namespace orpheus::render::opengl {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glGenTextures(1, &m_textureReservoirSampleRead);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirSampleRead);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glGenTextures(1, &m_textureReservoirRead);
+        glBindTexture(GL_TEXTURE_2D, m_textureReservoirRead);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, WIDTH, HEIGHT, 0, GL_RG, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glGenTextures(1, &m_textureReservoirSampleWrite);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirSampleWrite);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureReservoirWeightRead);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirWeightRead);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureReservoirWeightWrite);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirWeightWrite);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glGenTextures(1, &m_textureReservoirWrite);
+        glBindTexture(GL_TEXTURE_2D, m_textureReservoirWrite);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, WIDTH, HEIGHT, 0, GL_RG, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -419,14 +403,12 @@ namespace orpheus::render::opengl {
     void OpenGL::setMaterial(const render::material::GGX& material) {
         glUseProgram(m_programGGX);
 
-        std::swap(m_textureReservoirSampleRead, m_textureReservoirSampleWrite);
-        std::swap(m_textureReservoirWeightRead, m_textureReservoirWeightWrite);
+        std::swap(m_textureReservoirRead, m_textureReservoirWrite);
 
-        GLenum drawBuffers[3] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
-        glDrawBuffers(3, drawBuffers);
+        GLenum drawBuffers[2] = {GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+        glDrawBuffers(2, drawBuffers);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureFboNoise, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureReservoirSampleWrite, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_textureReservoirWeightWrite, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureReservoirWrite, 0);
         clear(0.0f, 0.0f, 0.0f, 0.0f);
 
         math::Matrix4x4 viewInv;
@@ -475,11 +457,7 @@ namespace orpheus::render::opengl {
         glUniform1i(glGetUniformLocation(m_programGGX, "u_textureMag"), 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirSampleRead);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureReservoir[0]"), 2);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirWeightRead);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureReservoir[1]"), 3);
+        glBindTexture(GL_TEXTURE_2D, m_textureReservoirRead);
+        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureReservoir"), 2);
     }
 }

@@ -46,10 +46,8 @@ namespace orpheus::render::opengl {
         GLuint m_textureDenoiseWrite;
         GLuint m_textureBlurPass1;
         GLuint m_textureBlurPass2;
-        GLuint m_textureReservoirSampleRead;
-        GLuint m_textureReservoirWeightRead;
-        GLuint m_textureReservoirSampleWrite;
-        GLuint m_textureReservoirWeightWrite;
+        GLuint m_textureReservoirRead;
+        GLuint m_textureReservoirWrite;
 
         GLuint m_programFlatColor;
         GLuint m_programGGX;

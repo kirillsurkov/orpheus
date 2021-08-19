@@ -11,7 +11,7 @@ namespace orpheus {
                    const std::shared_ptr<interface::IMath>&    math,
                    const std::shared_ptr<Scene>&               scene) :
         m_running(true),
-        m_fpsLimit(60),
+        m_fpsLimit(1000),
         m_window(window),
         m_render(render),
         m_renderExecutor("Render"),
@@ -59,7 +59,7 @@ namespace orpheus {
             double delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count() / 1000.0f;
             last = now;
 
-            std::cout << (1.0f / delta) << std::endl;
+            //std::cout << (1.0f / delta) << std::endl;
 
             auto renderFuture  = m_renderExecutor.execute([&]() {
                 m_render->startFrame();
