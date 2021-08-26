@@ -35,9 +35,10 @@ namespace orpheus::render::opengl {
         Mesh m_plane;
         Mesh m_bumpy;
 
-        GLuint m_textureLtcMat;
-        GLuint m_textureLtcMag;
         GLuint m_textureNoise;
+
+        GLuint m_textureBRDF_GGX_mat;
+        GLuint m_textureBRDF_GGX_mag;
 
         GLuint m_textureFloorColor;
         GLuint m_textureFloorNormal;
@@ -45,21 +46,21 @@ namespace orpheus::render::opengl {
 
         GLuint m_fbo;
         GLuint m_textureFboDepthColor;
-        GLuint m_textureFboDepthNoise;
         GLuint m_textureFboColor;
-        GLuint m_textureFboNormal;
-        GLuint m_textureFboNoise;
-        GLuint m_textureDenoiseRead;
-        GLuint m_textureDenoiseWrite;
-        GLuint m_textureBlurPass1;
-        GLuint m_textureBlurPass2;
         GLuint m_textureReservoirRead;
         GLuint m_textureReservoirWrite;
 
+        GLuint m_textureFboBRDFDepth;
+        GLuint m_textureFboBRDFColor;
+        GLuint m_textureFboBRDFPosition;
+        GLuint m_textureFboBRDFNormal;
+        GLuint m_textureFboBRDFRoughness;
+        GLuint m_textureFboBRDFResult;
+
         GLuint m_programFlatColor;
-        GLuint m_programGGX;
-        GLuint m_programDenoise;
-        GLuint m_programBlur;
+        GLuint m_programBRDF;
+        GLuint m_programBRDF_GBuffer;
+        GLuint m_programCombine;
 
         Assimp::Importer m_meshImporter;
 

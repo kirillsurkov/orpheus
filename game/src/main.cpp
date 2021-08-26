@@ -347,7 +347,7 @@ public:
         m_materialGgx.lightsCount = m_areaLightGroup->getCount();
 
         m_model = orpheus::math::Matrix4x4{};
-        m_math->scale(m_model, 5.0f, 5.0f, 5.0f);
+        m_math->scale(m_model, 5.0f, 15.0f, 5.0f);
         m_math->translate(m_model, m_position.x(), m_position.y() + 2 * std::abs(std::sin(0.1f * m_timer + m_position.x() * 0.481516 + m_position.z() * 0.2342)), m_position.z());
 
         orpheus::math::Matrix4x4 model;
@@ -397,8 +397,8 @@ public:
         auto areaLightGroup = addEntity<EntityAreaLightGroup>();
 
         std::vector<std::shared_ptr<EntityReflectFloor>> floors;
-        for (int i = -25; i < 25; i++) {
-            for (int j = -25; j < 25; j++) {
+        for (int i = -10; i < 10; i++) {
+            for (int j = -10; j < 10; j++) {
                 orpheus::math::Vector3 color;
                 m_math->hsv2rgb(color, 360.0f * std::fmod(3.0f * ((i + 5) * 10 + (j + 5)) / 100.0f, 1.0f), 0.75f, 0.4f);
                 floors.push_back(addEntity<EntityReflectFloor>(areaLightGroup, color, i * 2.01f, 0.0, -j * 2.01f));
