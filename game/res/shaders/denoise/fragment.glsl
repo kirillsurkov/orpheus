@@ -3,6 +3,7 @@
 uniform sampler2D u_color;
 uniform sampler2D u_noise;
 uniform sampler2D u_lastDenoise;
+uniform sampler2D u_textureFboColor;
 uniform vec2 u_resolution;
 
 in vec2 v_uv;
@@ -64,5 +65,5 @@ void main() {
     mixRate += clampAmount * 4.0;
     mixRate = clamp(mixRate, 0.05, 0.5);
 
-    outColor = texture2D(u_color, v_uv) + vec4(decodePalYuv(denoised), mixRate);
+    outColor = texture2D(u_textureFboColor, v_uv) * 1.0 + texture2D(u_noise, v_uv);// + vec4(decodePalYuv(denoised), mixRate);
 }

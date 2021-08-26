@@ -43,7 +43,7 @@ namespace orpheus {
         if (m_flyRight)    m_math->add(translation, translation, m_right);
         if (translation.x() || translation.y() || translation.z()) {
             m_math->normalize(translation);
-            m_math->mul(translation, translation, delta * 10);
+            m_math->mul(translation, translation, delta * 20);
             m_math->add(m_position, m_position, translation);
         }
 

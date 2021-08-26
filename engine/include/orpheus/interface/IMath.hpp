@@ -137,5 +137,7 @@ namespace orpheus::interface {
         virtual void sub(math::Vector2& dst, const math::Vector2& lhs, const math::Vector2& rhs)                          = 0;
         virtual void sub(math::Vector3& dst, const math::Vector3& lhs, const math::Vector3& rhs)                          = 0;
         virtual void sub(math::Vector4& dst, const math::Vector4& lhs, const math::Vector4& rhs)                          = 0;
+
+        virtual void hsv2rgb(math::Vector3& dst, float h, float s, float v)                                               = 0;
     };
 }

@@ -5,17 +5,20 @@
 #include <memory>
 #include <vector>
 
-namespace orpheus::render::material {
-    struct FlatColor {
-        math::Vector3 color;
-    };
+namespace orpheus::render {
+    using SsboId = std::size_t;
 
-    struct GGX {
-        float              roughness;
-        std::vector<float> lightPoints;
-        std::vector<float> lightColors;
-        std::vector<int>   lightIndices;
-    };
+    namespace material {
+        struct FlatColor {
+            math::Vector3 color;
+        };
+
+        struct GGX {
+            float         roughness;
+            SsboId        lightsBuffer;
+            std::uint64_t lightsCount = 1;
+        };
+    }
 }
 
 namespace orpheus::interface {
@@ -23,6 +26,12 @@ namespace orpheus::interface {
         virtual void init()                                    = 0;
         virtual void startFrame()                              = 0;
         virtual void endFrame()                                = 0;
+
+        virtual void  setSSBO(render::SsboId ssbo)             = 0;
+        virtual void* ssboMapBuffer()                          = 0;
+        virtual void  ssboUnmapBuffer()                        = 0;
+        virtual void  ssboSetSize(std::uint32_t size)          = 0;
+
         virtual void setProjection(const math::Matrix4x4& mat) = 0;
         virtual void setView(const math::Matrix4x4& mat)       = 0;
         virtual void setModel(const math::Matrix4x4& mat)      = 0;

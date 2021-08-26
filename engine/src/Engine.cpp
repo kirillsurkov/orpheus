@@ -22,22 +22,21 @@ namespace orpheus {
         m_math(math),
         m_scene(scene)
     {
-        m_window->create("", 1600, 900);
-
-        m_scene->setWidth(1600);
-        m_scene->setHeight(900);
+        m_scene->setWidth(800);
+        m_scene->setHeight(600);
 
         m_renderExecutor.start();
         m_inputExecutor.start();
         m_physicsExecutor.start();
 
         auto renderFut = m_renderExecutor.execute([&]() {
+            m_window->create("TWG", 800, 600);
             m_renderContext = m_window->createContext();
             m_render->init();
         });
 
         auto physicsFut = m_physicsExecutor.execute([&]() {
-            m_physics->init(1.0f / 10.0f);
+            if (m_physics) m_physics->init(1.0f / 10.0f);
         });
 
         physicsFut.wait();
@@ -45,11 +44,17 @@ namespace orpheus {
     }
 
     Engine::~Engine() {
-        auto renderFut = m_renderExecutor.execute([&]() { m_renderContext.reset(); });
-        auto physicsFut = m_physicsExecutor.execute([&]() { m_physics.reset(); });
+        auto renderFut = m_renderExecutor.execute([&]() {
+            m_renderContext.reset();
+            m_window->destroy();
+        });
+
+        auto physicsFut = m_physicsExecutor.execute([&]() {
+            m_physics.reset();
+        });
+
         physicsFut.wait();
         renderFut.wait();
-        m_window->destroy();
     }
 
     void Engine::run() {
@@ -62,24 +67,26 @@ namespace orpheus {
             //std::cout << (1.0f / delta) << std::endl;
 
             auto renderFuture  = m_renderExecutor.execute([&]() {
+                m_input->update();
+
                 m_render->startFrame();
                 m_scene->draw(m_render);
                 m_render->endFrame();
                 m_window->swapBuffers();
             });
 
-            auto inputFuture   = m_renderExecutor.execute ([&]() { m_input->update(); });
-            auto physicsFuture = m_physicsExecutor.execute([&]() { m_physics->update(delta); });
+            //auto inputFuture   = m_renderExecutor.execute ([&]() { m_input->update(); });
+            auto physicsFuture = m_physicsExecutor.execute([&]() { if (m_physics) m_physics->update(delta); });
 
             physicsFuture.wait();
-            inputFuture.wait();
+            //inputFuture.wait();
             renderFuture.wait();
 
             if (m_input->isQuit()) {
                 break;
             }
 
-            m_physics->apply();
+            if (m_physics) m_physics->apply();
 
             m_scene->update(delta);
 

@@ -2,6 +2,7 @@
 
 #include <cglm/cglm.h>
 #include <cglm/call.h>
+#include <cglm/color.h>
 
 namespace orpheus::math::cglm {
     void CGLM::inverse(Matrix4x4& dst, const Matrix4x4& mat) {
@@ -108,5 +109,46 @@ namespace orpheus::math::cglm {
 
     void CGLM::sub(Vector4& dst, const Vector4& lhs, const Vector4& rhs) {
         glm_vec4_sub(const_cast<Vector4&>(lhs).data, const_cast<Vector4&>(rhs).data, dst.data);
+    }
+
+    void CGLM::hsv2rgb(Vector3& dst, float h, float s, float v) {
+        if (s <= 0.0) {
+            dst.x() = v;
+            dst.y() = v;
+            dst.z() = v;
+            return;
+        }
+
+        float hh = h;
+        if (hh >= 360.0) hh = 0.0;
+        hh /= 60.0;
+
+        long i = (long)hh;
+        float ff = hh - i;
+        float p = v * (1.0 - s);
+        float q = v * (1.0 - (s * ff));
+        float t = v * (1.0 - (s * (1.0 - ff)));
+
+        switch(i) {
+        case 0:
+            dst = {v, t, p};
+            break;
+        case 1:
+            dst = {q, v, p};
+            break;
+        case 2:
+            dst = {p, v, t};
+            break;
+        case 3:
+            dst = {p, q, v};
+            break;
+        case 4:
+            dst = {t, p, v};
+            break;
+        case 5:
+        default:
+            dst = {v, p, q};
+            break;
+        }
     }
 }

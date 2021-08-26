@@ -41,5 +41,7 @@ namespace orpheus::math::cglm {
         virtual void sub(Vector2& dst, const Vector2& lhs, const Vector2& rhs)                                      override;
         virtual void sub(Vector3& dst, const Vector3& lhs, const Vector3& rhs)                                      override;
         virtual void sub(Vector4& dst, const Vector4& lhs, const Vector4& rhs)                                      override;
+
+        virtual void hsv2rgb(Vector3& dst, float h, float s, float v)                                               override;
     };
 }

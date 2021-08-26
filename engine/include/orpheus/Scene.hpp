@@ -20,6 +20,7 @@ namespace orpheus {
         std::shared_ptr<interface::IPhysics>                              m_physics;
         std::vector<std::shared_ptr<Entity>>                              m_entities;
         std::unordered_map<input::Key, std::function<void(input::State)>> m_keyListeners;
+        std::uint32_t                                                     m_ssboCounter;
 
     protected:
         std::shared_ptr<interface::IMath> m_math;
@@ -44,10 +45,12 @@ namespace orpheus {
 
         physics::ID addBody(const physics::Description& description);
 
+        render::SsboId createSSBO();
+
         void setWidth(float width);
         void setHeight(float height);
 
-        void draw(const std::shared_ptr<orpheus::interface::IRender>& render);
+        void draw(const std::shared_ptr<interface::IRender>& render);
         void update(float delta);
 
         virtual void userUpdate(float delta);

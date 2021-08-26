@@ -24,6 +24,7 @@ namespace orpheus::render::opengl {
         math::Matrix4x4 m_projection;
         math::Matrix4x4 m_view;
         math::Matrix4x4 m_model;
+        math::Matrix4x4 m_viewInv;
 
         math::Matrix4x4 m_viewProjection;
         math::Matrix4x4 m_modelViewProjection;
@@ -36,9 +37,15 @@ namespace orpheus::render::opengl {
 
         GLuint m_textureLtcMat;
         GLuint m_textureLtcMag;
+        GLuint m_textureNoise;
+
+        GLuint m_textureFloorColor;
+        GLuint m_textureFloorNormal;
+        GLuint m_textureFloorRoughness;
 
         GLuint m_fbo;
-        GLuint m_textureFboDepth;
+        GLuint m_textureFboDepthColor;
+        GLuint m_textureFboDepthNoise;
         GLuint m_textureFboColor;
         GLuint m_textureFboNormal;
         GLuint m_textureFboNoise;
@@ -56,8 +63,10 @@ namespace orpheus::render::opengl {
 
         Assimp::Importer m_meshImporter;
 
-        std::random_device m_randomDevice;
-        std::uniform_real_distribution<float> m_random;
+        std::random_device                    m_randomDevice;
+        std::uniform_real_distribution<float> m_randomFloat;
+
+        std::unordered_map<SsboId, GLuint> m_ssboMap;
 
         GLuint createShader(const std::string& name);
         Mesh loadMesh(const std::string& name);
@@ -68,6 +77,12 @@ namespace orpheus::render::opengl {
         virtual void init()                                    override;
         virtual void startFrame()                              override;
         virtual void endFrame()                                override;
+
+        virtual void  setSSBO(render::SsboId ssbo)             override;
+        virtual void* ssboMapBuffer()                          override;
+        virtual void  ssboUnmapBuffer()                        override;
+        virtual void  ssboSetSize(std::uint32_t size)          override;
+
         virtual void setProjection(const math::Matrix4x4& mat) override;
         virtual void setView(const math::Matrix4x4& mat)       override;
         virtual void setModel(const math::Matrix4x4& mat)      override;

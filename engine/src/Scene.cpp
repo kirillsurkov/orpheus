@@ -23,6 +23,10 @@ namespace orpheus {
         return m_physics->addBody(description);
     }
 
+    render::SsboId Scene::createSSBO() {
+        return m_ssboCounter++;
+    }
+
     void Scene::setWidth(float width) {
         m_width = width;
     }
@@ -31,7 +35,7 @@ namespace orpheus {
         m_height = height;
     }
 
-    void Scene::draw(const std::shared_ptr<orpheus::interface::IRender>& render) {
+    void Scene::draw(const std::shared_ptr<interface::IRender>& render) {
         math::Matrix4x4 projection;
         m_math->perspective(projection, 3.141592653f * 1.0f / 4.0f, m_width / m_height, 0.01f, 1000.0f);
 
