@@ -112,7 +112,7 @@ namespace orpheus::render::opengl {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat == GL_DEPTH_COMPONENT ? GL_DEPTH_COMPONENT : format, type, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat == GL_DEPTH_COMPONENT32F ? GL_DEPTH_COMPONENT : format, type, data);
         return id;
     }
 
@@ -144,6 +144,7 @@ namespace orpheus::render::opengl {
         m_programBRDF = createShader("brdf");
         m_programBRDF_GBuffer = createShader("brdf_gbuffer");
         m_programCombine = createShader("combine");
+        m_programDenoise = createShader("denoise");
 
         m_textureNoise = loadTexture("noise/noise.png", GL_RGBA32F);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -153,36 +154,38 @@ namespace orpheus::render::opengl {
         m_textureFloorNormal = loadTexture("floor/normal.png", GL_RGB32F);
         m_textureFloorRoughness = loadTexture("floor/roughness.png", GL_R32F);
 
-        std::vector<float> ltc_mat;
-        std::vector<float> ltc_mag;
-
         {
+            std::vector<float> data;
             std::ifstream input("./res/textures/ltc/ggx/mat");
             float f;
-            while (input >> f) ltc_mat.push_back(f);
+            while (input >> f) data.push_back(f);
+            m_textureBRDF_GGX_mat = createTexture(GL_RGBA32F, 64, 64, data.data(), GL_FLOAT);
         }
 
         {
+            std::vector<float> data;
             std::ifstream input("./res/textures/ltc/ggx/mag");
             float f;
-            while (input >> f) ltc_mag.push_back(f);
+            while (input >> f) data.push_back(f);
+            m_textureBRDF_GGX_mag = createTexture(GL_R32F, 64, 64, data.data(), GL_FLOAT, GL_RED);
         }
-
-        m_textureBRDF_GGX_mat = createTexture(GL_RGBA32F, 64, 64, ltc_mat.data(), GL_FLOAT);
-        m_textureBRDF_GGX_mag = createTexture(GL_R32F, 64, 64, ltc_mag.data(), GL_FLOAT, GL_RED);
 
         m_textureReservoirRead = createTexture(GL_RGB32F, WIDTH, HEIGHT);
         m_textureReservoirWrite = createTexture(GL_RGB32F, WIDTH, HEIGHT);
 
-        m_textureFboDepth = createTexture(GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        m_textureFboDepth = createTexture(GL_DEPTH_COMPONENT32F, WIDTH, HEIGHT);
         m_textureFboColor = createTexture(GL_RGB, WIDTH, HEIGHT);
 
-        m_textureFboBRDFDepth = createTexture(GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        m_textureFboBRDFDepth = createTexture(GL_DEPTH_COMPONENT32F, WIDTH, HEIGHT);
         m_textureFboBRDFColor = createTexture(GL_RGB, WIDTH, HEIGHT);
         m_textureFboBRDFPosition = createTexture(GL_RGB32F, WIDTH, HEIGHT);
         m_textureFboBRDFNormal = createTexture(GL_RGB32F, WIDTH, HEIGHT);
         m_textureFboBRDFRoughness = createTexture(GL_RED, WIDTH, HEIGHT);
-        m_textureFboBRDFResult = createTexture(GL_RGB, WIDTH, HEIGHT);
+        m_textureFboBRDF = createTexture(GL_RGB, WIDTH, HEIGHT);
+
+        m_textureFboDenoiseInput = createTexture(GL_RGB, WIDTH, HEIGHT);
+        m_textureFboDenoiseRead = createTexture(GL_RGB, WIDTH, HEIGHT);
+        m_textureFboDenoiseWrite = createTexture(GL_RGB, WIDTH, HEIGHT);
 
         {
             glGenFramebuffers(1, &m_fboFlatColor);
@@ -214,7 +217,16 @@ namespace orpheus::render::opengl {
             GLenum drawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
             glDrawBuffers(2, drawBuffers);
             glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
-            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFResult, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDF, 0);
+        }
+
+        {
+            glGenFramebuffers(1, &m_fboDenoise);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fboDenoise);
+            glViewport(0, 0, WIDTH, HEIGHT);
+            GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, drawBuffers);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
         }
     }
 
@@ -290,10 +302,10 @@ namespace orpheus::render::opengl {
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboDenoise);
         glViewport(0, 0, WIDTH, HEIGHT);
 
-        clear(0.0f, 0.0f, 0.0f, 0.0f);
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboDenoiseInput, 0);
 
         glUseProgram(m_programCombine);
 
@@ -306,7 +318,7 @@ namespace orpheus::render::opengl {
         glUniform1i(glGetUniformLocation(m_programCombine, "u_textureDepth1"), 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFResult);
+        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDF);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_texture2"), 2);
 
         glActiveTexture(GL_TEXTURE3);
@@ -315,9 +327,27 @@ namespace orpheus::render::opengl {
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        /*glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_textureFboDenoiseInput);
+        glUniform1i(glGetUniformLocation(m_programCombine, "u_noise"), 0);
+
+        glUseProgram(m_programDenoise);
+        for (int i = 0; i < 10; i++) {
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboDenoiseWrite, 0);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, m_textureFboDenoiseRead);
+            glUniform1i(glGetUniformLocation(m_programCombine, "u_lastDenoise"), 1);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            std::swap(m_textureFboDenoiseRead, m_textureFboDenoiseWrite);
+        }
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboDenoise);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(0, 0, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);*/
+        glBlitFramebuffer(0, 0, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
     void OpenGL::setSSBO(render::SsboId ssbo) {

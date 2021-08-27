@@ -1,10 +1,7 @@
 #version 330 core
 
-uniform sampler2D u_color;
 uniform sampler2D u_noise;
 uniform sampler2D u_lastDenoise;
-uniform sampler2D u_textureFboColor;
-uniform vec2 u_resolution;
 
 in vec2 v_uv;
 
@@ -30,7 +27,7 @@ void main() {
     vec4 lastColor = texture2D(u_lastDenoise, v_uv);
     float mixRate = min(lastColor.a, 0.5);
 
-    vec2 offset = 1.0 / u_resolution;
+    vec2 offset = 1.0 / vec2(800.0, 600.0);
     vec3 in0 = texture2D(u_noise, v_uv).rgb;
 
     vec3 denoised = lastColor.rgb;
@@ -65,5 +62,5 @@ void main() {
     mixRate += clampAmount * 4.0;
     mixRate = clamp(mixRate, 0.05, 0.5);
 
-    outColor = texture2D(u_textureFboColor, v_uv) * 1.0 + texture2D(u_noise, v_uv);// + vec4(decodePalYuv(denoised), mixRate);
+    outColor = vec4(decodePalYuv(denoised), mixRate);
 }

@@ -57,12 +57,18 @@ namespace orpheus::render::opengl {
         GLuint m_textureFboBRDFRoughness;
 
         GLuint m_fboBRDF;
-        GLuint m_textureFboBRDFResult;
+        GLuint m_textureFboBRDF;
+
+        GLuint m_fboDenoise;
+        GLuint m_textureFboDenoiseInput;
+        GLuint m_textureFboDenoiseRead;
+        GLuint m_textureFboDenoiseWrite;
 
         GLuint m_programFlatColor;
         GLuint m_programBRDF;
         GLuint m_programBRDF_GBuffer;
         GLuint m_programCombine;
+        GLuint m_programDenoise;
 
         Assimp::Importer m_meshImporter;
 
