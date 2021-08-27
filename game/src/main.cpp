@@ -397,10 +397,11 @@ public:
         auto areaLightGroup = addEntity<EntityAreaLightGroup>();
 
         std::vector<std::shared_ptr<EntityReflectFloor>> floors;
-        for (int i = -10; i < 10; i++) {
-            for (int j = -10; j < 10; j++) {
+        for (int i = -25; i < 25; i++) {
+            for (int j = -25; j < 25; j++) {
                 orpheus::math::Vector3 color;
-                m_math->hsv2rgb(color, 360.0f * std::fmod(3.0f * ((i + 5) * 10 + (j + 5)) / 100.0f, 1.0f), 0.75f, 0.4f);
+                //m_math->hsv2rgb(color, 360.0f * std::fmod(3.0f * ((i + 5) * 10 + (j + 5)) / 100.0f, 1.0f), 0.75f, 0.4f);
+                m_math->hsv2rgb(color, 360.0f * (rand() / static_cast<double>(RAND_MAX)), 0.75f, 1.0f);
                 floors.push_back(addEntity<EntityReflectFloor>(areaLightGroup, color, i * 2.01f, 0.0, -j * 2.01f));
             }
         }

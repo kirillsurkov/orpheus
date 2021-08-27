@@ -367,7 +367,7 @@ namespace orpheus::render::opengl {
 
         glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFResult, 0);
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 16; i++) {
             std::swap(m_textureReservoirRead, m_textureReservoirWrite);
 
             glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureReservoirWrite, 0);
