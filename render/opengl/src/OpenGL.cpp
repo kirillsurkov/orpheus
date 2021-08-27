@@ -1,13 +1,16 @@
 #include "render/opengl/OpenGL.hpp"
 
+#include "render/opengl/PNGReader.hpp"
+
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 1600
+#define HEIGHT 900
 
 namespace orpheus::render::opengl {
     GLuint OpenGL::createShader(const std::string& name) {
@@ -101,6 +104,26 @@ namespace orpheus::render::opengl {
         return Mesh{static_cast<std::uint32_t>(positions.size() / 3), vao, vboPositions, vboNormals};
     }
 
+    GLuint OpenGL::createTexture(GLint internalFormat, std::uint32_t width, std::uint32_t height, const void* data, GLenum type, GLint format) {
+        GLuint id;
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat == GL_DEPTH_COMPONENT ? GL_DEPTH_COMPONENT : format, type, data);
+        return id;
+    }
+
+    GLuint OpenGL::loadTexture(const std::string& name, GLint internalFormat) {
+        std::uint32_t width;
+        std::uint32_t height;
+        std::vector<unsigned char> pixels;
+        PNGReader::read("./res/textures/" + name, width, height, pixels);
+        return createTexture(internalFormat, width, height, pixels.data());
+    }
+
     OpenGL::OpenGL(const std::shared_ptr<interface::IMath>& math) :
         m_math(math),
         m_randomFloat(0.0f, 1.0f)
@@ -122,180 +145,77 @@ namespace orpheus::render::opengl {
         m_programBRDF_GBuffer = createShader("brdf_gbuffer");
         m_programCombine = createShader("combine");
 
-        std::vector<unsigned char> noise;
+        m_textureNoise = loadTexture("noise/noise.png", GL_RGBA32F);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        m_textureFloorColor = loadTexture("floor/color.png", GL_RGB32F);
+        m_textureFloorNormal = loadTexture("floor/normal.png", GL_RGB32F);
+        m_textureFloorRoughness = loadTexture("floor/roughness.png", GL_R32F);
 
         std::vector<float> ltc_mat;
         std::vector<float> ltc_mag;
 
-        std::vector<unsigned char> floorColor;
-        std::vector<unsigned char> floorNormal;
-        std::vector<unsigned char> floorRoughness;
-
         {
-            std::ifstream input("./res/noise.dds");
-            int c;
-            while (input >> c) noise.push_back(c);
-        }
-
-        {
-            std::ifstream input("./res/ltc_mat.dds");
+            std::ifstream input("./res/textures/ltc/ggx/mat");
             float f;
             while (input >> f) ltc_mat.push_back(f);
         }
 
         {
-            std::ifstream input("./res/ltc_mag.dds");
+            std::ifstream input("./res/textures/ltc/ggx/mag");
             float f;
             while (input >> f) ltc_mag.push_back(f);
         }
 
+        m_textureBRDF_GGX_mat = createTexture(GL_RGBA32F, 64, 64, ltc_mat.data(), GL_FLOAT);
+        m_textureBRDF_GGX_mag = createTexture(GL_R32F, 64, 64, ltc_mag.data(), GL_FLOAT, GL_RED);
+
+        m_textureReservoirRead = createTexture(GL_RGB32F, WIDTH, HEIGHT);
+        m_textureReservoirWrite = createTexture(GL_RGB32F, WIDTH, HEIGHT);
+
+        m_textureFboDepth = createTexture(GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        m_textureFboColor = createTexture(GL_RGB, WIDTH, HEIGHT);
+
+        m_textureFboBRDFDepth = createTexture(GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        m_textureFboBRDFColor = createTexture(GL_RGB, WIDTH, HEIGHT);
+        m_textureFboBRDFPosition = createTexture(GL_RGB32F, WIDTH, HEIGHT);
+        m_textureFboBRDFNormal = createTexture(GL_RGB32F, WIDTH, HEIGHT);
+        m_textureFboBRDFRoughness = createTexture(GL_RED, WIDTH, HEIGHT);
+        m_textureFboBRDFResult = createTexture(GL_RGB, WIDTH, HEIGHT);
+
         {
-            std::ifstream input("./res/floor_color.ppm");
-            int c;
-            while (input >> c) floorColor.push_back(c);
+            glGenFramebuffers(1, &m_fboFlatColor);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fboFlatColor);
+            glViewport(0, 0, WIDTH, HEIGHT);
+            GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, drawBuffers);
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboDepth, 0);
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboColor, 0);
         }
 
         {
-            std::ifstream input("./res/floor_normal.ppm");
-            int c;
-            while (input >> c) floorNormal.push_back(c);
+            glGenFramebuffers(1, &m_fboBRDF_GBuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF_GBuffer);
+            glViewport(0, 0, WIDTH, HEIGHT);
+            GLenum drawBuffers[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+            glDrawBuffers(4, drawBuffers);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFColor, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureFboBRDFPosition, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureFboBRDFNormal, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_textureFboBRDFRoughness, 0);
         }
 
         {
-            std::ifstream input("./res/floor_roughness.ppm");
-            int c;
-            while (input >> c) floorRoughness.push_back(c);
+            glGenFramebuffers(1, &m_fboBRDF);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF);
+            glViewport(0, 0, WIDTH, HEIGHT);
+            GLenum drawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+            glDrawBuffers(2, drawBuffers);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFResult, 0);
         }
-
-        glGenTextures(1, &m_textureNoise);
-        glBindTexture(GL_TEXTURE_2D, m_textureNoise);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, noise.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureBRDF_GGX_mat);
-        glBindTexture(GL_TEXTURE_2D, m_textureBRDF_GGX_mat);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 64, 64, 0, GL_RGBA, GL_FLOAT, ltc_mat.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureBRDF_GGX_mag);
-        glBindTexture(GL_TEXTURE_2D, m_textureBRDF_GGX_mag);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 64, 64, 0, GL_RED, GL_FLOAT, ltc_mag.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFloorColor);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, floorColor.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFloorNormal);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorNormal);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, floorNormal.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFloorRoughness);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorRoughness);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, floorRoughness.data());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboDepthColor);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboDepthColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFDepth);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFDepth);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboColor);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureReservoirRead);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirRead);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureReservoirWrite);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirWrite);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFColor);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFPosition);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFPosition);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFNormal);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFNormal);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFRoughness);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFRoughness);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WIDTH, HEIGHT, 0, GL_RED, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenTextures(1, &m_textureFboBRDFResult);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFResult);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glGenFramebuffers(1, &m_fbo);
     }
 
     void OpenGL::startFrame() {
@@ -306,21 +226,10 @@ namespace orpheus::render::opengl {
         glViewport(0, 0, WIDTH, HEIGHT);
         clear(0.0f, 0.0f, 0.0f, 0.0f);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        glViewport(0, 0, WIDTH, HEIGHT);
-        GLenum drawBuffers[6] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5};
-        glDrawBuffers(6, drawBuffers);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboColor, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureFboBRDFColor, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureFboBRDFPosition, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_textureFboBRDFNormal, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, m_textureFboBRDFRoughness, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, m_textureFboBRDFResult, 0);
-
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboFlatColor);
         clear(0.0f, 0.0f, 0.0f, 0.0f);
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboDepthColor, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF_GBuffer);
         clear(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
@@ -329,6 +238,8 @@ namespace orpheus::render::opengl {
         glDepthMask(GL_FALSE);
 
         glUseProgram(m_programBRDF);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF);
 
         math::Vector4 origin{0.0f, 0.0f, 0.0f, 1.0f};
         m_math->mul(origin, m_viewInv, origin);
@@ -362,12 +273,7 @@ namespace orpheus::render::opengl {
         glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFRoughness);
         glUniform1i(glGetUniformLocation(m_programBRDF, "u_textureRoughness"), 6);
 
-        GLenum drawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-        glDrawBuffers(2, drawBuffers);
-
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFResult, 0);
-
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 10; i++) {
             std::swap(m_textureReservoirRead, m_textureReservoirWrite);
 
             glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureReservoirWrite, 0);
@@ -396,7 +302,7 @@ namespace orpheus::render::opengl {
         glUniform1i(glGetUniformLocation(m_programCombine, "u_texture1"), 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboDepthColor);
+        glBindTexture(GL_TEXTURE_2D, m_textureFboDepth);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_textureDepth1"), 1);
 
         glActiveTexture(GL_TEXTURE2);
@@ -488,10 +394,7 @@ namespace orpheus::render::opengl {
     void OpenGL::setMaterial(const render::material::FlatColor& material) {
         glUseProgram(m_programFlatColor);
 
-        GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-        glDrawBuffers(1, drawBuffers);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboDepthColor, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboColor, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboFlatColor);
 
         glUniformMatrix4fv(glGetUniformLocation(m_programFlatColor, "u_viewProjection"), 1, GL_FALSE, &m_viewProjection.data[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(m_programFlatColor, "u_modelViewProjection"), 1, GL_FALSE, &m_modelViewProjection.data[0][0]);
@@ -501,13 +404,7 @@ namespace orpheus::render::opengl {
     void OpenGL::setMaterial(const render::material::GGX& material) {
         glUseProgram(m_programBRDF_GBuffer);
 
-        GLenum drawBuffers[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
-        glDrawBuffers(4, drawBuffers);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFColor, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureFboBRDFPosition, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureFboBRDFNormal, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_textureFboBRDFRoughness, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF_GBuffer);
 
         math::Matrix4x4 normalMatrix;
         m_math->inverse(normalMatrix, m_model);
@@ -531,63 +428,5 @@ namespace orpheus::render::opengl {
 
         setSSBO(material.lightsBuffer);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_ssboMap[material.lightsBuffer]);
-
-        /*glUseProgram(m_programGGX);
-
-        GLenum drawBuffers[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
-        glDrawBuffers(4, drawBuffers);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFColors, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_textureFboBRDFPositions, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_textureFboBRDFNormals, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_textureFboBRDFRoughness, 0);
-
-        math::Matrix4x4 normalMatrix;
-        m_math->inverse(normalMatrix, m_model);
-        m_math->transpose(normalMatrix, normalMatrix);
-
-        math::Vector4 origin{0.0f, 0.0f, 0.0f, 1.0f};
-        m_math->mul(origin, m_viewInv, origin);
-
-        glUniformMatrix4fv(glGetUniformLocation(m_programGGX, "u_model"), 1, GL_FALSE, &m_model.data[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(m_programGGX, "u_normalMatrix"), 1, GL_FALSE, &normalMatrix.data[0][0]);
-        glUniformMatrix4fv(glGetUniformLocation(m_programGGX, "u_modelViewProjection"), 1, GL_FALSE, &m_modelViewProjection.data[0][0]);
-
-        glUniform3fv(glGetUniformLocation(m_programGGX, "u_origin"), 1, origin.data);
-
-        glUniform1f(glGetUniformLocation(m_programGGX, "u_roughness"), material.roughness);
-
-        setSSBO(material.lightsBuffer);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_ssboMap[material.lightsBuffer]);
-
-        glUniform1f(glGetUniformLocation(m_programGGX, "u_seed"), m_randomFloat(m_randomDevice));
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_textureLtcMat);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureMat"), 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_textureLtcMag);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureMag"), 1);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, m_textureNoise);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureNoise"), 2);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, m_textureReservoirRead);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureReservoir"), 3);
-
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorColor);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureFloorColor"), 4);
-
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorNormal);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureFloorNormal"), 5);
-
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, m_textureFloorRoughness);
-        glUniform1i(glGetUniformLocation(m_programGGX, "u_textureFloorRoughness"), 6);*/
     }
 }

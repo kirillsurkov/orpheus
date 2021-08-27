@@ -3,7 +3,6 @@
 #include <orpheus/interface/IRender.hpp>
 
 #include <GL/glew.h>
-
 #include <assimp/Importer.hpp>
 
 #include <deque>
@@ -44,17 +43,20 @@ namespace orpheus::render::opengl {
         GLuint m_textureFloorNormal;
         GLuint m_textureFloorRoughness;
 
-        GLuint m_fbo;
-        GLuint m_textureFboDepthColor;
+        GLuint m_fboFlatColor;
+        GLuint m_textureFboDepth;
         GLuint m_textureFboColor;
         GLuint m_textureReservoirRead;
         GLuint m_textureReservoirWrite;
 
+        GLuint m_fboBRDF_GBuffer;
         GLuint m_textureFboBRDFDepth;
         GLuint m_textureFboBRDFColor;
         GLuint m_textureFboBRDFPosition;
         GLuint m_textureFboBRDFNormal;
         GLuint m_textureFboBRDFRoughness;
+
+        GLuint m_fboBRDF;
         GLuint m_textureFboBRDFResult;
 
         GLuint m_programFlatColor;
@@ -70,7 +72,11 @@ namespace orpheus::render::opengl {
         std::unordered_map<SsboId, GLuint> m_ssboMap;
 
         GLuint createShader(const std::string& name);
+
         Mesh loadMesh(const std::string& name);
+
+        GLuint createTexture(GLint internalFormat, std::uint32_t width, std::uint32_t height, const void* data = nullptr, GLenum type = GL_UNSIGNED_BYTE, GLint format = GL_RGBA);
+        GLuint loadTexture(const std::string& name, GLint internalFormat);
 
     public:
         OpenGL(const std::shared_ptr<interface::IMath>& math);

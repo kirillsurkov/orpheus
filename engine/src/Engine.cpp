@@ -22,15 +22,15 @@ namespace orpheus {
         m_math(math),
         m_scene(scene)
     {
-        m_scene->setWidth(800);
-        m_scene->setHeight(600);
+        m_scene->setWidth(1600);
+        m_scene->setHeight(900);
 
         m_renderExecutor.start();
         m_inputExecutor.start();
         m_physicsExecutor.start();
 
         auto renderFut = m_renderExecutor.execute([&]() {
-            m_window->create("TWG", 800, 600);
+            m_window->create("TWG", 1600, 900);
             m_renderContext = m_window->createContext();
             m_render->init();
         });

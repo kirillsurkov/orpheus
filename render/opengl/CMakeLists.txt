@@ -24,4 +24,8 @@ find_package(OpenGL REQUIRED)
 include_directories(RenderOpenGL ${OPENGL_INCLUDE_DIRS})
 target_link_libraries(RenderOpenGL ${OPENGL_LIBRARIES})
 
+find_package(PNG REQUIRED)
+include_directories(RenderOpenGL ${PNG_INCLUDE_DIRS})
+target_link_libraries(RenderOpenGL ${PNG_LIBRARIES})
+
 third_parties(RenderOpenGL glew assimp)
