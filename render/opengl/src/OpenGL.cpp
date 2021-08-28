@@ -145,6 +145,7 @@ namespace orpheus::render::opengl {
         m_programBRDF = createShader("brdf");
         m_programBRDF_GBuffer = createShader("brdf_gbuffer");
         m_programCombine = createShader("combine");
+        m_programBlit = createShader("blit");
 
         m_textureNoise = loadTexture("noise/noise.png", GL_RGBA32F);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -187,7 +188,10 @@ namespace orpheus::render::opengl {
         m_textureFboBRDFNormal = createTexture(GL_RGB32F, WIDTH, HEIGHT);
         m_textureFboBRDFRoughness = createTexture(GL_RED, WIDTH, HEIGHT);
         m_textureFboBRDFMotion = createTexture(GL_RG32F, WIDTH, HEIGHT);
+
         m_textureFboBRDFResult = createTexture(GL_RGB, WIDTH, HEIGHT);
+
+        m_textureFboCombineResult = createTexture(GL_RGB, WIDTH, HEIGHT);
 
         {
             glGenFramebuffers(1, &m_fboFlatColor);
@@ -219,8 +223,16 @@ namespace orpheus::render::opengl {
             glViewport(0, 0, WIDTH, HEIGHT);
             GLenum drawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
             glDrawBuffers(2, drawBuffers);
-            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureFboBRDFDepth, 0);
             glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboBRDFResult, 0);
+        }
+
+        {
+            glGenFramebuffers(1, &m_fboCombine);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fboCombine);
+            glViewport(0, 0, WIDTH, HEIGHT);
+            GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, drawBuffers);
+            glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureFboCombineResult, 0);
         }
     }
 
@@ -243,6 +255,7 @@ namespace orpheus::render::opengl {
         glUseProgram(m_programBRDF);
 
         glBindFramebuffer(GL_FRAMEBUFFER, m_fboBRDF);
+        glViewport(0, 0, WIDTH, HEIGHT);
 
         math::Vector4 origin{0.0f, 0.0f, 0.0f, 1.0f};
         m_math->mul(origin, m_viewInv, origin);
@@ -299,24 +312,40 @@ namespace orpheus::render::opengl {
         }
     }
 
-    void OpenGL::stageCombine() {
+    void OpenGL::stageCombine(GLuint tex1, GLuint depth1, GLuint tex2, GLuint depth2) {
         glUseProgram(m_programCombine);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fboCombine);
+        glViewport(0, 0, WIDTH, HEIGHT);
+
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboColor);
+        glBindTexture(GL_TEXTURE_2D, tex1);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_texture1"), 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboDepth);
+        glBindTexture(GL_TEXTURE_2D, depth1);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_textureDepth1"), 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFResult);
+        glBindTexture(GL_TEXTURE_2D, tex2);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_texture2"), 2);
 
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, m_textureFboBRDFDepth);
+        glBindTexture(GL_TEXTURE_2D, depth2);
         glUniform1i(glGetUniformLocation(m_programCombine, "u_textureDepth2"), 3);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    void OpenGL::stageBlit(GLuint tex) {
+        glUseProgram(m_programBlit);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, WIDTH, HEIGHT);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glUniform1i(glGetUniformLocation(m_programBlit, "u_texture"), 0);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -326,10 +355,8 @@ namespace orpheus::render::opengl {
         glDepthMask(GL_FALSE);
 
         stageBRDF();
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, WIDTH, HEIGHT);
-        stageCombine();
+        stageCombine(m_textureFboColor, m_textureFboDepth, m_textureFboBRDFResult, m_textureFboBRDFDepth);
+        stageBlit(m_textureFboCombineResult);
 
         m_jitter.x() = -m_jitter.x();
         m_jitter.y() = -m_jitter.y();

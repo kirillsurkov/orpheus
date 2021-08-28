@@ -19,7 +19,7 @@ target_include_directories(Orpheus PUBLIC "${PROJECT_BINARY_DIR}" "./include" ".
 target_link_libraries(Orpheus MathCGLM)
 
 target_link_libraries(Orpheus RenderOpenGL)
-target_link_libraries(Orpheus RenderVulkan)
+#target_link_libraries(Orpheus RenderVulkan)
 
 #target_link_libraries(Orpheus PhysicsPhysX)
 target_link_libraries(Orpheus PhysicsBullet)

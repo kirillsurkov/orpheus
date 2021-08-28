@@ -1,14 +1,10 @@
 #include <SDL.h>
-#include <SDL_vulkan.h>
-
-#include <vulkan/vulkan.h>
 
 #include <orpheus/Engine.hpp>
 
 #include <math/cglm/CGLM.hpp>
-//#include <physics/physx/PhysX.hpp>
+#include <physics/bullet/Bullet.hpp>
 #include <render/opengl/OpenGL.hpp>
-#include <render/vulkan/Vulkan.hpp>
 
 #include <unordered_map>
 #include <vector>
@@ -679,61 +675,6 @@ public:
     }
 };
 
-class RenderContextSDLVulkan : public orpheus::interface::IRenderContext {
-private:
-    SDL_vulkanInstance m_vkInstance;
-
-public:
-    RenderContextSDLVulkan(SDL_Window* window) {
-        uint32_t extensionCount;
-        SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
-        std::vector<const char *> extensionNames(extensionCount);
-        SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames.data());
-
-        VkApplicationInfo appInfo = {};
-        std::vector<const char*> layerNames;
-
-        VkInstanceCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        info.pApplicationInfo = &appInfo;
-        info.enabledLayerCount = layerNames.size();
-        info.ppEnabledLayerNames = layerNames.data();
-        info.enabledExtensionCount = extensionNames.size();
-        info.ppEnabledExtensionNames = extensionNames.data();
-
-        if (vkCreateInstance(&info, nullptr, &m_vkInstance) != VK_SUCCESS) {
-            throw std::runtime_error("vulkan initialization failed");
-        }
-    }
-
-    ~RenderContextSDLVulkan() {
-        vkDestroyInstance(m_vkInstance, nullptr);
-    }
-};
-
-class WindowSDLVulkan : public orpheus::interface::IWindow {
-private:
-    SDL_Window*   m_window;
-
-public:
-    virtual void create(const std::string& title, std::uint32_t width, std::uint32_t height) override {
-        SDL_Init(SDL_INIT_VIDEO);
-        m_window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
-        SDL_SetRelativeMouseMode(SDL_TRUE);
-    }
-
-    virtual std::shared_ptr<orpheus::interface::IRenderContext> createContext() override {
-        return std::make_shared<RenderContextSDLVulkan>(m_window);
-    }
-
-    virtual void destroy() override {
-        SDL_DestroyWindow(m_window);
-    }
-
-    virtual void swapBuffers() override {
-    }
-};
-
 #ifdef _WIN32
 #include <windows.h>
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -744,7 +685,7 @@ int main() {
     auto math    = std::make_shared<orpheus::math::cglm::CGLM>();
     auto render  = std::make_shared<orpheus::render::opengl::OpenGL>(math);
     auto input   = std::make_shared<InputSDL>();
-    auto physics = nullptr;//std::make_shared<orpheus::physics::physx::PhysX>();
+    auto physics = std::make_shared<orpheus::physics::bullet::Bullet>();
     auto scene   = std::make_shared<TestScene2>(math, input, physics);
 
     orpheus::Engine(window, render, input, physics, math, scene).run();

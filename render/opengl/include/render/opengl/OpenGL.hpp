@@ -67,10 +67,14 @@ namespace orpheus::render::opengl {
         GLuint m_fboBRDF;
         GLuint m_textureFboBRDFResult;
 
+        GLuint m_fboCombine;
+        GLuint m_textureFboCombineResult;
+
         GLuint m_programFlatColor;
         GLuint m_programBRDF;
         GLuint m_programBRDF_GBuffer;
         GLuint m_programCombine;
+        GLuint m_programBlit;
 
         Assimp::Importer m_meshImporter;
 
@@ -87,7 +91,8 @@ namespace orpheus::render::opengl {
         GLuint loadTexture(const std::string& name, GLint internalFormat);
 
         void stageBRDF();
-        void stageCombine();
+        void stageCombine(GLuint tex1, GLuint depth1, GLuint tex2, GLuint depth2);
+        void stageBlit(GLuint tex);
 
     public:
         OpenGL(const std::shared_ptr<interface::IMath>& math);

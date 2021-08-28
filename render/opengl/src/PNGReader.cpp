@@ -8,7 +8,7 @@ namespace orpheus::render::opengl {
         static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
             std::istream* from = reinterpret_cast<std::istream*>(png_get_io_ptr(png_ptr));
             if (!from->read(reinterpret_cast<char*>(data), length)) {
-                png_error(png_ptr, "Error reading.");
+                png_error(png_ptr, "error reading");
             }
         }
     }
@@ -18,7 +18,7 @@ namespace orpheus::render::opengl {
         height = 0;
         pixels.clear();
 
-        std::ifstream input(filename);
+        std::ifstream input(filename, std::ios_base::binary);
         png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 
         png_set_read_fn(png, &input, user_read_data);
@@ -34,7 +34,11 @@ namespace orpheus::render::opengl {
         }
 
         png_bytep* row_pointers = nullptr;
+#ifdef _WIN32
+        if (__builtin_setjmp(png_jmpbuf(png))) {
+#else
         if (setjmp(png_jmpbuf(png))) {
+#endif
             png_destroy_read_struct(&png, &info, nullptr);
             if (row_pointers != nullptr) delete[] row_pointers;
             pixels.clear();

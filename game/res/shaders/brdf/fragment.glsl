@@ -49,10 +49,6 @@ float rand(float seed) {
     return fract(r1 + r2 + r3 + r4);
 }
 
-vec3 toSRGB(vec3 v, float gamma) {
-    return pow(v, vec3(1.0 / gamma));
-}
-
 struct LTC {
     float coeff;
     vec3 position;
@@ -380,6 +376,6 @@ void main() {
 
     vec3 color = (spec * (1.0 - roughness) + diff * roughness);
 
-    outColor = vec4(toSRGB(texture2D(u_textureColor, v_uv).rgb * (vec3(0.05) + 0.95 * color), 2.0), 1.0);
+    outColor = vec4(texture2D(u_textureColor, v_uv).rgb * (vec3(0.05) + 0.95 * color), 1.0);
     outReservoir = reservoirEncode(reservoir);
 }
