@@ -14,8 +14,6 @@ namespace orpheus {
         Entity(const std::shared_ptr<orpheus::interface::IMath>& math,
                const std::shared_ptr<orpheus::interface::IPhysics>& physics);
 
-        //Entity(const Entity& src) = default;
-
         virtual void update(float delta);
         virtual void draw(const std::shared_ptr<interface::IRender>& render);
     };

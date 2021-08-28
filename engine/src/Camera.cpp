@@ -36,6 +36,9 @@ namespace orpheus {
                      -std::cos(m_rotation.x()) * std::cos(m_rotation.y())};
         m_right = {-m_forward.z(), 0.0f, m_forward.x()};
 
+        m_math->normalize(m_forward);
+        m_math->normalize(m_right);
+
         orpheus::math::Vector3 translation;
         if (m_flyForward)  m_math->add(translation, translation, m_forward);
         if (m_flyBackward) m_math->sub(translation, translation, m_forward);

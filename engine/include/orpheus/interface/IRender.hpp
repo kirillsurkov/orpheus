@@ -35,6 +35,11 @@ namespace orpheus::interface {
         virtual void setProjection(const math::Matrix4x4& mat) = 0;
         virtual void setView(const math::Matrix4x4& mat)       = 0;
         virtual void setModel(const math::Matrix4x4& mat)      = 0;
+        virtual void setPrevModel(const math::Matrix4x4& mat)  = 0;
+
+        virtual void setForward(const math::Vector3& vec)      = 0;
+        virtual void setRight(const math::Vector3& vec)        = 0;
+
         virtual void clear(float r, float g, float b, float a) = 0;
         virtual void drawCube()                                = 0;
         virtual void drawSphere()                              = 0;

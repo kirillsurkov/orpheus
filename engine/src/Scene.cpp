@@ -41,6 +41,8 @@ namespace orpheus {
 
         render->setProjection(projection);
         render->setView(m_camera.getTransform());
+        render->setForward(m_camera.getForward());
+        render->setRight(m_camera.getRight());
 
         for (const auto& entity : m_entities) {
             entity->draw(render);

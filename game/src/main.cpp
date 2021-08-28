@@ -178,14 +178,22 @@ public:
 };*/
 
 class EntityAreaLight : public orpheus::Entity {
+public:
+    enum class Type {
+        Quad,
+        Sphere
+    };
+
 private:
+    Type                                 m_type;
     orpheus::math::Matrix4x4             m_model;
     orpheus::render::material::FlatColor m_material;
     std::vector<orpheus::math::Vector3>  m_points;
 
 public:
-    EntityAreaLight(orpheus::Entity& base, orpheus::Scene& scene, float x, float y, float z) :
-        orpheus::Entity(base)
+    EntityAreaLight(orpheus::Entity& base, orpheus::Scene& scene, Type type, float x, float y, float z) :
+        orpheus::Entity(base),
+        m_type(type)
     {
         m_math->translate(m_model, x, y + 2.0f, z);
         m_math->scale(m_model, 2.0f, 2.0f, 1.0f);
@@ -193,10 +201,23 @@ public:
 
         m_material.color = {1.0f, 1.0f, 1.0f};
 
-        m_points.insert(m_points.end(), {-1.0f,  1.0f,  0.0f});
-        m_points.insert(m_points.end(), { 1.0f,  1.0f,  0.0f});
-        m_points.insert(m_points.end(), { 1.0f, -1.0f,  0.0f});
-        m_points.insert(m_points.end(), {-1.0f, -1.0f,  0.0f});
+        switch (type) {
+        case Type::Quad: {
+            m_points.insert(m_points.end(), {-1.0f,  1.0f,  0.0f});
+            m_points.insert(m_points.end(), { 1.0f,  1.0f,  0.0f});
+            m_points.insert(m_points.end(), { 1.0f, -1.0f,  0.0f});
+            m_points.insert(m_points.end(), {-1.0f, -1.0f,  0.0f});
+            break;
+        }
+        case Type::Sphere: {
+            m_points.insert(m_points.end(), {0.0f, 0.0f,  0.0f});
+            m_points.insert(m_points.end(), {0.0f, 0.0f,  0.0f});
+            m_points.insert(m_points.end(), {0.0f, 0.0f,  0.0f});
+            m_points.insert(m_points.end(), {0.0f, 0.0f,  0.0f});
+        }
+        }
+
+
     }
 
     void setColor(float r, float g, float b) {
@@ -211,6 +232,10 @@ public:
 
     const std::vector<orpheus::math::Vector3>& getPoints() const {
         return m_points;
+    }
+
+    Type getType() const {
+        return m_type;
     }
 
     const orpheus::math::Vector3& getColor() const {
@@ -248,38 +273,43 @@ public:
     virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
         std::uint32_t maxLights     = 10000;
         std::uint32_t countSize     =               4 * sizeof(std::uint32_t);
+        std::uint32_t typesSize     = maxLights *   4 * sizeof(std::uint32_t);
         std::uint32_t colorsSize    = maxLights *   4 * sizeof(float);
         std::uint32_t positionsSize = maxLights * 4*4 * sizeof(float);
-        std::uint32_t indicesSize   = maxLights * 4*4 * sizeof(std::uint32_t);
 
         render->setSSBO(m_ssbo);
-        render->ssboSetSize(countSize + colorsSize + positionsSize + indicesSize);
+        render->ssboSetSize(countSize + colorsSize + positionsSize + typesSize);
 
         void* buffer = render->ssboMapBuffer();
 
         std::uint32_t* countPtr        = static_cast<std::uint32_t*>(buffer);
-        float*         colorsBuffer    = static_cast<float*>        (static_cast<void*>(static_cast<char*>(buffer) + countSize));
-        float*         positionsBuffer = static_cast<float*>        (static_cast<void*>(static_cast<char*>(buffer) + countSize + colorsSize));
-        std::uint32_t* indicesBuffer   = static_cast<std::uint32_t*>(static_cast<void*>(static_cast<char*>(buffer) + countSize + colorsSize + positionsSize));
+        std::uint32_t* typesBuffer     = static_cast<std::uint32_t*>(static_cast<void*>(static_cast<char*>(buffer) + countSize));
+        float*         colorsBuffer    = static_cast<float*>        (static_cast<void*>(static_cast<char*>(buffer) + countSize + typesSize));
+        float*         positionsBuffer = static_cast<float*>        (static_cast<void*>(static_cast<char*>(buffer) + countSize + typesSize + colorsSize));
 
         countPtr[0] = m_areaLights.size();
 
         std::uint32_t colorsIt = 0;
         std::uint32_t positionsIt = 0;
-        std::uint32_t indicesIt = 0;
+        std::uint32_t typesIt = 0;
 
         for (const auto& areaLight : m_areaLights) {
             auto areaModel = areaLight->getModel();
 
-            std::size_t offset = positionsIt / 4;
-            std::size_t count = areaLight->getPoints().size();
+            switch (areaLight->getType()) {
+            case EntityAreaLight::Type::Quad:   typesBuffer[typesIt++] = 0; break;
+            case EntityAreaLight::Type::Sphere: typesBuffer[typesIt++] = 1; break;
+            }
+            typesBuffer[typesIt++] = 0;
+            typesBuffer[typesIt++] = 0;
+            typesBuffer[typesIt++] = 0;
 
             colorsBuffer[colorsIt++] = areaLight->getColor().x();
             colorsBuffer[colorsIt++] = areaLight->getColor().y();
             colorsBuffer[colorsIt++] = areaLight->getColor().z();
             colorsBuffer[colorsIt++] = 1.0f;
 
-            for (const auto& point : areaLight->getPoints()) {                
+            for (const auto& point : areaLight->getPoints()) {
                 orpheus::math::Vector4 pSrc = {point.x(), point.y(), point.z(), 1.0f};
                 orpheus::math::Vector4 pDst;
                 m_math->mul(pDst, areaModel, pSrc);
@@ -288,13 +318,6 @@ public:
                 positionsBuffer[positionsIt++] = pDst.y();
                 positionsBuffer[positionsIt++] = pDst.z();
                 positionsBuffer[positionsIt++] = pDst.w();
-            }
-
-            for (std::size_t i = 0; i < count; i++) {
-                indicesBuffer[indicesIt++] = offset + i;
-                indicesBuffer[indicesIt++] = offset + (i + 1) % count;
-                indicesBuffer[indicesIt++] = 0;
-                indicesBuffer[indicesIt++] = 0;
             }
         }
 
@@ -305,6 +328,7 @@ public:
 class EntityReflectFloor : public orpheus::Entity {
 private:
     orpheus::math::Matrix4x4              m_model;
+    orpheus::math::Matrix4x4              m_prevModel;
     orpheus::render::material::FlatColor  m_materialColor;
     orpheus::render::material::GGX        m_materialGgx;
     orpheus::math::Vector3                m_position;
@@ -327,10 +351,10 @@ public:
         m_materialGgx.roughness = 0.2f;
         m_materialGgx.lightsBuffer = areaLightGroup->getSSBO();
 
-        m_areaLight1 = scene.addEntity<EntityAreaLight>(0.0f, 0.0f, 0.0f);
-        m_areaLight2 = scene.addEntity<EntityAreaLight>(0.0f, 0.0f, 0.0f);
-        m_areaLight3 = scene.addEntity<EntityAreaLight>(0.0f, 0.0f, 0.0f);
-        m_areaLight4 = scene.addEntity<EntityAreaLight>(0.0f, 0.0f, 0.0f);
+        m_areaLight1 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+        m_areaLight2 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+        m_areaLight3 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+        m_areaLight4 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
         m_areaLight1->setColor(color.x(), color.y(), color.z());
         m_areaLight2->setColor(color.x(), color.y(), color.z());
         m_areaLight3->setColor(color.x(), color.y(), color.z());
@@ -342,6 +366,8 @@ public:
     }
 
     virtual void update(float delta) override {
+        m_prevModel = m_model;
+
         m_timer += delta;
 
         m_materialGgx.lightsCount = m_areaLightGroup->getCount();
@@ -353,35 +379,76 @@ public:
         orpheus::math::Matrix4x4 model;
 
         model = m_model;
-        m_math->translate(model,  0.0f, 0.0f,  1.01f);
+        m_math->translate(model,  0.0f, 0.0f,  1.0f);
         m_areaLight1->setModel(model);
 
         model = m_model;
-        m_math->translate(model,  0.0f, 0.0f, -1.01f);
+        m_math->translate(model,  0.0f, 0.0f, -1.0f);
         m_math->rotate(model, 0.0f, 1.0f, 0.0f, 3.141592653f * 1.0f);
         m_areaLight2->setModel(model);
 
         model = m_model;
-        m_math->translate(model, -1.005f, 0.0f,  0.0f);
+        m_math->translate(model, -1.0f, 0.0f,  0.0f);
         m_math->rotate(model, 0.0f, 1.0f, 0.0f, -3.141592653f / 2.0f);
         m_areaLight3->setModel(model);
 
         model = m_model;
-        m_math->translate(model,  1.005f, 0.0f,  0.0f);
+        m_math->translate(model,  1.0f, 0.0f,  0.0f);
         m_math->rotate(model, 0.0f, 1.0f, 0.0f, 3.141592653f / 2.0f);
         m_areaLight4->setModel(model);
     }
 
     virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
         auto model = m_model;
+        auto prevModel = m_prevModel;
         render->setModel(model);
+        render->setPrevModel(prevModel);
         render->setMaterial(m_materialColor);
         render->drawCube();
 
         m_math->translate(model, 0.0f, 1.0f, 0.0f);
+        m_math->translate(prevModel, 0.0f, 1.0f, 0.0f);
         render->setModel(model);
+        render->setPrevModel(prevModel);
         render->setMaterial(m_materialGgx);
         render->drawPlane();
+    }
+};
+
+class EntityBall : public orpheus::Entity {
+private:
+    float m_timer = 0.0f;
+    orpheus::math::Matrix4x4              m_model;
+    orpheus::render::material::FlatColor  m_material;
+    orpheus::math::Vector3                m_position;
+    std::shared_ptr<EntityAreaLightGroup> m_areaLightGroup;
+    std::shared_ptr<EntityAreaLight>      m_areaLight;
+
+public:
+    EntityBall(orpheus::Entity& base, orpheus::Scene& scene, const std::shared_ptr<EntityAreaLightGroup>& areaLightGroup, const orpheus::math::Vector3& color, float x, float y, float z) :
+        orpheus::Entity(base),
+        m_position({x, y, z}),
+        m_areaLightGroup(areaLightGroup)
+    {
+        m_material.color = color;
+        m_areaLight = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Sphere, 0.0f, 0.0f, 0.0f);
+        m_areaLight->setColor(color.x(), color.y(), color.z());
+        areaLightGroup->addAreaLight(m_areaLight);
+    }
+
+    virtual void update(float delta) override {
+        m_timer += delta;
+
+        m_model = orpheus::math::Matrix4x4{};
+        m_math->translate(m_model, m_position.x() + 2 * std::cos(m_timer), m_position.y(), m_position.z() + 2 * std::sin(m_timer));
+
+        m_areaLight->setModel(m_model);
+    }
+
+    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
+        render->setModel(m_model);
+        render->setMaterial(m_material);
+        render->drawSphere();
     }
 };
 
@@ -396,13 +463,15 @@ public:
 
         auto areaLightGroup = addEntity<EntityAreaLightGroup>();
 
-        std::vector<std::shared_ptr<EntityReflectFloor>> floors;
+        addEntity<EntityBall>(areaLightGroup, orpheus::math::Vector3{1.0f, 0.75f, 0.25f}, 0.0f, 8.5f, -5.0f);
+        addEntity<EntityBall>(areaLightGroup, orpheus::math::Vector3{1.0f, 0.25f, 0.25f}, 0.0f, 8.5f, 5.0f);
+
         for (int i = -10; i < 10; i++) {
             for (int j = -10; j < 10; j++) {
                 orpheus::math::Vector3 color;
                 //m_math->hsv2rgb(color, 360.0f * std::fmod(3.0f * ((i + 5) * 10 + (j + 5)) / 100.0f, 1.0f), 0.75f, 0.4f);
                 m_math->hsv2rgb(color, 360.0f * (rand() / static_cast<double>(RAND_MAX)), 0.75f, 1.0f);
-                floors.push_back(addEntity<EntityReflectFloor>(areaLightGroup, color, i * 2.01f, 0.0, -j * 2.01f));
+                addEntity<EntityReflectFloor>(areaLightGroup, color, i * 2.01f, 0.0, -j * 2.01f);
             }
         }
 

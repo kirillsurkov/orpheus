@@ -7,11 +7,14 @@ uniform sampler2D u_textureFloorRoughness;
 in vec3 v_normal;
 in vec3 v_position;
 in vec2 v_uv;
+in vec4 v_curRelPosition;
+in vec4 v_prevRelPosition;
 
 layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec3 outPosition;
 layout (location = 2) out vec3 outNormal;
 layout (location = 3) out float outRoughness;
+layout (location = 4) out vec2 outMotionVector;
 
 vec3 floorGetColor() {
     vec3 c = texture2D(u_textureFloorColor, v_uv).rgb;
@@ -31,4 +34,5 @@ void main() {
     outPosition = v_position;
     outNormal = floorGetNormal();
     outRoughness = floorGetRoughness();
+    outMotionVector = vec2(1600, 900) * ((v_curRelPosition / v_curRelPosition.w) - (v_prevRelPosition / v_prevRelPosition.w)).xy;
 }

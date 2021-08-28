@@ -22,11 +22,18 @@ namespace orpheus::render::opengl {
 
         math::Matrix4x4 m_projection;
         math::Matrix4x4 m_view;
-        math::Matrix4x4 m_model;
         math::Matrix4x4 m_viewInv;
+        math::Matrix4x4 m_model;
+        math::Matrix4x4 m_prevModel;
 
         math::Matrix4x4 m_viewProjection;
+        math::Matrix4x4 m_prevViewProjection;
         math::Matrix4x4 m_modelViewProjection;
+
+        math::Vector3   m_forward;
+        math::Vector3   m_right;
+
+        math::Vector2   m_jitter;
 
         Mesh m_cube;
         Mesh m_sphere;
@@ -36,8 +43,8 @@ namespace orpheus::render::opengl {
 
         GLuint m_textureNoise;
 
-        GLuint m_textureBRDF_GGX_mat;
-        GLuint m_textureBRDF_GGX_mag;
+        GLuint m_textureBRDF_GGX_ltc1;
+        GLuint m_textureBRDF_GGX_ltc2;
 
         GLuint m_textureFloorColor;
         GLuint m_textureFloorNormal;
@@ -55,20 +62,15 @@ namespace orpheus::render::opengl {
         GLuint m_textureFboBRDFPosition;
         GLuint m_textureFboBRDFNormal;
         GLuint m_textureFboBRDFRoughness;
+        GLuint m_textureFboBRDFMotion;
 
         GLuint m_fboBRDF;
-        GLuint m_textureFboBRDF;
-
-        GLuint m_fboDenoise;
-        GLuint m_textureFboDenoiseInput;
-        GLuint m_textureFboDenoiseRead;
-        GLuint m_textureFboDenoiseWrite;
+        GLuint m_textureFboBRDFResult;
 
         GLuint m_programFlatColor;
         GLuint m_programBRDF;
         GLuint m_programBRDF_GBuffer;
         GLuint m_programCombine;
-        GLuint m_programDenoise;
 
         Assimp::Importer m_meshImporter;
 
@@ -83,6 +85,9 @@ namespace orpheus::render::opengl {
 
         GLuint createTexture(GLint internalFormat, std::uint32_t width, std::uint32_t height, const void* data = nullptr, GLenum type = GL_UNSIGNED_BYTE, GLint format = GL_RGBA);
         GLuint loadTexture(const std::string& name, GLint internalFormat);
+
+        void stageBRDF();
+        void stageCombine();
 
     public:
         OpenGL(const std::shared_ptr<interface::IMath>& math);
@@ -99,6 +104,11 @@ namespace orpheus::render::opengl {
         virtual void setProjection(const math::Matrix4x4& mat) override;
         virtual void setView(const math::Matrix4x4& mat)       override;
         virtual void setModel(const math::Matrix4x4& mat)      override;
+        virtual void setPrevModel(const math::Matrix4x4& mat)  override;
+
+        virtual void setForward(const math::Vector3& vec)      override;
+        virtual void setRight(const math::Vector3& vec)        override;
+
         virtual void clear(float r, float g, float b, float a) override;
         virtual void drawCube()                                override;
         virtual void drawSphere()                              override;
