@@ -10,8 +10,7 @@
 #include "orpheus/interface/IWindow.hpp"
 
 namespace orpheus {
-    class Engine
-    {
+    class Engine {
     private:
         bool                                       m_running;
         float                                      m_fpsLimit;

@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 uniform sampler2D u_noise;
 uniform sampler2D u_lastDenoise;

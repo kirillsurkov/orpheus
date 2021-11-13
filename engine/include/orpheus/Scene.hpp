@@ -13,8 +13,8 @@
 namespace orpheus {
     class Scene {
     private:
-        float                                                             m_width;
-        float                                                             m_height;
+        std::uint32_t                                                     m_width;
+        std::uint32_t                                                     m_height;
         Entity                                                            m_baseEntity;
         std::shared_ptr<interface::IInput>                                m_input;
         std::shared_ptr<interface::IPhysics>                              m_physics;
@@ -41,14 +41,18 @@ namespace orpheus {
             m_keyListeners[key] = callback;
         }
 
+        void unbindKey(input::Key key) {
+            m_keyListeners.erase(key);
+        }
+
 		math::Vector2 getMouseDxDy() const;
 
-        physics::ID addBody(const physics::Description& description);
+        physics::BodyID addBody(const physics::BodyDescription& description);
 
         render::SsboId createSSBO();
 
-        void setWidth(float width);
-        void setHeight(float height);
+        void setWidth(std::uint32_t width);
+        void setHeight(std::uint32_t height);
 
         void draw(const std::shared_ptr<interface::IRender>& render);
         void update(float delta);

@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <fstream>
 
 namespace orpheus {
     Engine::Engine(const std::shared_ptr<interface::IWindow>&  window,
@@ -22,25 +23,26 @@ namespace orpheus {
         m_math(math),
         m_scene(scene)
     {
-        m_scene->setWidth(1600);
-        m_scene->setHeight(900);
-
         m_renderExecutor.start();
         m_inputExecutor.start();
         m_physicsExecutor.start();
 
         auto renderFut = m_renderExecutor.execute([&]() {
-            m_window->create("TWG", 1600, 900);
+            m_window->create("DARK SOULS");
             m_renderContext = m_window->createContext();
+            m_render->setViewport(m_window->getWidth(), m_window->getHeight());
             m_render->init();
         });
 
         auto physicsFut = m_physicsExecutor.execute([&]() {
-            if (m_physics) m_physics->init(1.0f / 10.0f);
+            if (m_physics) m_physics->init(1.0f / 50.0f);
         });
 
         physicsFut.wait();
         renderFut.wait();
+
+        m_scene->setWidth(m_window->getWidth());
+        m_scene->setHeight(m_window->getHeight());
     }
 
     Engine::~Engine() {

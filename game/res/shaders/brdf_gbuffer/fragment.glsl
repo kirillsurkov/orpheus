@@ -1,8 +1,9 @@
-#version 460 core
+#version 430 core
 
 uniform sampler2D u_textureFloorColor;
 uniform sampler2D u_textureFloorNormal;
 uniform sampler2D u_textureFloorRoughness;
+uniform vec2 u_resolution;
 
 in vec3 v_normal;
 in vec3 v_position;
@@ -34,5 +35,5 @@ void main() {
     outPosition = v_position;
     outNormal = floorGetNormal();
     outRoughness = floorGetRoughness();
-    outMotionVector = vec2(1600, 900) * ((v_curRelPosition / v_curRelPosition.w) - (v_prevRelPosition / v_prevRelPosition.w)).xy;
+    outMotionVector = u_resolution * ((v_curRelPosition / v_curRelPosition.w) - (v_prevRelPosition / v_prevRelPosition.w)).xy;
 }

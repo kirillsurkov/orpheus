@@ -1,4 +1,4 @@
-#version 460 core
+#version 430 core
 
 const float PI = 3.141592653;
 
@@ -202,13 +202,13 @@ float ltcIntegrateSampleSphere(uint sampleIdx, in LTC ltc) {
     vec3 ey = cross(u_forward, u_right);
     ey.y = -ey.y;
 
+    float radius = lightsPositions[sampleIdx * 4 + 1].x;
+    ex *= radius;
+    ey *= radius;
+
     vec3 p1 = ltc.matR * ((sphc - ex - ey) - ltc.position);
     vec3 p2 = ltc.matR * ((sphc + ex - ey) - ltc.position);
     vec3 p3 = ltc.matR * ((sphc + ex + ey) - ltc.position);
-
-    //vec3 p1 = lightsPositions[sampleIdx * 4 + 0].xyz - ltc.position;;
-    //vec3 p2 = lightsPositions[sampleIdx * 4 + 1].xyz - ltc.position;;
-    //vec3 p3 = lightsPositions[sampleIdx * 4 + 2].xyz - ltc.position;;
 
     vec3 C  = ltc.mat * (0.5 * (p1 + p3));
     vec3 V1 = ltc.mat * (0.5 * (p2 - p3));
@@ -371,10 +371,7 @@ void main() {
     reservoir.sumw = ltcIntegrateSample(reservoir.idx, ltcSpec);
     reservoir.m = 1;
 
-    vec3 spec = reservoir.sumw * lightsColors[reservoir.idx].rgb;
-    vec3 diff = ltcIntegrateSample(reservoir.idx, ltcDiff) * lightsColors[reservoir.idx].rgb;
-
-    vec3 color = (spec * (1.0 - roughness) + diff * roughness);
+    vec3 color = reservoir.sumw * lightsColors[reservoir.idx].rgb;
 
     outColor = vec4(texture2D(u_textureColor, v_uv).rgb * (vec3(0.05) + 0.95 * color), 1.0);
     outReservoir = reservoirEncode(reservoir);

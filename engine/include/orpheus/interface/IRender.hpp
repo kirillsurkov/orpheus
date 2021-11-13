@@ -1,8 +1,10 @@
 #pragma once
 
 #include "orpheus/interface/IMath.hpp"
+#include "orpheus/Font.hpp"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace orpheus::render {
@@ -14,9 +16,16 @@ namespace orpheus::render {
         };
 
         struct GGX {
-            float         roughness;
-            SsboId        lightsBuffer;
-            std::uint64_t lightsCount = 1;
+            float  roughness;
+            SsboId lightsBuffer;
+        };
+
+        struct Text {
+            std::string font;
+            Font::Glyph glyph;
+            float       height;
+            float       descender;
+            float       advance;
         };
     }
 }
@@ -26,6 +35,8 @@ namespace orpheus::interface {
         virtual void init()                                    = 0;
         virtual void startFrame()                              = 0;
         virtual void endFrame()                                = 0;
+
+        virtual void setViewport(std::uint32_t width, std::uint32_t height) = 0;
 
         virtual void  setSSBO(render::SsboId ssbo)             = 0;
         virtual void* ssboMapBuffer()                          = 0;
@@ -49,5 +60,6 @@ namespace orpheus::interface {
 
         virtual void setMaterial(const render::material::FlatColor& material) = 0;
         virtual void setMaterial(const render::material::GGX&       material) = 0;
+        virtual void setMaterial(const render::material::Text&      material) = 0;
     };
 }

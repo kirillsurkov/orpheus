@@ -21,4 +21,4 @@ add_dependencies(Game CopyResources)
 
 target_link_libraries(Game Orpheus)
 
-third_parties(Game sdl2)
+third_parties(Game sdl2 perlin nlohmann)

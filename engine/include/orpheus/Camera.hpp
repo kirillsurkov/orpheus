@@ -24,6 +24,7 @@ namespace orpheus {
         void flyLeft(bool enable);
         void flyRight(bool enable);
 
+        const math::Vector3& getPosition() const;
         void setPosition(const math::Vector3& position);
 
         void update(const math::Vector2& rotation, float delta);

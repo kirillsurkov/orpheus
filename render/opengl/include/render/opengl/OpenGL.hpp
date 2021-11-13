@@ -20,6 +20,9 @@ namespace orpheus::render::opengl {
 
         std::shared_ptr<interface::IMath> m_math;
 
+        std::uint32_t   m_width;
+        std::uint32_t   m_height;
+
         math::Matrix4x4 m_projection;
         math::Matrix4x4 m_view;
         math::Matrix4x4 m_viewInv;
@@ -32,8 +35,6 @@ namespace orpheus::render::opengl {
 
         math::Vector3   m_forward;
         math::Vector3   m_right;
-
-        math::Vector2   m_jitter;
 
         Mesh m_cube;
         Mesh m_sphere;
@@ -70,11 +71,17 @@ namespace orpheus::render::opengl {
         GLuint m_fboCombine;
         GLuint m_textureFboCombineResult;
 
+        GLuint m_fboText;
+        GLuint m_textureFboTextResult;
+
+        std::unordered_map<std::string, GLuint> m_fontAtlas;
+
         GLuint m_programFlatColor;
         GLuint m_programBRDF;
         GLuint m_programBRDF_GBuffer;
         GLuint m_programCombine;
         GLuint m_programBlit;
+        GLuint m_programText;
 
         Assimp::Importer m_meshImporter;
 
@@ -101,6 +108,8 @@ namespace orpheus::render::opengl {
         virtual void startFrame()                              override;
         virtual void endFrame()                                override;
 
+        virtual void setViewport(std::uint32_t width, std::uint32_t height) override;
+
         virtual void  setSSBO(render::SsboId ssbo)             override;
         virtual void* ssboMapBuffer()                          override;
         virtual void  ssboUnmapBuffer()                        override;
@@ -123,5 +132,6 @@ namespace orpheus::render::opengl {
 
         virtual void setMaterial(const render::material::FlatColor& material) override;
         virtual void setMaterial(const render::material::GGX&       material) override;
+        virtual void setMaterial(const render::material::Text&      material) override;
     };
 }

@@ -19,7 +19,7 @@ namespace orpheus {
         return m_input->getMouseDxDy();
     }
 
-    physics::ID Scene::addBody(const physics::Description& description) {
+    physics::BodyID Scene::addBody(const physics::BodyDescription& description) {
         return m_physics->addBody(description);
     }
 
@@ -27,17 +27,19 @@ namespace orpheus {
         return m_ssboCounter++;
     }
 
-    void Scene::setWidth(float width) {
+    void Scene::setWidth(std::uint32_t width) {
         m_width = width;
     }
 
-    void Scene::setHeight(float height) {
+    void Scene::setHeight(std::uint32_t height) {
         m_height = height;
     }
 
     void Scene::draw(const std::shared_ptr<interface::IRender>& render) {
+        render->setViewport(m_width, m_height);
+
         math::Matrix4x4 projection;
-        m_math->perspective(projection, 3.141592653f * 1.0f / 4.0f, m_width / m_height, 0.01f, 1000.0f);
+        m_math->perspective(projection, 3.141592653f * 1.0f / 3.0f, static_cast<float>(m_width) / m_height, 0.01f, 1000.0f);
 
         render->setProjection(projection);
         render->setView(m_camera.getTransform());

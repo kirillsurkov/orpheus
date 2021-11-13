@@ -1,6 +1,7 @@
-#version 460 core
+#version 430 core
 
 uniform sampler2D u_texture;
+uniform sampler2D u_textureText;
 
 in vec2 v_uv;
 
@@ -87,5 +88,5 @@ vec3 ToLinear(vec3 v) { return PowVec3(v,     gamma); }
 vec3 ToSRGB(vec3 v)   { return PowVec3(v, 1.0/gamma); }
 
 void main() {
-    outColor = vec4(ToSRGB(aces_fitted(texture2D(u_texture, v_uv).rgb)), 1.0);
+    outColor = vec4(ToSRGB(aces_fitted(texture2D(u_texture, v_uv).rgb)) + texture2D(u_textureText, v_uv).rgb, 1.0);
 }

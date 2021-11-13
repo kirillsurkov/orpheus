@@ -23,6 +23,10 @@ namespace orpheus {
         m_flyRight = enable;
     }
 
+    const math::Vector3& Camera::getPosition() const {
+        return m_position;
+    }
+
     void Camera::setPosition(const math::Vector3& position) {
         m_position = position;
     }
@@ -46,7 +50,7 @@ namespace orpheus {
         if (m_flyRight)    m_math->add(translation, translation, m_right);
         if (translation.x() || translation.y() || translation.z()) {
             m_math->normalize(translation);
-            m_math->mul(translation, translation, delta * 20);
+            m_math->mul(translation, translation, delta * 100);
             m_math->add(m_position, m_position, translation);
         }
 
