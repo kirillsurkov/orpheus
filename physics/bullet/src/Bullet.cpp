@@ -262,6 +262,11 @@ namespace orpheus::physics::bullet {
         return math::Quaternion{rotation[0], rotation[1], rotation[2], rotation[3]};
     }
 
+    void Bullet::setLinearFactor(BodyID id, const math::Vector3& factor) {
+        auto body = getBody(id);
+        body->setLinearFactor(btVector3(factor.x(), factor.y(), factor.z()));
+    }
+
     void Bullet::setAngularFactor(BodyID id, const math::Vector3& factor) {
         auto body = getBody(id);
         body->setAngularFactor(btVector3(factor.x(), factor.y(), factor.z()));

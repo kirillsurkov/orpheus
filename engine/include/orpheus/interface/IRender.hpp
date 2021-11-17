@@ -52,11 +52,7 @@ namespace orpheus::interface {
         virtual void setRight(const math::Vector3& vec)        = 0;
 
         virtual void clear(float r, float g, float b, float a) = 0;
-        virtual void drawCube()                                = 0;
-        virtual void drawSphere()                              = 0;
-        virtual void drawCylinder()                            = 0;
-        virtual void drawPlane()                               = 0;
-        virtual void drawBumpy()                               = 0;
+        virtual void draw(const std::string& mesh)             = 0;
 
         virtual void setMaterial(const render::material::FlatColor& material) = 0;
         virtual void setMaterial(const render::material::GGX&       material) = 0;

@@ -59,10 +59,13 @@ namespace orpheus::render::opengl {
     }
 
     OpenGL::Mesh OpenGL::loadMesh(const std::string& name) {
-        const aiScene* scene = m_meshImporter.ReadFile("./res/models/" + name + "/geometry.obj", aiProcess_Triangulate);
+        const aiScene* scene = m_meshImporter.ReadFile("./res/models/" + name + "/geometry.obj", aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
         std::vector<float> positions;
         std::vector<float> normals;
+        std::vector<float> texCoords;
+        std::vector<float> tangents;
+        std::vector<float> bitangents;
 
         for (unsigned int meshId = 0; meshId < scene->mNumMeshes; meshId++) {
             aiMesh* mesh = scene->mMeshes[meshId];
@@ -76,6 +79,17 @@ namespace orpheus::render::opengl {
 
                     const auto& normal = mesh->mNormals[index];
                     normals.insert(normals.end(), {normal.x, normal.y, normal.z});
+
+                    if (mesh->mTextureCoords[0]) {
+                        const auto& texCoord = mesh->mTextureCoords[0][index];
+                        texCoords.insert(texCoords.end(), {texCoord.x, texCoord.y});
+                    }
+
+                    const auto& tangent = mesh->mTangents[index];
+                    tangents.insert(tangents.end(), {tangent.x, tangent.y, tangent.z});
+
+                    const auto& bitangent = mesh->mBitangents[index];
+                    bitangents.insert(bitangents.end(), {bitangent.x, bitangent.y, bitangent.z});
                 }
             }
         }
@@ -98,7 +112,28 @@ namespace orpheus::render::opengl {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glEnableVertexAttribArray(1);
 
-        return Mesh{static_cast<std::uint32_t>(positions.size() / 3), vao, vboPositions, vboNormals};
+        GLuint vboTexCoords;
+        glGenBuffers(1, &vboTexCoords);
+        glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
+        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(float), texCoords.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(2);
+
+        GLuint vboTangents;
+        glGenBuffers(1, &vboTangents);
+        glBindBuffer(GL_ARRAY_BUFFER, vboTangents);
+        glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(3);
+
+        GLuint vboBitangents;
+        glGenBuffers(1, &vboBitangents);
+        glBindBuffer(GL_ARRAY_BUFFER, vboBitangents);
+        glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(float), bitangents.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(4);
+
+        return Mesh{static_cast<std::uint32_t>(positions.size() / 3), vao, vboPositions, vboNormals, vboTexCoords, vboTangents, vboBitangents};
     }
 
     GLuint OpenGL::createTexture(GLint internalFormat, std::uint32_t width, std::uint32_t height, const void* data, GLenum type, GLint format) {
@@ -133,12 +168,6 @@ namespace orpheus::render::opengl {
         if (err != GLEW_OK) {
             throw std::runtime_error("glewInit() failed. Error: " + std::to_string(err));
         }
-
-        m_cube = loadMesh("cube");
-        m_sphere = loadMesh("sphere");
-        m_cylinder = loadMesh("cylinder");
-        m_plane = loadMesh("plane");
-        m_bumpy = loadMesh("bumpy");
 
         m_programFlatColor = createShader("flat_color");
         m_programBRDF = createShader("brdf");
@@ -445,29 +474,13 @@ namespace orpheus::render::opengl {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void OpenGL::drawCube() {
-        glBindVertexArray(m_cube.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_cube.count);
-    }
-
-    void OpenGL::drawSphere() {
-        glBindVertexArray(m_sphere.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_sphere.count);
-    }
-
-    void OpenGL::drawCylinder() {
-        glBindVertexArray(m_cylinder.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_cylinder.count);
-    }
-
-    void OpenGL::drawPlane() {
-        glBindVertexArray(m_plane.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_plane.count);
-    }
-
-    void OpenGL::drawBumpy() {
-        glBindVertexArray(m_bumpy.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_bumpy.count);
+    void OpenGL::draw(const std::string& mesh) {
+        auto it = m_meshes.find(mesh);
+        if (it == m_meshes.end()) {
+            it = m_meshes.emplace(mesh, loadMesh(mesh)).first;
+        }
+        glBindVertexArray(it->second.vao);
+        glDrawArrays(GL_TRIANGLES, 0, it->second.count);
     }
 
     void OpenGL::setMaterial(const render::material::FlatColor& material) {
@@ -533,15 +546,6 @@ namespace orpheus::render::opengl {
         m_math->ortho(projection, 0.0f, m_width, 0.0f, m_height, 0.1f, 10.0f);
 
         auto worldRect = material.glyph.getWorldRect();
-
-        //worldRect.width = 1.0f;
-        //std::cout << worldRect.width << std::endl;
-
-        std::cout << (char)material.glyph.getID() << std::endl;
-        std::cout << worldRect.x << " " << worldRect.y << " " << worldRect.width << " " << worldRect.height << std::endl;
-        std::cout << material.height / 460.0f << std::endl;
-        std::cout << material.descender << std::endl;
-        std::cout << std::endl;
 
         math::Matrix4x4 model = m_model;
         m_math->scale(model, material.height, worldRect.height * material.height, 1.0f);

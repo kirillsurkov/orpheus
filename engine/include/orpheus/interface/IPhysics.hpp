@@ -80,6 +80,7 @@ namespace orpheus::interface {
         virtual void             setRotation(physics::BodyID id, const math::Quaternion& rotation)       = 0;
         virtual math::Quaternion getRotation(physics::BodyID id)                                   const = 0;
 
+        virtual void             setLinearFactor(physics::BodyID id, const math::Vector3& factor)        = 0;
         virtual void             setAngularFactor(physics::BodyID id, const math::Vector3& factor)       = 0;
 
         virtual physics::State   getState(physics::BodyID id)                                      const = 0;

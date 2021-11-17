@@ -51,6 +51,7 @@ namespace orpheus::physics::bullet {
         virtual void              setRotation(physics::BodyID id, const math::Quaternion& rotation)       override;
         virtual math::Quaternion  getRotation(physics::BodyID id)                                   const override;
 
+        virtual void              setLinearFactor(BodyID id, const math::Vector3& factor)                 override;
         virtual void              setAngularFactor(BodyID id, const math::Vector3& factor)                override;
 
         virtual State             getState(BodyID id)                                               const override;

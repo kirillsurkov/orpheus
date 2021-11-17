@@ -55,6 +55,7 @@ struct LTC {
     mat3 mat;
     mat3 matR;
     mat3 matInv;
+    float asd;
 };
 
 LTC ltcInit(float roughness) {
@@ -63,6 +64,11 @@ LTC ltcInit(float roughness) {
     vec3 normal = normalize(texture2D(u_textureNormal, v_uv).xyz);
     vec3 position = texture2D(u_texturePosition, v_uv).xyz;
     vec3 dir = normalize(position - u_origin);
+
+    float asd = dot(dir, normal);
+
+    /*if (dot(dir, normal) >= 0)
+        dir = -dir;*/
 
     float ndotv = clamp(dot(normal, -dir), 0.0, 1.0);
     vec3 T1 = normalize(-dir - normal * dot(-dir, normal));
@@ -77,6 +83,7 @@ LTC ltcInit(float roughness) {
     ltc.mat = mat3(vec3(tex1.x, 0.0, tex1.y), vec3(0.0, 1.0, 0.0), vec3(tex1.z, 0.0, tex1.w));
     ltc.matR = transpose(mat3(T1, T2, normal));
     ltc.matInv = ltc.mat * ltc.matR;
+    ltc.asd = asd;
 
     return ltc;
 }
@@ -100,9 +107,9 @@ float ltcIntegrateSampleQuad(uint sampleIdx, in LTC ltc) {
     vec3 p3 = lightsPositions[sampleIdx * 4 + 2].xyz - ltc.position;
     vec3 p4 = lightsPositions[sampleIdx * 4 + 3].xyz - ltc.position;
 
-    if (dot(p1, cross(p2 - p1, p4 - p1)) < 0.0) {
-        return 0.0;
-    }
+    vec3 dir = p1;
+    vec3 lightNormal = cross(p2 - p1, p4 - p1);//cross(lightsPositions[sampleIdx * 4 + 1].xyz - lightsPositions[sampleIdx * 4 + 0].xyz, lightsPositions[sampleIdx * 4 + 3].xyz - lightsPositions[sampleIdx * 4 + 0].xyz);
+    bool behind = dot(dir, lightNormal) < 0.0;
 
     p1 = normalize(ltc.matInv * p1);
     p2 = normalize(ltc.matInv * p2);
@@ -117,8 +124,10 @@ float ltcIntegrateSampleQuad(uint sampleIdx, in LTC ltc) {
 
     float len = length(vsum);
     float z = vsum.z / len;
+    if (behind)
+        z = -z;
 
-    return ltc.coeff * len * texture2D(u_textureLtc2, vec2(z * 0.5 + 0.5, len) * LUT_SCALE + vec2(LUT_BIAS)).w;
+    return ltc.asd;//ltc.coeff * len * texture2D(u_textureLtc2, vec2(z * 0.5 + 0.5, len) * LUT_SCALE + vec2(LUT_BIAS)).w;
 }
 
 vec3 SolveCubic(vec4 Coefficient) {
@@ -363,9 +372,9 @@ void main() {
 
     Reservoir reservoir = reservoirInit();
     RIS(reservoir, ltcSpec);
-    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x,     m.y), 0).xy), 0.4228584333060338);
-    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x - 2, m.y), 0).xy), 0.1314829920117552);
-    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x + 2, m.y), 0).xy), 0.7972877170150268);
+    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x,     m.y), 0).xy),     0.4228584333060338);
+    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x - 2, m.y), 0).xy),     0.1314829920117552);
+    reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x + 2, m.y), 0).xy),     0.7972877170150268);
     reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x,     m.y - 2), 0).xy), 0.6601296319005907);
     reservoirMerge(reservoir, reservoirDecode(texelFetch(u_textureReservoir, ivec2(gl_FragCoord.xy) + ivec2(m.x,     m.y + 2), 0).xy), 0.4979573192540756);
     reservoir.sumw = ltcIntegrateSample(reservoir.idx, ltcSpec);
@@ -373,6 +382,8 @@ void main() {
 
     vec3 color = reservoir.sumw * lightsColors[reservoir.idx].rgb;
 
-    outColor = vec4(texture2D(u_textureColor, v_uv).rgb * (vec3(0.05) + 0.95 * color), 1.0);
+    outColor = vec4(mix(texture2D(u_textureColor, v_uv).rgb, color, 0.95), 1.0);
+
+    //outColor = vec4(texture2D(u_textureColor, v_uv).rgb * (vec3(0.05) + 0.95 * color), 1.0);
     outReservoir = reservoirEncode(reservoir);
 }

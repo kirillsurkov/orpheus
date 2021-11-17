@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <assimp/Importer.hpp>
 
-#include <deque>
+#include <map>
 #include <random>
 
 namespace orpheus::render::opengl {
@@ -16,6 +16,9 @@ namespace orpheus::render::opengl {
             GLuint        vao;
             GLuint        vboPositions;
             GLuint        vboNormals;
+            GLuint        vboTexCoords;
+            GLuint        vboTangents;
+            GLuint        vboBitangents;
         };
 
         std::shared_ptr<interface::IMath> m_math;
@@ -36,11 +39,7 @@ namespace orpheus::render::opengl {
         math::Vector3   m_forward;
         math::Vector3   m_right;
 
-        Mesh m_cube;
-        Mesh m_sphere;
-        Mesh m_cylinder;
-        Mesh m_plane;
-        Mesh m_bumpy;
+        std::map<std::string, Mesh> m_meshes;
 
         GLuint m_textureNoise;
 
@@ -124,11 +123,7 @@ namespace orpheus::render::opengl {
         virtual void setRight(const math::Vector3& vec)        override;
 
         virtual void clear(float r, float g, float b, float a) override;
-        virtual void drawCube()                                override;
-        virtual void drawSphere()                              override;
-        virtual void drawCylinder()                            override;
-        virtual void drawPlane()                               override;
-        virtual void drawBumpy()                               override;
+        virtual void draw(const std::string& mesh)             override;
 
         virtual void setMaterial(const render::material::FlatColor& material) override;
         virtual void setMaterial(const render::material::GGX&       material) override;

@@ -33,7 +33,8 @@ namespace orpheus {
 
         template<class T, class... Args>
         std::shared_ptr<T> addEntity(Args&&... args) {
-            return std::static_pointer_cast<T>(m_entities.emplace_back(std::make_shared<T>(m_baseEntity, *this, std::forward<Args>(args)...)));
+            const auto& base = m_baseEntity;
+            return std::static_pointer_cast<T>(m_entities.emplace_back(std::make_shared<T>(base, *this, std::forward<Args>(args)...)));
         }
 
         template<class T>

@@ -6,8 +6,6 @@
 #include <physics/bullet/Bullet.hpp>
 #include <render/opengl/OpenGL.hpp>
 
-#include <PerlinNoise.hpp>
-
 #include <unordered_map>
 #include <vector>
 #include <iostream>
@@ -28,7 +26,7 @@ private:
     std::string m_text;
 
 public:
-    EntityText(orpheus::Entity& base, orpheus::Scene& scene, const orpheus::Font& font, float x, float y, const std::string& text) :
+    EntityText(const orpheus::Entity& base, orpheus::Scene& scene, const orpheus::Font& font, float x, float y, const std::string& text) :
         orpheus::Entity(base),
         m_font(font),
         m_text(text)
@@ -48,7 +46,7 @@ public:
             m_material.glyph = m_font.getGlyph(c);
             m_material.advance = advance;
             render->setMaterial(m_material);
-            render->drawPlane();
+            render->draw("plane");
             advance += m_material.glyph.getAdvance();
         }
     }
@@ -78,10 +76,10 @@ private:
     bool m_jump     = false;
     std::uint64_t m_score;
     orpheus::math::Matrix4x4 m_model;
-    orpheus::render::material::FlatColor m_material;
+    orpheus::render::material::GGX m_material;
 
 public:
-    EntityPlayer(orpheus::Entity& base, orpheus::Scene& scene, float x, float y, float z) :
+    EntityPlayer(const orpheus::Entity& base, orpheus::Scene& scene, float x, float y, float z) :
         orpheus::Entity(base),
         m_score(0)
     {
@@ -97,7 +95,9 @@ public:
                                         0.0f
                                     });
 
-        m_material.color = {1.0f, 1.0f, 0.0f};
+        m_material.roughness = 0.8f;
+        m_material.lightsBuffer = 0;
+        //m_material.color = {1.0f, 1.0f, 0.0f};
     }
 
     void setDirectionVectors(const orpheus::math::Vector3& forward, const orpheus::math::Vector3& right) {
@@ -163,7 +163,6 @@ public:
         m_math->mul(position, m_physics->getState(m_capsuleId).transform, position);
         m_position = {position.x(), position.y(), position.z()};
         m_position.y() += 2.0f;
-        //m_position.z() += 5.0f;
 
         if (m_alive && m_onGround) {
             orpheus::math::Vector3 direction;
@@ -193,22 +192,105 @@ public:
         }
 
         m_model = m_physics->getState(m_capsuleId).transform;
+        m_physics->setLinearFactor(m_capsuleId, orpheus::math::Vector3{1.0f, 1.0f, 0.0f});
     }
 
     virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
+        auto model = m_model;
+        m_math->rotate(model, 0.0f, 1.0f, 0.0f, 3.141592653f / 4.0f);
+        render->setModel(model);
+        render->setMaterial(m_material);
+        render->draw("banshee_torso");
+        render->draw("banshee_head");
+        render->draw("banshee_larm");
+        render->draw("banshee_rarm");
+        render->draw("banshee_sword");
+
         /*render->setModel(m_model);
         render->setMaterial(m_material);
-        render->drawCylinder();
+        render->draw("cylinder");
 
         m_math->translate(m_model, 0.0f, 1.0f, 0.0f);
         render->setModel(m_model);
         render->setMaterial(m_material);
-        render->drawSphere();
+        render->draw("sphere");
 
         m_math->translate(m_model, 0.0f, -2.0f, 0.0f);
         render->setModel(m_model);
         render->setMaterial(m_material);
-        render->drawSphere();*/
+        render->draw("sphere");*/
+    }
+};
+
+class EntityEnemy : public orpheus::Entity {
+private:
+    orpheus::physics::BodyID  m_capsuleId;
+    orpheus::math::Vector3    m_dirForward;
+    orpheus::math::Vector3    m_dirRight;
+    orpheus::math::Vector3    m_position;
+    orpheus::math::Matrix4x4  m_model;
+    orpheus::render::material::FlatColor m_material;
+
+public:
+    EntityEnemy(const orpheus::Entity& base, orpheus::Scene& scene, float x, float y, float z) :
+        orpheus::Entity(base)
+    {
+        orpheus::physics::ShapeInfo capsuleShapeInfo;
+        capsuleShapeInfo.capsule.radius = 1.0f;
+        capsuleShapeInfo.capsule.height = 1.0f;
+        m_capsuleId = scene.addBody(orpheus::physics::BodyDescription{
+                                        orpheus::physics::Shape::Capsule,
+                                        capsuleShapeInfo,
+                                        orpheus::physics::Type::Dynamic,
+                                        orpheus::math::Vector3{x, y, z},
+                                        orpheus::math::Vector3{0.0f, 1.0f, 0.0f},
+                                        0.0f
+                                    });
+
+        m_material.color = {1.0f, 0.0f, 0.0f};
+    }
+
+    void setDirectionVectors(const orpheus::math::Vector3& forward, const orpheus::math::Vector3& right) {
+        m_dirForward = forward;
+        m_dirForward.y() = 0;
+
+        m_dirRight = right;
+        m_dirRight.y() = 0;
+    }
+
+    const orpheus::math::Vector3& getPosition() const {
+        return m_position;
+    }
+
+    orpheus::physics::BodyID getBodyID() const {
+        return m_capsuleId;
+    }
+
+    virtual void update(float delta) override {
+        orpheus::math::Vector4 position = {0.0f, 0.0f, 0.0f, 1.0f};
+        m_math->mul(position, m_physics->getState(m_capsuleId).transform, position);
+        m_position = {position.x(), position.y(), position.z()};
+        m_position.y() += 2.0f;
+
+        m_model = m_physics->getState(m_capsuleId).transform;
+
+        m_physics->setLinearFactor(m_capsuleId, orpheus::math::Vector3{1.0f, 1.0f, 0.0f});
+    }
+
+    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
+        render->setModel(m_model);
+        render->setMaterial(m_material);
+        render->draw("cylinder");
+
+        m_math->translate(m_model, 0.0f, 1.0f, 0.0f);
+        render->setModel(m_model);
+        render->setMaterial(m_material);
+        render->draw("sphere");
+
+        m_math->translate(m_model, 0.0f, -2.0f, 0.0f);
+        render->setModel(m_model);
+        render->setMaterial(m_material);
+        render->draw("sphere");
     }
 };
 
@@ -224,16 +306,14 @@ private:
     orpheus::math::Matrix4x4             m_model;
     orpheus::render::material::FlatColor m_material;
     std::vector<orpheus::math::Vector3>  m_points;
+    bool                                 m_draw;
 
 public:
-    EntityAreaLight(orpheus::Entity& base, orpheus::Scene& scene, Type type, float x, float y, float z) :
+    EntityAreaLight(const orpheus::Entity& base, orpheus::Scene& scene, Type type, float x, float y, float z) :
         orpheus::Entity(base),
-        m_type(type)
+        m_type(type),
+        m_draw(true)
     {
-        m_math->translate(m_model, x, y + 2.0f, z);
-        m_math->scale(m_model, 2.0f, 2.0f, 1.0f);
-        m_math->rotate(m_model, 1.0f, 0.0f, 0.0f, 3.141592653f / 2.0f);
-
         m_material.color = {1.0f, 1.0f, 1.0f};
 
         switch (type) {
@@ -263,6 +343,10 @@ public:
         m_model = model;
     }
 
+    void setDraw(bool draw) {
+        m_draw = draw;
+    }
+
     const std::vector<orpheus::math::Vector3>& getPoints() const {
         return m_points;
     }
@@ -278,6 +362,17 @@ public:
     const orpheus::math::Matrix4x4& getModel() const {
         return m_model;
     }
+
+    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
+        if (!m_draw)
+            return;
+
+        auto model = m_model;
+        m_math->rotate(model, 1.0f, 0.0f, 0.0f, 1.0f * 3.141592653f / 2.0f);
+        render->setModel(model);
+        render->setMaterial(m_material);
+        render->draw("plane");
+    }
 };
 
 class EntityAreaLightGroup : public orpheus::Entity {
@@ -286,7 +381,7 @@ private:
     orpheus::render::SsboId m_ssbo;
 
 public:
-    EntityAreaLightGroup(orpheus::Entity& base, orpheus::Scene& scene) :
+    EntityAreaLightGroup(const orpheus::Entity& base, orpheus::Scene& scene) :
         orpheus::Entity(base),
         m_ssbo(scene.createSSBO())
     { }
@@ -365,62 +460,30 @@ public:
 
 class EntityReflectFloor : public orpheus::Entity {
 private:
-    const siv::PerlinNoise                m_perlin;
     std::shared_ptr<EntityPlayer>         m_player;
     orpheus::math::Matrix4x4              m_model;
     orpheus::math::Matrix4x4              m_prevModel;
     orpheus::render::material::FlatColor  m_materialColor;
     orpheus::render::material::GGX        m_materialGgx;
     orpheus::math::Vector3                m_scale;
-    orpheus::math::Vector3                m_positionInitial;
-    orpheus::math::Vector3                m_positionActual;
+    orpheus::math::Vector3                m_position;
     orpheus::math::Vector2                m_noisePosition;
     float                                 m_timer;
     orpheus::physics::BodyID              m_cubeId;
-    std::shared_ptr<EntityAreaLight>      m_areaLight1;
-    std::shared_ptr<EntityAreaLight>      m_areaLight2;
-    std::shared_ptr<EntityAreaLight>      m_areaLight3;
-    std::shared_ptr<EntityAreaLight>      m_areaLight4;
-    bool                                  m_hueDirectionForward;
-    float                                 m_hueOffset;
-
-    void updateActualPosition(float delta) {
-        m_positionActual = m_positionInitial;
-
-        orpheus::math::Vector3 playerPos = m_player->getPosition();
-        playerPos.y() = 0.0f;
-        m_math->normalize(playerPos);
-
-        if (m_player->isMoved()) {
-            m_noisePosition.x() += delta * playerPos.x();
-            m_noisePosition.y() += delta * playerPos.z();
-        }
-
-        float noiseScale = 0.1f;
-        float noiseX = m_positionInitial.x() * noiseScale - m_noisePosition.x();
-        float noiseY = m_positionInitial.z() * noiseScale - m_noisePosition.y();
-
-        m_positionActual.x() *= m_scale.x();
-        m_positionActual.y() += m_scale.y() * 2.0f * m_perlin.noise3D(1.0f + noiseX, 1.0f + noiseY, 1.0f);
-        m_positionActual.z() *= m_scale.z();
-    }
 
 public:
-    EntityReflectFloor(orpheus::Entity& base, orpheus::Scene& scene,
-                       const siv::PerlinNoise& perlin,
+    EntityReflectFloor(const orpheus::Entity& base, orpheus::Scene& scene,
                        const std::shared_ptr<EntityPlayer>& player,
                        const std::shared_ptr<EntityAreaLightGroup>& areaLightGroup,
-                       float hueOffset, float x, float y, float z) :
+                       float x, float y, float z) :
         orpheus::Entity(base),
-        m_perlin(perlin),
         m_player(player),
         m_scale({5.0f, 5.0f, 5.0f}),
-        m_positionInitial({x, y, z}),
-        m_noisePosition({0.0f, 0.0f}),
-        m_timer(0.0f),
-        m_hueDirectionForward(true),
-        m_hueOffset(hueOffset)
+        m_position({x, y, z}),
+        m_timer(0.0f)
     {
+        m_materialColor.color = orpheus::math::Vector3{0.2f, 0.2f, 0.2f};
+
         m_materialGgx.roughness = 0.2f;
         m_materialGgx.lightsBuffer = areaLightGroup->getSSBO();
 
@@ -434,21 +497,10 @@ public:
                                      orpheus::physics::Type::Kinematic,
                                      orpheus::math::Vector3{x * shapeInfo.cube.scaleX, y * shapeInfo.cube.scaleY, z * shapeInfo.cube.scaleZ}
                                  });
-
-        m_areaLight1 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
-        m_areaLight2 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
-        m_areaLight3 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
-        m_areaLight4 = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
-        areaLightGroup->addAreaLight(m_areaLight1);
-        areaLightGroup->addAreaLight(m_areaLight2);
-        areaLightGroup->addAreaLight(m_areaLight3);
-        areaLightGroup->addAreaLight(m_areaLight4);
-
-        updateActualPosition(0.0f);
     }
 
-    const orpheus::math::Vector3& getActualPosition() const {
-        return m_positionActual;
+    const orpheus::math::Vector3& getPosition() const {
+        return m_position;
     }
 
     const orpheus::math::Vector3& getScale() const {
@@ -456,20 +508,6 @@ public:
     }
 
     virtual void update(float delta) override {
-        m_hueOffset += delta * 0.25f;
-        if (m_hueOffset >= 1.0f) {
-            m_hueOffset = std::fmod(m_hueOffset, 1.0f);
-            m_hueDirectionForward = !m_hueDirectionForward;
-        }
-
-        orpheus::math::Vector3 color;
-        m_math->hsv2rgb(color, 60.0f + 180.0f * (m_hueDirectionForward ? m_hueOffset : (1.0f - m_hueOffset)), 0.75f, 1.0f);
-        m_materialColor.color = color;
-        m_areaLight1->setColor(color.x(), color.y(), color.z());
-        m_areaLight2->setColor(color.x(), color.y(), color.z());
-        m_areaLight3->setColor(color.x(), color.y(), color.z());
-        m_areaLight4->setColor(color.x(), color.y(), color.z());
-
         m_prevModel = m_model;
 
         m_timer += delta;
@@ -477,268 +515,27 @@ public:
         m_model = m_physics->getState(m_cubeId).transform;
         m_math->scale(m_model, m_scale.x(), m_scale.y(), m_scale.z());
 
-        updateActualPosition(delta);
-
-        m_physics->setPosition(m_cubeId, m_positionActual);
-
-        orpheus::math::Matrix4x4 model;
-
-        model = m_model;
-        m_math->translate(model,  0.0f, 0.0f,  1.0f);
-        m_areaLight1->setModel(model);
-
-        model = m_model;
-        m_math->translate(model,  0.0f, 0.0f, -1.0f);
-        m_math->rotate(model, 0.0f, 1.0f, 0.0f, 3.141592653f * 1.0f);
-        m_areaLight2->setModel(model);
-
-        model = m_model;
-        m_math->translate(model, -1.0f, 0.0f,  0.0f);
-        m_math->rotate(model, 0.0f, 1.0f, 0.0f, -3.141592653f / 2.0f);
-        m_areaLight3->setModel(model);
-
-        model = m_model;
-        m_math->translate(model,  1.0f, 0.0f,  0.0f);
-        m_math->rotate(model, 0.0f, 1.0f, 0.0f, 3.141592653f / 2.0f);
-        m_areaLight4->setModel(model);
+        m_physics->setPosition(m_cubeId, m_position);
     }
 
     virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
-        auto model = m_model;
-        auto prevModel = m_prevModel;
-        render->setModel(model);
-        render->setPrevModel(prevModel);
-        render->setMaterial(m_materialColor);
-        render->drawCube();
-
-        m_math->translate(model, 0.0f, 1.0f, 0.0f);
-        m_math->translate(prevModel, 0.0f, 1.0f, 0.0f);
-        render->setModel(model);
-        render->setPrevModel(prevModel);
+        render->setModel(m_model);
+        render->setPrevModel(m_prevModel);
         render->setMaterial(m_materialGgx);
-        render->drawPlane();
-    }
-};
-
-class EntityBall : public orpheus::Entity {
-private:
-    orpheus::math::Matrix4x4              m_model;
-    bool                                  m_hueDirectionForward;
-    float                                 m_hueOffset;
-    float                                 m_radius;
-    orpheus::render::material::FlatColor  m_material;
-    orpheus::math::Vector3                m_position;
-    orpheus::physics::BodyID              m_sphereId;
-    std::shared_ptr<EntityAreaLight>      m_areaLight;
-    const std::shared_ptr<EntityPlayer>&  m_player;
-
-public:
-    EntityBall(orpheus::Entity& base, orpheus::Scene& scene,
-               const std::shared_ptr<EntityPlayer>& player,
-               const std::shared_ptr<EntityAreaLightGroup>& areaLightGroup,
-               float hueOffset, float radius, float x, float y, float z) :
-        orpheus::Entity(base),
-        m_hueDirectionForward(true),
-        m_hueOffset(hueOffset),
-        m_radius(radius),
-        m_position({x, y, z}),
-        m_player(player)
-    {
-        orpheus::physics::ShapeInfo shapeInfo;
-        shapeInfo.sphere.radius = radius;
-        m_sphereId = scene.addBody(orpheus::physics::BodyDescription{
-                                       orpheus::physics::Shape::Sphere,
-                                       shapeInfo,
-                                       orpheus::physics::Type::Dynamic,
-                                       orpheus::math::Vector3{x, y, z}
-                                  });
-
-        m_areaLight = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Sphere, m_radius, 0.0f, 0.0f);
-        areaLightGroup->addAreaLight(m_areaLight);
-    }
-
-    virtual void update(float delta) override {
-        m_hueOffset += delta * 0.25f;
-        if (m_hueOffset >= 1.0f) {
-            m_hueOffset = std::fmod(m_hueOffset, 1.0f);
-            m_hueDirectionForward = !m_hueDirectionForward;
-        }
-
-        orpheus::math::Vector3 color;
-        m_math->hsv2rgb(color, 30.0f * (m_hueDirectionForward ? m_hueOffset : (1.0f - m_hueOffset)), 0.85f, 1.0f);
-        m_material.color = color;
-        m_areaLight->setColor(color.x(), color.y(), color.z());
-
-        m_model = m_physics->getState(m_sphereId).transform;
-        m_math->scale(m_model, m_radius, m_radius, m_radius);
-        m_areaLight->setModel(m_model);
-
-        orpheus::physics::BodyID playerBodyId = m_player->getBodyID();
-        for (orpheus::physics::BodyID collision : m_physics->getCollisions(m_sphereId)) {
-            if (collision == playerBodyId) {
-                m_player->kill();
-                break;
-            }
-        }
-    }
-
-    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
-        render->setModel(m_model);
-        render->setMaterial(m_material);
-        render->drawSphere();
-    }
-};
-
-class EntityReward : public orpheus::Entity {
-private:
-    orpheus::math::Matrix4x4              m_model;
-    bool                                  m_hueDirectionForward;
-    float                                 m_hueOffset;
-    float                                 m_radius;
-    orpheus::render::material::FlatColor  m_material;
-    orpheus::physics::BodyID              m_sphereId;
-    std::shared_ptr<EntityAreaLight>      m_areaLight;
-    std::shared_ptr<EntityPlayer>         m_player;
-    float                                 m_timer;
-    int                                                     m_currentFloorId;
-    const std::vector<std::shared_ptr<EntityReflectFloor>>& m_floors;
-
-    void respawn() {
-        m_currentFloorId = rand() % m_floors.size();
-    }
-
-public:
-    EntityReward(orpheus::Entity& base, orpheus::Scene& scene,
-                 const std::shared_ptr<EntityPlayer>& player,
-                 const std::vector<std::shared_ptr<EntityReflectFloor>>& floors,
-                 const std::shared_ptr<EntityAreaLightGroup>& areaLightGroup,
-                 float radius) :
-        orpheus::Entity(base),
-        m_hueDirectionForward(true),
-        m_hueOffset(0.0f),
-        m_radius(radius),
-        m_player(player),
-        m_timer(0.0f),
-        m_floors(floors)
-    {
-        orpheus::physics::ShapeInfo shapeInfo;
-        shapeInfo.sphere.radius = radius;
-        m_sphereId = scene.addBody(orpheus::physics::BodyDescription{
-                                       orpheus::physics::Shape::Sphere,
-                                       shapeInfo,
-                                       orpheus::physics::Type::Static,
-                                       orpheus::math::Vector3{0.0f, 0.0f, 0.0f}
-                                  });
-
-        m_areaLight = scene.addEntity<EntityAreaLight>(EntityAreaLight::Type::Sphere, m_radius, 0.0f, 0.0f);
-        areaLightGroup->addAreaLight(m_areaLight);
-
-        respawn();
-    }
-
-    virtual void update(float delta) override {
-        m_hueOffset += delta * 0.25f;
-        if (m_hueOffset >= 1.0f) {
-            m_hueOffset = std::fmod(m_hueOffset, 1.0f);
-            m_hueDirectionForward = !m_hueDirectionForward;
-        }
-
-        orpheus::math::Vector3 color;
-        m_math->hsv2rgb(color, 110.0f + 20.0f * (m_hueDirectionForward ? m_hueOffset : (1.0f - m_hueOffset)), 0.9f, 1.0f);
-        m_material.color = color;
-        m_areaLight->setColor(color.x(), color.y(), color.z());
-
-        m_timer = std::fmod(m_timer + delta, 10.0f);
-
-        m_model = m_physics->getState(m_sphereId).transform;
-        m_math->scale(m_model, m_radius, m_radius, m_radius);
-        m_areaLight->setModel(m_model);
-
-        orpheus::math::Vector3 curPos = m_physics->getPosition(m_sphereId);
-
-        orpheus::physics::BodyID playerBodyId = m_player->getBodyID();
-        for (orpheus::physics::BodyID collision : m_physics->getCollisions(m_sphereId)) {
-            if (collision == playerBodyId) {
-                respawn();
-
-                orpheus::math::Vector3 playerPos = m_player->getPosition();
-                m_math->sub(playerPos, playerPos, curPos);
-                float len = playerPos.x() * playerPos.x() + playerPos.y() * playerPos.y() + playerPos.z() * playerPos.z();
-
-                if (len <= 50.0f) {
-                    m_player->addScore(100);
-                }
-
-                break;
-            }
-        }
-
-        float pathLength = 2.0f;
-
-        orpheus::math::Vector3 position = m_floors[m_currentFloorId]->getActualPosition();
-        position.y() += m_floors[m_currentFloorId]->getScale().y() + m_radius + pathLength * (1.0f + std::sin(m_timer * M_PI));
-        m_physics->setPosition(m_sphereId, position);
-    }
-
-    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
-        render->setModel(m_model);
-        render->setMaterial(m_material);
-        render->drawSphere();
-    }
-};
-
-class EntityWall : public orpheus::Entity {
-private:
-    orpheus::math::Matrix4x4              m_model;
-    orpheus::render::material::FlatColor  m_material;
-    orpheus::math::Vector3                m_position;
-    orpheus::math::Vector3                m_scale;
-    orpheus::physics::BodyID              m_cubeId;
-
-public:
-    EntityWall(orpheus::Entity& base, orpheus::Scene& scene, float x, float y, float z, float scaleX, float scaleY, float scaleZ) :
-        orpheus::Entity(base),
-        m_position({x, y, z}),
-        m_scale({scaleX, scaleY, scaleZ})
-    {
-        m_material.color = {0.0f, 0.5f, 0.0f};
-
-        orpheus::physics::ShapeInfo shapeInfo;
-        shapeInfo.cube.scaleX = scaleX;
-        shapeInfo.cube.scaleY = scaleY;
-        shapeInfo.cube.scaleZ = scaleZ;
-        m_cubeId = scene.addBody(orpheus::physics::BodyDescription{
-                                     orpheus::physics::Shape::Cube,
-                                     shapeInfo,
-                                     orpheus::physics::Type::Kinematic,
-                                     orpheus::math::Vector3{x, y, z}
-                                 });
-    }
-
-    virtual void update(float delta) override {
-        m_model = m_physics->getState(m_cubeId).transform;
-        m_math->scale(m_model, m_scale.x(), m_scale.y(), m_scale.z());
-    }
-
-    virtual void draw(const std::shared_ptr<orpheus::interface::IRender>& render) override {
-        /*render->setModel(m_model);
-        render->setMaterial(m_material);
-        render->drawCube();*/
+        render->draw("floor");
     }
 };
 
 class TestScene : public orpheus::Scene {
 private:
-    siv::PerlinNoise                                 m_perlin;
     std::shared_ptr<EntityPlayer>                    m_player;
+    std::shared_ptr<EntityEnemy>                     m_enemy;
     std::vector<std::shared_ptr<EntityReflectFloor>> m_floors;
     orpheus::Font                                    m_font;
 
     std::deque<float> m_deltaBuffer;
 
-    std::shared_ptr<EntityText> m_labelScore;
     std::shared_ptr<EntityText> m_labelFPS;
-    std::shared_ptr<EntityText> m_labelDead;
 
 public:
     TestScene(const std::shared_ptr<orpheus::interface::IMath>& math,
@@ -747,60 +544,120 @@ public:
         orpheus::Scene(math, input, physics),
         m_font("noto-sans-mono")
     {
-        m_camera.setPosition(orpheus::math::Vector3{0.0f, 30.0f, 0.0f});
+        m_camera.setPosition(orpheus::math::Vector3{0.0f, 20.0f, 60.0f});
 
-        m_labelScore = addEntity<EntityText>(m_font, 10.0f, 10.0f, "");
         m_labelFPS = addEntity<EntityText>(m_font, 10.0f, 10.0f + 20.0f, "");
-        m_labelDead = addEntity<EntityText>(m_font, 10.0f, 10.0f + 20.0f * 2, "");
 
-        m_player = addEntity<EntityPlayer>(-4.5f, 15.0f, -20.0f);
+        //PlayerEnemyConnector connector;
+        m_player = addEntity<EntityPlayer>(-0.0f, 15.0f, -0.0f);
+        m_enemy = addEntity<EntityEnemy>(20.0f, 15.0f, -0.0f);
+        //connector.setPlayer(m_player);
+        //connector.setEnemy(m_enemy);
 
         auto areaLightGroup = addEntity<EntityAreaLightGroup>();
 
-        for (int i = -10; i < 10; i++) {
-            for (int j = -10; j < 10; j++) {
-                float x = (i + 0.5f) * 2.01f;
-                float z = (j + 0.5f) * 2.01f;
-                float hueOffset = rand() / static_cast<double>(RAND_MAX);
-
-                m_floors.push_back(addEntity<EntityReflectFloor>(m_perlin, m_player, areaLightGroup, hueOffset, x, 0.0, z));
-            }
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 0.0f, 10.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
+            light->setModel(model);
+            light->setColor(1.0f, 0.25f, 0.25f);
+            areaLightGroup->addAreaLight(light);
         }
 
-        addEntity<EntityReward>(m_player, m_floors, areaLightGroup, 2.0f);
-
-        for (std::uint32_t i = 0; i < 20; i++) {
-            std::uint32_t index = rand() % m_floors.size();
-            float x = m_floors[index]->getActualPosition().x();
-            float z = m_floors[index]->getActualPosition().z();
-            float hueOffset = rand() / static_cast<double>(RAND_MAX);
-            float radius = 3.0f + 3.0f * (rand() / static_cast<double>(RAND_MAX));
-
-            addEntity<EntityBall>(m_player, areaLightGroup, hueOffset, radius, x, 50.0f, z);
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 10.0f, 12.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
+            light->setModel(model);
+            light->setColor(0.25f, 1.0f, 0.25f);
+            areaLightGroup->addAreaLight(light);
         }
 
-        float wallWidth = 5.0f * 2.01f * 10.0f;
-        float wallHeight = 100.0f;
-        addEntity<EntityWall>( wallWidth + 1.0f, 0.5f * wallHeight,              0.0f,      1.0f, wallHeight, wallWidth);
-        addEntity<EntityWall>(-wallWidth - 1.0f, 0.5f * wallHeight,              0.0f,      1.0f, wallHeight, wallWidth);
-        addEntity<EntityWall>(             0.0f, 0.5f * wallHeight,  wallWidth + 1.0f, wallWidth, wallHeight,      1.0f);
-        addEntity<EntityWall>(             0.0f, 0.5f * wallHeight, -wallWidth - 1.0f, wallWidth, wallHeight,      1.0f);
-        addEntity<EntityWall>(             0.0f, 1.0f + wallHeight,              0.0f, wallWidth,       1.0f, wallWidth);
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 20.0f, 10.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
 
-        /*bindKey(orpheus::input::Key::W, [&](orpheus::input::State state) { m_camera.flyForward(state == orpheus::input::State::Down); });
+            light->setModel(model);
+            light->setColor(0.25f, 0.25f, 1.0f);
+            areaLightGroup->addAreaLight(light);
+        }
+
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 30.0f, 10.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
+
+            light->setModel(model);
+            light->setColor(0.25f, 1.0f, 1.0f);
+            areaLightGroup->addAreaLight(light);
+        }
+
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 40.0f, 12.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
+
+            light->setModel(model);
+            light->setColor(1.0f, 0.25f, 1.0f);
+            areaLightGroup->addAreaLight(light);
+        }
+
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 50.0f, 10.0f, -7.5f);
+            m_math->scale(model, 2.5f, 2.5f, 2.5f);
+
+            light->setModel(model);
+            light->setColor(1.0f, 1.0f, 0.25f);
+            areaLightGroup->addAreaLight(light);
+        }
+
+        {
+            auto light = addEntity<EntityAreaLight>(EntityAreaLight::Type::Quad, 0.0f, 0.0f, 0.0f);
+            auto model = light->getModel();
+            m_math->translate(model, 25.0f, 15.0f, 7.5f);
+            m_math->scale(model, 30.0f, 2.5f, 2.5f);
+            m_math->rotate(model, 1.0f, 0.0f, 0.0f, -3.141592653f / 6.0f);
+
+            light->setModel(model);
+            light->setColor(1.0f, 1.0f, 1.0f);
+            light->setDraw(false);
+            areaLightGroup->addAreaLight(light);
+        }
+
+
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, -10.0f, 8.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup,  0.0f, 0.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 10.0f, 2.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 20.0f, 0.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 30.0f, 0.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 40.0f, 2.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 50.0f, 0.0f, 0.0f));
+        m_floors.push_back(addEntity<EntityReflectFloor>(m_player, areaLightGroup, 60.0f, 8.0f, 0.0f));
+
+        /*bindKey(orpheus::input::Key::A, [&](orpheus::input::State state) { m_player->backward(state == orpheus::input::State::Down); });
+        bindKey(orpheus::input::Key::D, [&](orpheus::input::State state) { m_player->forward(state == orpheus::input::State::Down); });
+        bindKey(orpheus::input::Key::SPACE, [&](orpheus::input::State state) { m_player->jump(state == orpheus::input::State::Down); });
+
+        bindKey(orpheus::input::Key::LMB, [&](orpheus::input::State state) { m_player->jump(state == orpheus::input::State::Down); });*/
+
+        bindKey(orpheus::input::Key::W, [&](orpheus::input::State state) { m_camera.flyForward(state == orpheus::input::State::Down); });
         bindKey(orpheus::input::Key::S, [&](orpheus::input::State state) { m_camera.flyBackward(state == orpheus::input::State::Down); });
         bindKey(orpheus::input::Key::A, [&](orpheus::input::State state) { m_camera.flyLeft(state == orpheus::input::State::Down); });
-        bindKey(orpheus::input::Key::D, [&](orpheus::input::State state) { m_camera.flyRight(state == orpheus::input::State::Down); });*/
-        bindKey(orpheus::input::Key::W, [&](orpheus::input::State state) { m_player->forward(state == orpheus::input::State::Down); });
-        bindKey(orpheus::input::Key::S, [&](orpheus::input::State state) { m_player->backward(state == orpheus::input::State::Down); });
-        bindKey(orpheus::input::Key::A, [&](orpheus::input::State state) { m_player->left(state == orpheus::input::State::Down); });
-        bindKey(orpheus::input::Key::D, [&](orpheus::input::State state) { m_player->right(state == orpheus::input::State::Down); });
-        bindKey(orpheus::input::Key::SPACE, [&](orpheus::input::State state) { m_player->jump(state == orpheus::input::State::Down); });
+        bindKey(orpheus::input::Key::D, [&](orpheus::input::State state) { m_camera.flyRight(state == orpheus::input::State::Down); });
     }
 
     virtual void userUpdate(float delta) override {
         m_deltaBuffer.push_back(delta);
-        if (m_deltaBuffer.size() > 20) {
+        if (m_deltaBuffer.size() > 60) {
             m_deltaBuffer.pop_front();
         }
         float totalDelta = 0.0f;
@@ -809,33 +666,20 @@ public:
         }
 
         m_labelFPS->setText("FPS: " + std::to_string(m_deltaBuffer.size() / totalDelta));
-        m_labelScore->setText("SCORE: " + std::to_string(m_player->getScore()));
 
-        if (m_player->isAlive()) {
-            m_labelDead->setText("");
-        } else {
-            if (m_labelDead->getText().size() == 0) {
-                m_labelDead->setText("YOU DIED! PRESS 'R' TO RESTART");
-                bindKey(orpheus::input::Key::R, [&](orpheus::input::State state) {
-                    if (state == orpheus::input::State::Down) {
-                        m_player->respawn();
-                        unbindKey(orpheus::input::Key::R);
-                    }
-                });
-            }
-        }
-
-        m_player->setDirectionVectors(m_camera.getForward(), m_camera.getRight());
+        m_player->setDirectionVectors(orpheus::math::Vector3{1.0f, 0.0f, 0.0f}, orpheus::math::Vector3{0.0f, 0.0f, 0.0f});
 
         auto camera = m_camera.getPosition();
         auto player = m_player->getPosition();
+        player.y() += 4.0f;
+        player.z() = 15.0f;
 
         orpheus::math::Vector3 diff;
         m_math->sub(diff, player, camera);
-        m_math->mul(diff, diff, 0.8f);
+        m_math->mul(diff, diff, 0.1f);
         m_math->add(diff, camera, diff);
 
-        m_camera.setPosition(diff);
+        //m_camera.setPosition(diff);
     }
 };
 
@@ -921,7 +765,15 @@ orpheus::input::Key keySdl(SDL_Scancode key) {
     case SDL_SCANCODE_RSHIFT: return orpheus::input::Key::R_SHIFT;
     case SDL_SCANCODE_RALT:   return orpheus::input::Key::R_ALT;
 
-    /*LMB, MMB, RMB*/
+    default: return orpheus::input::Key::UNKNOWN;
+    }
+}
+
+orpheus::input::Key keySdl(Uint8 key) {
+    switch (key) {
+    case SDL_BUTTON_LEFT:   return orpheus::input::Key::LMB;
+    case SDL_BUTTON_RIGHT:  return orpheus::input::Key::RMB;
+    case SDL_BUTTON_MIDDLE: return orpheus::input::Key::MMB;
 
     default: return orpheus::input::Key::UNKNOWN;
     }
@@ -932,6 +784,7 @@ private:
     bool                                        m_quit;
     orpheus::input::Keys                        m_keys;
     std::unordered_multimap<SDL_Scancode, bool> m_keysPressed;
+    std::unordered_multimap<Uint8, bool>        m_mousePressed;
     orpheus::math::Vector2                      m_realMouseXY;
     orpheus::math::Vector2                      m_smoothMouseXY;
 
@@ -940,6 +793,14 @@ private:
         if (it == m_keysPressed.end() || it->second != down) {
             m_keys.push_back({keySdl(key), down ? orpheus::input::State::Down : orpheus::input::State::Up});
             m_keysPressed.emplace(key, down);
+        }
+    }
+
+    void onMouse(Uint8 key, bool down) {
+        auto it = m_mousePressed.find(key);
+        if (it == m_mousePressed.end() || it->second != down) {
+            m_keys.push_back({keySdl(key), down ? orpheus::input::State::Down : orpheus::input::State::Up});
+            m_mousePressed.emplace(key, down);
         }
     }
 
@@ -969,6 +830,14 @@ public:
             case SDL_MOUSEMOTION: {
                 m_realMouseXY.x() += event.motion.xrel;
                 m_realMouseXY.y() += event.motion.yrel;
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                onMouse(event.button.button, true);
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                onMouse(event.button.button, false);
                 break;
             }
             }
